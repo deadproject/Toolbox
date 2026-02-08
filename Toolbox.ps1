@@ -45,13 +45,15 @@ function Show-MainMenu {
     Show-FixOsLogo
     
     $menuOptions = @(
-        "==============================================",
-        "             SELECT AN OPTION                ",
-        "==============================================",
-        "  [1] APPS INSTALLER                        ",
-        "  [2] RUN FIXOS PRESET                      ",
-        "  [3] EXIT TOOLBOX                          ",
-        "=============================================="
+        "╔════════════════════════════════════════════════╗",
+        "║             SELECT AN OPTION                   ║",
+        "╠════════════════════════════════════════════════╣",
+        "║  ┌──────────────────────────────────────────┐  ║",
+        "║  │       [1] APPS INSTALLER                 │  ║",
+        "║  │       [2] RUN FIXOS PRESET               │  ║",
+        "║  │       [3] EXIT TOOLBOX                   │  ║",
+        "║  └──────────────────────────────────────────┘  ║",
+        "╚════════════════════════════════════════════════╝"
     )
     
     foreach ($line in $menuOptions) {
@@ -430,9 +432,9 @@ function Show-CategoriesMenu {
     Clear-Host
     Show-FixOsLogo
     
-    Write-Host (Center-Text "==============================================") -ForegroundColor DarkCyan
-    Write-Host (Center-Text "          APP CATEGORIES MENU                ") -ForegroundColor DarkCyan
-    Write-Host (Center-Text "==============================================") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "==================================================================") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "                   APP CATEGORIES MENU                            ") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "==================================================================") -ForegroundColor DarkCyan
     
     $categories = @(
         "  [1] Browsers         [2] File Tools      [3] Dev Tools",
@@ -444,9 +446,9 @@ function Show-CategoriesMenu {
         Write-Host (Center-Text $line) -ForegroundColor White
     }
     
-    Write-Host (Center-Text "==============================================") -ForegroundColor DarkCyan
-    Write-Host (Center-Text "  Enter number (1-9) or [0] to go back       ") -ForegroundColor Gray
-    Write-Host (Center-Text "==============================================") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "==================================================================") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "              Enter number (1-9) or [0] to go back                ") -ForegroundColor Gray
+    Write-Host (Center-Text "==================================================================") -ForegroundColor DarkCyan
     Write-Host ""
 }
 
