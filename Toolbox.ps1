@@ -45,15 +45,13 @@ function Show-MainMenu {
     Show-FixOsLogo
     
     $menuOptions = @(
-        "╔════════════════════════════════════════════════╗",
-        "║             SELECT AN OPTION                   ║",
-        "╠════════════════════════════════════════════════╣",
-        "║  ┌──────────────────────────────────────────┐  ║",
-        "║  │  [1] 📦 APPS INSTALLER                  │  ║",
-        "║  │  [2] ⚡ RUN FIXOS PRESET                │  ║",
-        "║  │  [3] ❌ EXIT TOOLBOX                    │  ║",
-        "║  └──────────────────────────────────────────┘  ║",
-        "╚════════════════════════════════════════════════╝"
+        "==============================================",
+        "             SELECT AN OPTION                ",
+        "==============================================",
+        "  [1] APPS INSTALLER                        ",
+        "  [2] RUN FIXOS PRESET                      ",
+        "  [3] EXIT TOOLBOX                          ",
+        "=============================================="
     )
     
     foreach ($line in $menuOptions) {
@@ -66,12 +64,12 @@ function Install-App($appId, $appName) {
     try {
         Write-Host ""
         Write-Host (Center-Text "Installing $appName...") -ForegroundColor Yellow
-        winget install -e --id $appId --accept-package-agreements --accept-source-agreements
+        winget install --id $appId --exact --silent --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity
         Write-Host ""
-        Write-Host (Center-Text "✓ $appName installed successfully!") -ForegroundColor Green
+        Write-Host (Center-Text "$appName installed successfully!") -ForegroundColor Green
     } catch {
         Write-Host ""
-        Write-Host (Center-Text "✗ Error installing $appName") -ForegroundColor Red
+        Write-Host (Center-Text "Error installing $appName") -ForegroundColor Red
     }
     Write-Host ""
     Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
@@ -82,9 +80,9 @@ function Show-GridMenu($title, $options, $gridColumns = 3) {
     Clear-Host
     Show-FixOsLogo
     
-    Write-Host (Center-Text "═" * ($title.Length + 4)) -ForegroundColor Yellow
+    Write-Host (Center-Text "==============================================") -ForegroundColor Yellow
     Write-Host (Center-Text "  $title  ") -ForegroundColor Yellow
-    Write-Host (Center-Text "═" * ($title.Length + 4)) -ForegroundColor Yellow
+    Write-Host (Center-Text "==============================================") -ForegroundColor Yellow
     Write-Host ""
     
     $maxLength = ($options | Measure-Object -Property Length -Maximum).Maximum + 6
@@ -123,7 +121,7 @@ function Invoke-BrowsersInstaller {
     )
     
     while ($true) {
-        Show-GridMenu "🌐 BROWSERS SELECTION" $browsers 4
+        Show-GridMenu "BROWSERS SELECTION" $browsers 4
         
         Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
@@ -155,7 +153,7 @@ function Invoke-FileToolsInstaller {
     $toolIds = @("RARLab.WinRAR", "7zip.7zip")
     
     while ($true) {
-        Show-GridMenu "📁 FILE TOOLS" $tools 3
+        Show-GridMenu "FILE TOOLS" $tools 3
         
         Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
@@ -194,7 +192,7 @@ function Invoke-DevToolsInstaller {
     )
     
     while ($true) {
-        Show-GridMenu "💻 DEV TOOLS" $tools 4
+        Show-GridMenu "DEV TOOLS" $tools 4
         
         Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
@@ -229,7 +227,7 @@ function Invoke-DotNetInstaller {
     )
     
     while ($true) {
-        Show-GridMenu "🔷 .NET TOOLS" $tools 3
+        Show-GridMenu ".NET TOOLS" $tools 3
         
         Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
@@ -264,7 +262,7 @@ function Invoke-CommunicationInstaller {
     )
     
     while ($true) {
-        Show-GridMenu "💬 COMMUNICATION" $apps 3
+        Show-GridMenu "COMMUNICATION APPS" $apps 3
         
         Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
@@ -299,7 +297,7 @@ function Invoke-GamingInstaller {
     )
     
     while ($true) {
-        Show-GridMenu "🎮 GAMING APPS" $apps 2
+        Show-GridMenu "GAMING APPS" $apps 2
         
         Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
@@ -334,7 +332,7 @@ function Invoke-MicrosoftInstaller {
     )
     
     while ($true) {
-        Show-GridMenu "🔵 MICROSOFT APPS" $apps 2
+        Show-GridMenu "MICROSOFT APPS" $apps 2
         
         Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
@@ -366,7 +364,7 @@ function Invoke-MediaInstaller {
     $appIds = @("VideoLAN.VLC", "OBSProject.OBSStudio", "Handbrake.Handbrake")
     
     while ($true) {
-        Show-GridMenu "🎵 MEDIA APPS" $apps 3
+        Show-GridMenu "MEDIA APPS" $apps 3
         
         Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
@@ -401,7 +399,7 @@ function Invoke-ProductivityInstaller {
     )
     
     while ($true) {
-        Show-GridMenu "📊 PRODUCTIVITY" $tools 2
+        Show-GridMenu "PRODUCTIVITY TOOLS" $tools 2
         
         Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
@@ -432,23 +430,23 @@ function Show-CategoriesMenu {
     Clear-Host
     Show-FixOsLogo
     
+    Write-Host (Center-Text "==============================================") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "          APP CATEGORIES MENU                ") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "==============================================") -ForegroundColor DarkCyan
+    
     $categories = @(
-        "🌐  Browsers       📁  File Tools    💻  Dev Tools",
-        "🔷  .NET Tools     💬  Communication 🎮  Gaming Apps",
-        "🔵  Microsoft Apps 🎵  Media Apps    📊  Productivity"
+        "  [1] Browsers         [2] File Tools      [3] Dev Tools",
+        "  [4] .NET Tools       [5] Communication   [6] Gaming Apps",
+        "  [7] Microsoft Apps   [8] Media Apps      [9] Productivity"
     )
     
-    Write-Host (Center-Text "╔════════════════════════════════════════════════╗") -ForegroundColor DarkCyan
-    Write-Host (Center-Text "║          📂 APP CATEGORIES MENU               ║") -ForegroundColor DarkCyan
-    Write-Host (Center-Text "╠════════════════════════════════════════════════╣") -ForegroundColor DarkCyan
-    
     foreach ($line in $categories) {
-        Write-Host (Center-Text "║  $line  ║") -ForegroundColor White
+        Write-Host (Center-Text $line) -ForegroundColor White
     }
     
-    Write-Host (Center-Text "╠════════════════════════════════════════════════╣") -ForegroundColor DarkCyan
-    Write-Host (Center-Text "║  Enter number (1-9) or [0] to go back         ║") -ForegroundColor Gray
-    Write-Host (Center-Text "╚════════════════════════════════════════════════╝") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "==============================================") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "  Enter number (1-9) or [0] to go back       ") -ForegroundColor Gray
+    Write-Host (Center-Text "==============================================") -ForegroundColor DarkCyan
     Write-Host ""
 }
 
@@ -483,16 +481,8 @@ function Invoke-AppsInstaller {
 function Invoke-FullFixOsPreset {
     Clear-Host
     Show-FixOsLogo
-    
-    Write-Host (Center-Text "╔════════════════════════════════════════════════╗") -ForegroundColor DarkCyan
-    Write-Host (Center-Text "║           ⚡ FIXOS PRESET RUNNER               ║") -ForegroundColor DarkCyan
-    Write-Host (Center-Text "╠════════════════════════════════════════════════╣") -ForegroundColor DarkCyan
-    Write-Host (Center-Text "║  This will download and run FixOs installer   ║") -ForegroundColor White
-    Write-Host (Center-Text "║                                              ║") -ForegroundColor White
-    Write-Host (Center-Text "║  ⚠  Make sure you have a stable internet     ║") -ForegroundColor Yellow
-    Write-Host (Center-Text "║     connection before proceeding              ║") -ForegroundColor Yellow
-    Write-Host (Center-Text "╚════════════════════════════════════════════════╝") -ForegroundColor DarkCyan
-    Write-Host ""
+
+    Write-Host (Center-Text "  This will run FixOs installer ") -ForegroundColor White
     
     Write-Host (Center-Text "Continue? [Y/N]: ") -NoNewline -ForegroundColor Magenta
     $confirm = Read-Host
@@ -505,10 +495,10 @@ function Invoke-FullFixOsPreset {
     try {
         irm "DevelopmentSpace.pages.dev/FixOs.ps1" | iex
         Write-Host ""
-        Write-Host (Center-Text "✓ FixOs executed successfully!") -ForegroundColor Green
+        Write-Host (Center-Text "FixOs executed successfully!") -ForegroundColor Green
     } catch {
         Write-Host ""
-        Write-Host (Center-Text "✗ Error running FixOs") -ForegroundColor Red
+        Write-Host (Center-Text "Error running FixOs") -ForegroundColor Red
     }
     
     Write-Host ""
