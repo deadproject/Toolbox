@@ -23,7 +23,7 @@ function Show-FixOsLogo {
     )
     
     foreach ($line in $logoLines) {
-        Write-Host (Center-Text $line) -ForegroundColor Cyan
+        Write-Host (Center-Text $line) -ForegroundColor White
     }
     Write-Host ""
 }
