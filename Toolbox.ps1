@@ -80,7 +80,6 @@ function Create-ToolboxShortcut {
         $WshShell = New-Object -ComObject WScript.Shell
         $Shortcut = $WshShell.CreateShortcut($shortcutPath)
         $Shortcut.TargetPath = "powershell.exe"
-        $Shortcut.Arguments = "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command `"Start-Process powershell -ArgumentList '-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -Command \`\"irm \`\`\"$toolboxUrl\`\`\" | iex\`\"' -Verb RunAs`""
         $Shortcut.WorkingDirectory = "$env:USERPROFILE"
         $Shortcut.Description = "FixOs Toolbox - Download and Run as Administrator"
         $Shortcut.IconLocation = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe,0"
