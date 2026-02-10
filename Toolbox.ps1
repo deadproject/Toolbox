@@ -433,7 +433,7 @@ function Show-CategoriesMenu {
     Show-FixOsLogo
     
     Write-Host (Center-Text "==================================================================") -ForegroundColor DarkCyan
-    Write-Host (Center-Text "                   APP CATEGORIES MENU                            ") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "                       APP CATEGORIES MENU                        ") -ForegroundColor DarkCyan
     Write-Host (Center-Text "==================================================================") -ForegroundColor DarkCyan
     
     $categories = @(
@@ -446,9 +446,7 @@ function Show-CategoriesMenu {
         Write-Host (Center-Text $line) -ForegroundColor White
     }
     
-    Write-Host (Center-Text "==================================================================") -ForegroundColor DarkCyan
-    Write-Host (Center-Text "              Enter number (1-9) or [0] to go back                ") -ForegroundColor Gray
-    Write-Host (Center-Text "==================================================================") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "              Enter number (1-9) or [0] to go back                ") -ForegroundColor Gray DarkCyan
     Write-Host ""
 }
 
