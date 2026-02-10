@@ -57,7 +57,7 @@ function Show-MainMenu {
     )
     
     foreach ($line in $menuOptions) {
-        Write-Host (Center-Text $line) -ForegroundColor DarkCyan
+        Write-Host (Center-Text $line) -ForegroundColor White
     }
     Write-Host ""
 }
@@ -74,13 +74,12 @@ function Install-App($appId, $appName) {
         } -ArgumentList $appId
         
         $frames = @('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
-        $colors = @('Cyan', 'Magenta', 'Yellow', 'Green', 'Red')
         $i = 0
         $startTime = Get-Date
         
         while ($job.State -eq 'Running') {
             $elapsed = [math]::Round(((Get-Date) - $startTime).TotalSeconds, 1)
-            Write-Host (Center-Text "  $($frames[$i % 10]) Installing... $elapsed seconds") -ForegroundColor $colors[$i % 5] -NoNewline
+            Write-Host (Center-Text "  $($frames[$i % 10]) Installing... $elapsed seconds") -ForegroundColor White -NoNewline
             Start-Sleep -Milliseconds 100
             Write-Host "`r" -NoNewline
             $i++
@@ -110,7 +109,7 @@ function Show-GridMenu($title, $options, $gridColumns = 3) {
     Show-FixOsLogo
     
     Write-Host (Center-Text "==============================================") -ForegroundColor Yellow
-    Write-Host (Center-Text "  $title  ") -ForegroundColor Yellow
+    Write-Host (Center-Text "  $title  ") -ForegroundColor White
     Write-Host (Center-Text "==============================================") -ForegroundColor Yellow
     Write-Host ""
     
@@ -472,7 +471,7 @@ function Show-CategoriesMenu {
     foreach ($line in $categories) {
         Write-Host (Center-Text $line) -ForegroundColor White
     }
-    
+    Write-Host ""
     Write-Host (Center-Text "              Enter number (1-9) or [0] to go back                ") -ForegroundColor Gray DarkCyan
     Write-Host ""
 }
