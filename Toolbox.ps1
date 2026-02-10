@@ -66,12 +66,39 @@ function Install-App($appId, $appName) {
     try {
         Write-Host ""
         Write-Host (Center-Text "Installing $appName...") -ForegroundColor Yellow
-        winget install --id $appId --exact --silent --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity
         Write-Host ""
-        Write-Host (Center-Text "$appName installed successfully!") -ForegroundColor Green
+        
+        $job = Start-Job -ScriptBlock {
+            param($appId)
+            winget install --id $appId --exact --silent --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
+        } -ArgumentList $appId
+        
+        $frames = @('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
+        $colors = @('Cyan', 'Magenta', 'Yellow', 'Green', 'Red')
+        $i = 0
+        $startTime = Get-Date
+        
+        while ($job.State -eq 'Running') {
+            $elapsed = [math]::Round(((Get-Date) - $startTime).TotalSeconds, 1)
+            Write-Host (Center-Text "  $($frames[$i % 10]) Installing... $elapsed seconds") -ForegroundColor $colors[$i % 5] -NoNewline
+            Start-Sleep -Milliseconds 100
+            Write-Host "`r" -NoNewline
+            $i++
+        }
+        
+        $result = Receive-Job -Job $job
+        Remove-Job -Job $job -Force
+        
+        Write-Host ""
+        Write-Host (Center-Text "  ╔══════════════════════════════╗") -ForegroundColor Green
+        Write-Host (Center-Text "  ║  ✓ $appName installed!      ║") -ForegroundColor Green
+        Write-Host (Center-Text "  ╚══════════════════════════════╝") -ForegroundColor Green
+        
     } catch {
         Write-Host ""
-        Write-Host (Center-Text "Error installing $appName") -ForegroundColor Red
+        Write-Host (Center-Text "  ╔══════════════════════════════╗") -ForegroundColor Red
+        Write-Host (Center-Text "  ║  ✗ Error installing $appName ║") -ForegroundColor Red
+        Write-Host (Center-Text "  ╚══════════════════════════════╝") -ForegroundColor Red
     }
     Write-Host ""
     Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
