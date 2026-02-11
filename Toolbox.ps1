@@ -10,10 +10,10 @@ function Create-ToolboxShortcut {
         $WshShell = New-Object -ComObject WScript.Shell
         $Shortcut = $WshShell.CreateShortcut($shortcutPath)
         $Shortcut.TargetPath = "wt.exe"
-        $Shortcut.Arguments = "-p `"Windows PowerShell`" -d `"$env:USERPROFILE`" powershell -Command `"Start-Process wt -ArgumentList '-p `\`"Windows PowerShell`\`" -d `\`"$env:USERPROFILE`\`" powershell -Command `\`"irm '$toolboxUrl' | iex`\`"' -Verb RunAs`""
+        $Shortcut.Arguments = "-p `"Windows PowerShell`" -d `"$env:USERPROFILE`" powershell -Command `"irm '$toolboxUrl' | iex`""
         $Shortcut.WorkingDirectory = "$env:USERPROFILE"
-        $Shortcut.Description = "FixOs Toolbox - Run as Administrator"
-        $Shortcut.IconLocation = "$env:SystemRoot\System32\WindowsTerminal.exe,0"
+        $Shortcut.Description = "FixOs Toolbox"
+        $Shortcut.IconLocation = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe,0"
         $Shortcut.Save()
         
         if (Test-Path $shortcutPath) {
