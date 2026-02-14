@@ -97,7 +97,7 @@ function Show-Menu {
 
     Write-CenteredLine -Text ""
     Write-CenteredLine -Text ""
-    Write-CenteredLine -Text "[1] Install FixOS ULTRA    [2] Learn More"
+    Write-CenteredLine -Text "[1] Install FixOS  [2] Learn More"
     Write-CenteredLine -Text ""
     Write-CenteredLine -Text "[3] Exit"
     Write-CenteredLine -Text ""
@@ -300,7 +300,7 @@ function Start-WindowsOptimization {
         } catch {}
     }
 
-    function Optimize-Services-NoErrors {
+    function Optimize-Services {
         try {
             $servicesToDisable = @(
                 'DiagTrack', 'dmwappushservice', 'WSearch', 'XboxGipSvc', 'XblAuthManager',
@@ -523,7 +523,7 @@ public class Wallpaper {
 
     Remove-CrapApps
     Disable-Defender
-    Optimize-Services-NoErrors
+    Optimize-Services
     Remove-EdgeCompletely
     Remove-OneDrive
     Remove-Teams
@@ -1065,7 +1065,6 @@ function Install-FixOS {
     Start-Sleep -Milliseconds 100
     
     Write-Host "`r[####################] 100%"
-    Write-Host "ULTRA EXTREME COMPLETE - 45-50 PROCESSES ACHIEVED"
     Write-Host "Press any key to return to the Menu"
     
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
