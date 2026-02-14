@@ -664,29 +664,28 @@ public class Wallpaper {
         } catch {}
     }
 
-    Remove-CrapApps
-    Optimize-Services
-    Remove-EdgeCompletely
-    Remove-OneDrive
-    Remove-Teams
-    Remove-LinkedIn
-    Remove-StoreApps
-    Remove-PhotosAndPaint
-    Remove-Calculator
-    Remove-Notepad
-    Remove-StickyNotes
-    Remove-QuickAssist
-    Remove-Outlook
-    Remove-BingApps
-    Remove-StartExperiences
-    Remove-Widgets
-    Remove-Copilot
-    Remove-Xbox
-    Disable-Telemetry
-    Set-Wallpaper
-    Create-ToolboxShortcut
-    
-    return $true
+Optimize-Services
+Remove-EdgeCompletely
+Remove-OneDrive
+Remove-Teams
+Remove-LinkedIn
+Remove-StoreApps
+Remove-PhotosAndPaint
+Remove-Calculator
+Remove-Notepad
+Remove-StickyNotes
+Remove-QuickAssist
+Remove-Outlook
+Remove-BingApps
+Remove-StartExperiences
+Remove-Widgets
+Remove-Copilot
+Remove-Xbox
+Disable-Telemetry
+Set-Wallpaper
+Create-ToolboxShortcut
+
+return $true
 }
 
 function Apply-RegistryTweaks {
