@@ -253,301 +253,104 @@ function Start-WindowsOptimization {
     function Optimize-Services-Extreme {
         try {
             $servicesToDisable = @(
-                @{Name = 'DiagTrack'; StartupType = 'Disabled'}
-                @{Name = 'dmwappushservice'; StartupType = 'Disabled'}
-                @{Name = 'WSearch'; StartupType = 'Disabled'}
-                @{Name = 'XboxGipSvc'; StartupType = 'Disabled'}
-                @{Name = 'XblAuthManager'; StartupType = 'Disabled'}
-                @{Name = 'XblGameSave'; StartupType = 'Disabled'}
-                @{Name = 'XboxNetApiSvc'; StartupType = 'Disabled'}
-                @{Name = 'OneSyncSvc'; StartupType = 'Disabled'}
-                @{Name = 'PcaSvc'; StartupType = 'Disabled'}
-                @{Name = 'WpcMonSvc'; StartupType = 'Disabled'}
-                @{Name = 'wisvc'; StartupType = 'Disabled'}
-                @{Name = 'RetailDemo'; StartupType = 'Disabled'}
-                @{Name = 'MessagingService'; StartupType = 'Disabled'}
-                @{Name = 'lfsvc'; StartupType = 'Disabled'}
-                @{Name = 'MapsBroker'; StartupType = 'Disabled'}
-                @{Name = 'PimIndexMaintenanceSvc'; StartupType = 'Disabled'}
-                @{Name = 'UnistoreSvc'; StartupType = 'Disabled'}
-                @{Name = 'UserDataSvc'; StartupType = 'Disabled'}
-                @{Name = 'WpnService'; StartupType = 'Disabled'}
-                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
-                @{Name = 'WdNisSvc'; StartupType = 'Disabled'}
-                @{Name = 'Sense'; StartupType = 'Disabled'}
-                @{Name = 'wscsvc'; StartupType = 'Disabled'}
-                @{Name = 'SysMain'; StartupType = 'Disabled'}
-                @{Name = 'edgeupdate'; StartupType = 'Disabled'}
-                @{Name = 'edgeupdatem'; StartupType = 'Disabled'}
-                @{Name = 'MicrosoftEdgeElevationService'; StartupType = 'Disabled'}
-                @{Name = 'BcastDVRUserService'; StartupType = 'Disabled'}
-                @{Name = 'CaptureService'; StartupType = 'Disabled'}
-                @{Name = 'cbdhsvc'; StartupType = 'Disabled'}
-                @{Name = 'ConsentUxUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'CredentialEnrollmentManagerUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'DeviceAssociationBrokerSvc'; StartupType = 'Disabled'}
-                @{Name = 'DevicePickerUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'DevicesFlowUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'MessagingService'; StartupType = 'Disabled'}
-                @{Name = 'NPSMSvc'; StartupType = 'Disabled'}
-                @{Name = 'P9RdrService'; StartupType = 'Disabled'}
-                @{Name = 'PenService'; StartupType = 'Disabled'}
-                @{Name = 'PrintWorkflowUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'UdkUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'autotimesvc'; StartupType = 'Disabled'}
-                @{Name = 'tzautoupdate'; StartupType = 'Disabled'}
-                @{Name = 'shpamsvc'; StartupType = 'Disabled'}
-                @{Name = 'PhoneSvc'; StartupType = 'Disabled'}
-                @{Name = 'RemoteRegistry'; StartupType = 'Disabled'}
-                @{Name = 'RemoteAccess'; StartupType = 'Disabled'}
-                @{Name = 'SessionEnv'; StartupType = 'Disabled'}
-                @{Name = 'TermService'; StartupType = 'Disabled'}
-                @{Name = 'UmRdpService'; StartupType = 'Disabled'}
-                @{Name = 'SharedAccess'; StartupType = 'Disabled'}
-                @{Name = 'hidserv'; StartupType = 'Disabled'}
-                @{Name = 'WbioSrvc'; StartupType = 'Disabled'}
-                @{Name = 'FrameServer'; StartupType = 'Disabled'}
-                @{Name = 'StiSvc'; StartupType = 'Disabled'}
-                @{Name = 'WiaRpc'; StartupType = 'Disabled'}
-                @{Name = 'icssvc'; StartupType = 'Disabled'}
-                @{Name = 'WlanSvc'; StartupType = 'Disabled'}
-                @{Name = 'WwanSvc'; StartupType = 'Disabled'}
-                @{Name = 'Spooler'; StartupType = 'Disabled'}
-                @{Name = 'WbioSrvc'; StartupType = 'Disabled'}
-                @{Name = 'WlanSvc'; StartupType = 'Disabled'}
-                @{Name = 'WwanSvc'; StartupType = 'Disabled'}
-                @{Name = 'WpnService'; StartupType = 'Disabled'}
-                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
-                @{Name = 'XboxNetApiSvc'; StartupType = 'Disabled'}
-                @{Name = 'XblAuthManager'; StartupType = 'Disabled'}
-                @{Name = 'XblGameSave'; StartupType = 'Disabled'}
-                @{Name = 'XboxGipSvc'; StartupType = 'Disabled'}
-                @{Name = 'XboxNetApiSvc'; StartupType = 'Disabled'}
-                @{Name = 'AeLookupSvc'; StartupType = 'Disabled'}
-                @{Name = 'ALG'; StartupType = 'Disabled'}
-                @{Name = 'AppIDSvc'; StartupType = 'Disabled'}
-                @{Name = 'AppMgmt'; StartupType = 'Disabled'}
-                @{Name = 'AppReadiness'; StartupType = 'Disabled'}
-                @{Name = 'AppVClient'; StartupType = 'Disabled'}
-                @{Name = 'AppXSvc'; StartupType = 'Disabled'}
-                @{Name = 'AssignedAccessManagerSvc'; StartupType = 'Disabled'}
-                @{Name = 'AxInstSV'; StartupType = 'Disabled'}
-                @{Name = 'BDESVC'; StartupType = 'Disabled'}
-                @{Name = 'BTAGService'; StartupType = 'Disabled'}
-                @{Name = 'BthAvctpSvc'; StartupType = 'Disabled'}
-                @{Name = 'BthHFSrv'; StartupType = 'Disabled'}
-                @{Name = 'bthserv'; StartupType = 'Disabled'}
-                @{Name = 'CertPropSvc'; StartupType = 'Disabled'}
-                @{Name = 'DcpSvc'; StartupType = 'Disabled'}
-                @{Name = 'DevQueryBroker'; StartupType = 'Disabled'}
-                @{Name = 'DeviceInstall'; StartupType = 'Disabled'}
-                @{Name = 'DmEnrollmentSvc'; StartupType = 'Disabled'}
-                @{Name = 'DsSvc'; StartupType = 'Disabled'}
-                @{Name = 'DsmSvc'; StartupType = 'Disabled'}
-                @{Name = 'Eaphost'; StartupType = 'Disabled'}
-                @{Name = 'EntAppSvc'; StartupType = 'Disabled'}
-                @{Name = 'FDResPub'; StartupType = 'Disabled'}
-                @{Name = 'Fax'; StartupType = 'Disabled'}
-                @{Name = 'fhsvc'; StartupType = 'Disabled'}
-                @{Name = 'GraphicsPerfSvc'; StartupType = 'Disabled'}
-                @{Name = 'HomeGroupListener'; StartupType = 'Disabled'}
-                @{Name = 'HomeGroupProvider'; StartupType = 'Disabled'}
-                @{Name = 'HvHost'; StartupType = 'Disabled'}
-                @{Name = 'IEEtwCollectorService'; StartupType = 'Disabled'}
-                @{Name = 'IKEEXT'; StartupType = 'Disabled'}
-                @{Name = 'InstallService'; StartupType = 'Disabled'}
-                @{Name = 'InventorySvc'; StartupType = 'Disabled'}
-                @{Name = 'IpxlatCfgSvc'; StartupType = 'Disabled'}
-                @{Name = 'KtmRm'; StartupType = 'Disabled'}
-                @{Name = 'LicenseManager'; StartupType = 'Disabled'}
-                @{Name = 'LxpSvc'; StartupType = 'Disabled'}
-                @{Name = 'MSiSCSI'; StartupType = 'Disabled'}
-                @{Name = 'MixedRealityOpenXRSvc'; StartupType = 'Disabled'}
-                @{Name = 'MsKeyboardFilter'; StartupType = 'Disabled'}
-                @{Name = 'NaturalAuthentication'; StartupType = 'Disabled'}
-                @{Name = 'NcaSvc'; StartupType = 'Disabled'}
-                @{Name = 'NcbService'; StartupType = 'Disabled'}
-                @{Name = 'NcdAutoSetup'; StartupType = 'Disabled'}
-                @{Name = 'NetSetupSvc'; StartupType = 'Disabled'}
-                @{Name = 'NetTcpPortSharing'; StartupType = 'Disabled'}
-                @{Name = 'NgcCtnrSvc'; StartupType = 'Disabled'}
-                @{Name = 'NgcSvc'; StartupType = 'Disabled'}
-                @{Name = 'PNRPAutoReg'; StartupType = 'Disabled'}
-                @{Name = 'PNRPsvc'; StartupType = 'Disabled'}
-                @{Name = 'PeerDistSvc'; StartupType = 'Disabled'}
-                @{Name = 'PerfHost'; StartupType = 'Disabled'}
-                @{Name = 'PhoneSvc'; StartupType = 'Disabled'}
-                @{Name = 'PrintNotify'; StartupType = 'Disabled'}
-                @{Name = 'PushToInstall'; StartupType = 'Disabled'}
-                @{Name = 'QWAVE'; StartupType = 'Disabled'}
-                @{Name = 'RasAuto'; StartupType = 'Disabled'}
-                @{Name = 'RasMan'; StartupType = 'Disabled'}
-                @{Name = 'RmSvc'; StartupType = 'Disabled'}
-                @{Name = 'SCPolicySvc'; StartupType = 'Disabled'}
-                @{Name = 'SCardSvr'; StartupType = 'Disabled'}
-                @{Name = 'SDRSVC'; StartupType = 'Disabled'}
-                @{Name = 'SEMgrSvc'; StartupType = 'Disabled'}
-                @{Name = 'SNMPTRAP'; StartupType = 'Disabled'}
-                @{Name = 'SSDPSRV'; StartupType = 'Disabled'}
-                @{Name = 'ScDeviceEnum'; StartupType = 'Disabled'}
-                @{Name = 'SensorDataService'; StartupType = 'Disabled'}
-                @{Name = 'SensorService'; StartupType = 'Disabled'}
-                @{Name = 'SensrSvc'; StartupType = 'Disabled'}
-                @{Name = 'SharedRealitySvc'; StartupType = 'Disabled'}
-                @{Name = 'SmsRouter'; StartupType = 'Disabled'}
-                @{Name = 'SstpSvc'; StartupType = 'Disabled'}
-                @{Name = 'TabletInputService'; StartupType = 'Disabled'}
-                @{Name = 'TapiSrv'; StartupType = 'Disabled'}
-                @{Name = 'TextInputManagementService'; StartupType = 'Disabled'}
-                @{Name = 'TieringEngineService'; StartupType = 'Disabled'}
-                @{Name = 'TimeBrokerSvc'; StartupType = 'Disabled'}
-                @{Name = 'TokenBroker'; StartupType = 'Disabled'}
-                @{Name = 'TroubleshootingSvc'; StartupType = 'Disabled'}
-                @{Name = 'UI0Detect'; StartupType = 'Disabled'}
-                @{Name = 'UevAgentService'; StartupType = 'Disabled'}
-                @{Name = 'VacSvc'; StartupType = 'Disabled'}
-                @{Name = 'VSS'; StartupType = 'Disabled'}
-                @{Name = 'W32Time'; StartupType = 'Disabled'}
-                @{Name = 'WEPHOSTSVC'; StartupType = 'Disabled'}
-                @{Name = 'WFDSConMgrSvc'; StartupType = 'Disabled'}
-                @{Name = 'WMPNetworkSvc'; StartupType = 'Disabled'}
-                @{Name = 'WManSvc'; StartupType = 'Disabled'}
-                @{Name = 'WPDBusEnum'; StartupType = 'Disabled'}
-                @{Name = 'WSService'; StartupType = 'Disabled'}
-                @{Name = 'WaaSMedicSvc'; StartupType = 'Disabled'}
-                @{Name = 'WalletService'; StartupType = 'Disabled'}
-                @{Name = 'WarpJITSvc'; StartupType = 'Disabled'}
-                @{Name = 'WcsPlugInService'; StartupType = 'Disabled'}
-                @{Name = 'WdiServiceHost'; StartupType = 'Disabled'}
-                @{Name = 'WdiSystemHost'; StartupType = 'Disabled'}
-                @{Name = 'WebClient'; StartupType = 'Disabled'}
-                @{Name = 'Wecsvc'; StartupType = 'Disabled'}
-                @{Name = 'WerSvc'; StartupType = 'Disabled'}
-                @{Name = 'WinHttpAutoProxySvc'; StartupType = 'Disabled'}
-                @{Name = 'WinRM'; StartupType = 'Disabled'}
-                @{Name = 'WpcMonSvc'; StartupType = 'Disabled'}
-                @{Name = 'autotimesvc'; StartupType = 'Disabled'}
-                @{Name = 'camsvc'; StartupType = 'Disabled'}
-                @{Name = 'cloudidsvc'; StartupType = 'Disabled'}
-                @{Name = 'dcsvc'; StartupType = 'Disabled'}
-                @{Name = 'defragsvc'; StartupType = 'Disabled'}
-                @{Name = 'diagnosticshub.standardcollector.service'; StartupType = 'Disabled'}
-                @{Name = 'diagsvc'; StartupType = 'Disabled'}
-                @{Name = 'dot3svc'; StartupType = 'Disabled'}
-                @{Name = 'embeddedmode'; StartupType = 'Disabled'}
-                @{Name = 'fdPHost'; StartupType = 'Disabled'}
-                @{Name = 'icssvc'; StartupType = 'Disabled'}
-                @{Name = 'lltdsvc'; StartupType = 'Disabled'}
-                @{Name = 'lmhosts'; StartupType = 'Disabled'}
-                @{Name = 'p2pimsvc'; StartupType = 'Disabled'}
-                @{Name = 'p2psvc'; StartupType = 'Disabled'}
-                @{Name = 'perceptionsimulation'; StartupType = 'Disabled'}
-                @{Name = 'pla'; StartupType = 'Disabled'}
-                @{Name = 'seclogon'; StartupType = 'Disabled'}
-                @{Name = 'smphost'; StartupType = 'Disabled'}
-                @{Name = 'spectrum'; StartupType = 'Disabled'}
-                @{Name = 'sppsvc'; StartupType = 'Disabled'}
-                @{Name = 'ssh-agent'; StartupType = 'Disabled'}
-                @{Name = 'svsvc'; StartupType = 'Disabled'}
-                @{Name = 'swprv'; StartupType = 'Disabled'}
-                @{Name = 'uhssvc'; StartupType = 'Disabled'}
-                @{Name = 'upnphost'; StartupType = 'Disabled'}
-                @{Name = 'vds'; StartupType = 'Disabled'}
-                @{Name = 'vmicguestinterface'; StartupType = 'Disabled'}
-                @{Name = 'vmicheartbeat'; StartupType = 'Disabled'}
-                @{Name = 'vmickvpexchange'; StartupType = 'Disabled'}
-                @{Name = 'vmicrdv'; StartupType = 'Disabled'}
-                @{Name = 'vmicshutdown'; StartupType = 'Disabled'}
-                @{Name = 'vmictimesync'; StartupType = 'Disabled'}
-                @{Name = 'vmicvmsession'; StartupType = 'Disabled'}
-                @{Name = 'vmicvss'; StartupType = 'Disabled'}
-                @{Name = 'AJRouter'; StartupType = 'Disabled'}
-                @{Name = 'SEMgrSvc'; StartupType = 'Disabled'}
-                @{Name = 'PcaSvc'; StartupType = 'Disabled'}
-                @{Name = 'WpcMonSvc'; StartupType = 'Disabled'}
-                @{Name = 'wisvc'; StartupType = 'Disabled'}
-                @{Name = 'shpamsvc'; StartupType = 'Disabled'}
-                @{Name = 'StorSvc'; StartupType = 'Disabled'}
-                @{Name = 'FontCache'; StartupType = 'Disabled'}
-                @{Name = 'Themes'; StartupType = 'Disabled'}
+                'DiagTrack', 'dmwappushservice', 'WSearch', 'XboxGipSvc', 'XblAuthManager',
+                'XblGameSave', 'XboxNetApiSvc', 'OneSyncSvc', 'PcaSvc', 'WpcMonSvc',
+                'wisvc', 'RetailDemo', 'MessagingService', 'lfsvc', 'MapsBroker',
+                'PimIndexMaintenanceSvc', 'UnistoreSvc', 'UserDataSvc', 'WpnService',
+                'WpnUserService', 'WdNisSvc', 'Sense', 'wscsvc', 'SysMain',
+                'BcastDVRUserService', 'CaptureService', 'cbdhsvc', 'ConsentUxUserSvc',
+                'CredentialEnrollmentManagerUserSvc', 'DeviceAssociationBrokerSvc',
+                'DevicePickerUserSvc', 'DevicesFlowUserSvc', 'NPSMSvc', 'P9RdrService',
+                'PenService', 'PrintWorkflowUserSvc', 'UdkUserSvc', 'autotimesvc',
+                'tzautoupdate', 'shpamsvc', 'PhoneSvc', 'RemoteRegistry', 'RemoteAccess',
+                'SessionEnv', 'TermService', 'UmRdpService', 'SharedAccess', 'hidserv',
+                'WbioSrvc', 'FrameServer', 'StiSvc', 'WiaRpc', 'icssvc', 'WlanSvc',
+                'WwanSvc', 'Spooler', 'AeLookupSvc', 'ALG', 'AppIDSvc', 'AppMgmt',
+                'AppReadiness', 'AppVClient', 'AppXSvc', 'AssignedAccessManagerSvc',
+                'AxInstSV', 'BDESVC', 'BTAGService', 'BthAvctpSvc', 'BthHFSrv',
+                'bthserv', 'CertPropSvc', 'DcpSvc', 'DevQueryBroker', 'DeviceInstall',
+                'DmEnrollmentSvc', 'DsSvc', 'DsmSvc', 'Eaphost', 'EntAppSvc',
+                'FDResPub', 'Fax', 'fhsvc', 'GraphicsPerfSvc', 'HomeGroupListener',
+                'HomeGroupProvider', 'HvHost', 'IEEtwCollectorService', 'IKEEXT',
+                'InstallService', 'InventorySvc', 'IpxlatCfgSvc', 'KtmRm',
+                'LicenseManager', 'LxpSvc', 'MSiSCSI', 'MixedRealityOpenXRSvc',
+                'MsKeyboardFilter', 'NaturalAuthentication', 'NcaSvc', 'NcbService',
+                'NcdAutoSetup', 'NetSetupSvc', 'NetTcpPortSharing', 'NgcCtnrSvc',
+                'NgcSvc', 'PNRPAutoReg', 'PNRPsvc', 'PeerDistSvc', 'PerfHost',
+                'PrintNotify', 'PushToInstall', 'QWAVE', 'RasAuto', 'RasMan',
+                'RmSvc', 'SCPolicySvc', 'SCardSvr', 'SDRSVC', 'SEMgrSvc',
+                'SNMPTRAP', 'SSDPSRV', 'ScDeviceEnum', 'SensorDataService',
+                'SensorService', 'SensrSvc', 'SharedRealitySvc', 'SmsRouter',
+                'SstpSvc', 'TabletInputService', 'TapiSrv', 'TextInputManagementService',
+                'TieringEngineService', 'TimeBrokerSvc', 'TokenBroker',
+                'TroubleshootingSvc', 'UI0Detect', 'UevAgentService', 'VacSvc',
+                'VSS', 'W32Time', 'WEPHOSTSVC', 'WFDSConMgrSvc', 'WMPNetworkSvc',
+                'WManSvc', 'WPDBusEnum', 'WSService', 'WaaSMedicSvc', 'WalletService',
+                'WarpJITSvc', 'WcsPlugInService', 'WdiServiceHost', 'WdiSystemHost',
+                'WebClient', 'Wecsvc', 'WerSvc', 'WinHttpAutoProxySvc', 'WinRM',
+                'camsvc', 'cloudidsvc', 'dcsvc', 'defragsvc',
+                'diagnosticshub.standardcollector.service', 'diagsvc', 'dot3svc',
+                'embeddedmode', 'fdPHost', 'lltdsvc', 'lmhosts', 'p2pimsvc',
+                'p2psvc', 'perceptionsimulation', 'pla', 'seclogon', 'smphost',
+                'spectrum', 'sppsvc', 'ssh-agent', 'svsvc', 'swprv', 'uhssvc',
+                'upnphost', 'vds', 'vmicguestinterface', 'vmicheartbeat',
+                'vmickvpexchange', 'vmicrdv', 'vmicshutdown', 'vmictimesync',
+                'vmicvmsession', 'vmicvss', 'AJRouter', 'FontCache', 'Themes'
             )
-            
+
             $servicesToManual = @(
-                @{Name = 'BITS'; StartupType = 'Manual'}
-                @{Name = 'wuauserv'; StartupType = 'Manual'}
-                @{Name = 'DoSvc'; StartupType = 'Manual'}
-                @{Name = 'UsoSvc'; StartupType = 'Manual'}
-                @{Name = 'W32Time'; StartupType = 'Manual'}
-                @{Name = 'Schedule'; StartupType = 'Manual'}
-                @{Name = 'TrustedInstaller'; StartupType = 'Manual'}
-                @{Name = 'AudioEndpointBuilder'; StartupType = 'Manual'}
-                @{Name = 'Audiosrv'; StartupType = 'Manual'}
-                @{Name = 'CDPSvc'; StartupType = 'Manual'}
-                @{Name = 'CDPUserSvc'; StartupType = 'Manual'}
-                @{Name = 'CoreMessagingRegistrar'; StartupType = 'Manual'}
-                @{Name = 'StateRepository'; StartupType = 'Manual'}
-                @{Name = 'TimeBrokerSvc'; StartupType = 'Manual'}
-                @{Name = 'TokenBroker'; StartupType = 'Manual'}
-                @{Name = 'UserManager'; StartupType = 'Manual'}
-                @{Name = 'VaultSvc'; StartupType = 'Manual'}
-                @{Name = 'Winmgmt'; StartupType = 'Manual'}
-                @{Name = 'Wcmsvc'; StartupType = 'Manual'}
-                @{Name = 'nsi'; StartupType = 'Manual'}
-                @{Name = 'iphlpsvc'; StartupType = 'Manual'}
-                @{Name = 'Dnscache'; StartupType = 'Manual'}
-                @{Name = 'Dhcp'; StartupType = 'Manual'}
-                @{Name = 'EventLog'; StartupType = 'Manual'}
-                @{Name = 'EventSystem'; StartupType = 'Manual'}
-                @{Name = 'gpsvc'; StartupType = 'Manual'}
-                @{Name = 'ProfSvc'; StartupType = 'Manual'}
-                @{Name = 'Power'; StartupType = 'Manual'}
-                @{Name = 'DcomLaunch'; StartupType = 'Manual'}
-                @{Name = 'RpcSs'; StartupType = 'Manual'}
-                @{Name = 'RpcEptMapper'; StartupType = 'Manual'}
-                @{Name = 'SamSs'; StartupType = 'Manual'}
-                @{Name = 'LanmanServer'; StartupType = 'Manual'}
-                @{Name = 'LanmanWorkstation'; StartupType = 'Manual'}
-                @{Name = 'PlugPlay'; StartupType = 'Manual'}
-                @{Name = 'SENS'; StartupType = 'Manual'}
-                @{Name = 'ShellHWDetection'; StartupType = 'Manual'}
-                @{Name = 'TrkWks'; StartupType = 'Manual'}
-                @{Name = 'tiledatamodelsvc'; StartupType = 'Manual'}
-                @{Name = 'BrokerInfrastructure'; StartupType = 'Manual'}
-                @{Name = 'SystemEventsBroker'; StartupType = 'Manual'}
-                @{Name = 'CryptSvc'; StartupType = 'Manual'}
-                @{Name = 'DPS'; StartupType = 'Manual'}
-                @{Name = 'MpsSvc'; StartupType = 'Manual'}
-                @{Name = 'mpssvc'; StartupType = 'Manual'}
-                @{Name = 'BFE'; StartupType = 'Manual'}
-                @{Name = 'KeyIso'; StartupType = 'Manual'}
-                @{Name = 'Netlogon'; StartupType = 'Manual'}
-                @{Name = 'NlaSvc'; StartupType = 'Manual'}
-                @{Name = 'PolicyAgent'; StartupType = 'Manual'}
-                @{Name = 'SgrmBroker'; StartupType = 'Manual'}
-                @{Name = 'WinDefend'; StartupType = 'Manual'}
-                @{Name = 'SecurityHealthService'; StartupType = 'Manual'}
+                'BITS', 'wuauserv', 'DoSvc', 'UsoSvc', 'Schedule',
+                'TrustedInstaller', 'AudioEndpointBuilder', 'Audiosrv', 'CDPSvc',
+                'CDPUserSvc', 'CoreMessagingRegistrar', 'StateRepository',
+                'UserManager', 'VaultSvc', 'Winmgmt', 'Wcmsvc', 'nsi', 'iphlpsvc',
+                'Dnscache', 'Dhcp', 'EventLog', 'EventSystem', 'gpsvc', 'ProfSvc',
+                'Power', 'DcomLaunch', 'RpcSs', 'RpcEptMapper', 'SamSs',
+                'LanmanServer', 'LanmanWorkstation', 'PlugPlay', 'SENS',
+                'ShellHWDetection', 'TrkWks', 'tiledatamodelsvc', 'BrokerInfrastructure',
+                'SystemEventsBroker', 'CryptSvc', 'DPS', 'MpsSvc', 'mpssvc', 'BFE',
+                'KeyIso', 'Netlogon', 'NlaSvc', 'PolicyAgent', 'SgrmBroker',
+                'WinDefend', 'SecurityHealthService'
             )
-            
-            foreach ($service in $servicesToDisable) {
+
+            foreach ($serviceName in $servicesToDisable) {
                 try {
-                    $svc = Get-Service -Name $service.Name -ErrorAction SilentlyContinue
+                    $svc = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
                     if ($svc) {
-                        Set-Service -Name $service.Name -StartupType $service.StartupType -ErrorAction SilentlyContinue
-                        if ($svc.Status -eq 'Running') {
-                            Stop-Service -Name $service.Name -Force -ErrorAction SilentlyContinue
-                        }
+                        Set-Service -Name $serviceName -StartupType Disabled -ErrorAction SilentlyContinue
                     }
                 } catch {}
             }
-            
-            foreach ($service in $servicesToManual) {
+
+            $edgeServices = @('edgeupdate', 'edgeupdatem', 'MicrosoftEdgeElevationService')
+            foreach ($serviceName in $edgeServices) {
                 try {
-                    $svc = Get-Service -Name $service.Name -ErrorAction SilentlyContinue
+                    $svc = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
                     if ($svc) {
-                        Set-Service -Name $service.Name -StartupType $service.StartupType -ErrorAction SilentlyContinue
+                        Stop-Service -Name $serviceName -Force -ErrorAction SilentlyContinue
+                        Start-Sleep -Milliseconds 1000
+                        Set-Service -Name $serviceName -StartupType Disabled -ErrorAction SilentlyContinue
                     }
                 } catch {}
             }
+
+            foreach ($serviceName in $servicesToManual) {
+                try {
+                    $svc = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+                    if ($svc) {
+                        Set-Service -Name $serviceName -StartupType Manual -ErrorAction SilentlyContinue
+                    }
+                } catch {}
+            }
+
+            foreach ($serviceName in $servicesToDisable) {
+                try {
+                    $svc = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+                    if ($svc -and $svc.Status -eq 'Running') {
+                        Stop-Service -Name $serviceName -Force -ErrorAction SilentlyContinue
+                    }
+                } catch {}
+            }
+
         } catch {}
     }
 
