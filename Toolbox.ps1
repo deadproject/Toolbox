@@ -1,3 +1,11 @@
+<#
+- MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
+- NOTES
+    Version: 2.0.3
+    Author: Project/Development Space
+    Requires: Administrator privileges
+#>
+
 param([switch]$Install,[switch]$Silent)
 
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -97,7 +105,7 @@ function Show-Menu {
 
     Write-CenteredLine -Text ""
     Write-CenteredLine -Text ""
-    Write-CenteredLine -Text "[1] Install FixOS  [2] Learn More"
+    Write-CenteredLine -Text "[1] Install FixOS [2] Learn More"
     Write-CenteredLine -Text ""
     Write-CenteredLine -Text "[3] Exit"
     Write-CenteredLine -Text ""
@@ -118,13 +126,12 @@ function Start-WindowsOptimization {
         return $false
     }
 
-    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force -ErrorAction SilentlyContinue
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force -ErrorAction SilentlyContinue | Out-Null
 
     function Remove-AppxSafe {
         param([string]$AppName)
         try {
             Get-AppxPackage -Name $AppName -AllUsers -ErrorAction SilentlyContinue | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
-            Get-AppxPackage -Name $AppName -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue
             Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Where-Object { $_.PackageName -like "*$AppName*" } | ForEach-Object {
                 Remove-AppxProvisionedPackage -Online -PackageName $_.PackageName -ErrorAction SilentlyContinue
             }
@@ -136,9 +143,9 @@ function Start-WindowsOptimization {
         param([string]$Path, [string]$Name, [object]$Value, [string]$Type = "DWord")
         try {
             if (-not (Test-Path $Path)) {
-                New-Item -Path $Path -Force | Out-Null
+                New-Item -Path $Path -Force -ErrorAction SilentlyContinue | Out-Null
             }
-            Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -Force
+            Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -Force -ErrorAction SilentlyContinue
             return $true
         } catch { return $false }
     }
@@ -221,7 +228,6 @@ function Start-WindowsOptimization {
         "Microsoft.WindowsCopilot"
         "Microsoft.LinkedIn"
         "Microsoft.Teams"
-        "Microsoft.People"
         "Microsoft.MixedReality"
         "MicrosoftCorporationII.QuickAssist"
         "Microsoft.OutlookForWindows"
@@ -235,9 +241,6 @@ function Start-WindowsOptimization {
         "Microsoft.WindowsCalculator"
         "Microsoft.WindowsNotepad"
         "Microsoft.MicrosoftStickyNotes"
-        "Microsoft.People"
-        "Microsoft.WindowsFeedbackHub"
-        "Microsoft.Getstarted"
         "Microsoft.MicrosoftEdge"
         "Microsoft.MicrosoftEdge.Stable"
         "MicrosoftEdge"
@@ -259,122 +262,147 @@ function Start-WindowsOptimization {
         }
     }
 
-    function Disable-Defender {
-        try {
-            Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction SilentlyContinue
-            Set-MpPreference -DisableBehaviorMonitoring $true -ErrorAction SilentlyContinue
-            Set-MpPreference -DisableBlockAtFirstSeen $true -ErrorAction SilentlyContinue
-            Set-MpPreference -DisableIOAVProtection $true -ErrorAction SilentlyContinue
-            Set-MpPreference -DisablePrivacyMode $true -ErrorAction SilentlyContinue
-            Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true -ErrorAction SilentlyContinue
-            Set-MpPreference -DisableArchiveScanning $true -ErrorAction SilentlyContinue
-            Set-MpPreference -DisableIntrusionPreventionSystem $true -ErrorAction SilentlyContinue
-            Set-MpPreference -DisableScriptScanning $true -ErrorAction SilentlyContinue
-            Set-MpPreference -SubmitSamplesConsent 2 -ErrorAction SilentlyContinue
-            Set-MpPreference -MAPSReporting 0 -ErrorAction SilentlyContinue
-            Set-MpPreference -PUAProtection 0 -ErrorAction SilentlyContinue
-            
-            $defenderServices = @('WinDefend', 'WdNisSvc', 'WdNisDrv', 'WdBoot', 'WdFilter', 'SecurityHealthService')
-            foreach ($svc in $defenderServices) {
-                $s = Get-Service -Name $svc -ErrorAction SilentlyContinue
-                if ($s) {
-                    Stop-Service -Name $svc -Force -ErrorAction SilentlyContinue
-                    Set-Service -Name $svc -StartupType Disabled -ErrorAction SilentlyContinue
-                }
-            }
-            
-            $defenderRegs = @(
-                @{Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender"; Name = "DisableAntiSpyware"; Value = 1}
-                @{Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection"; Name = "DisableRealtimeMonitoring"; Value = 1}
-                @{Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\SpyNet"; Name = "DisableBlockAtFirstSeen"; Value = 1}
-                @{Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\SpyNet"; Name = "SpynetReporting"; Value = 0}
-                @{Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\SpyNet"; Name = "SubmitSamplesConsent"; Value = 2}
-                @{Path = "HKLM:\SOFTWARE\Microsoft\Windows Defender\Features"; Name = "TamperProtection"; Value = 0}
-            )
-            
-            foreach ($reg in $defenderRegs) {
-                Set-RegistrySafe -Path $reg.Path -Name $reg.Name -Value $reg.Value
-            }
-            
-            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "SettingsPageVisibility" -Value "hide:windowsdefender" -Force -ErrorAction SilentlyContinue
-        } catch {}
-    }
-
     function Optimize-Services {
         try {
             $servicesToDisable = @(
-                'DiagTrack', 'dmwappushservice', 'WSearch', 'XboxGipSvc', 'XblAuthManager',
-                'XblGameSave', 'XboxNetApiSvc', 'OneSyncSvc', 'PcaSvc', 'WpcMonSvc',
-                'wisvc', 'RetailDemo', 'MessagingService', 'lfsvc', 'MapsBroker',
-                'PimIndexMaintenanceSvc', 'UnistoreSvc', 'UserDataSvc', 'WpnService',
-                'WpnUserService', 'WdNisSvc', 'Sense', 'wscsvc', 'SysMain',
-                'BcastDVRUserService', 'CaptureService', 'cbdhsvc', 'ConsentUxUserSvc',
-                'CredentialEnrollmentManagerUserSvc', 'DeviceAssociationBrokerSvc',
-                'DevicePickerUserSvc', 'DevicesFlowUserSvc', 'NPSMSvc', 'P9RdrService',
-                'PenService', 'PrintWorkflowUserSvc', 'UdkUserSvc', 'autotimesvc',
-                'tzautoupdate', 'shpamsvc', 'PhoneSvc', 'RemoteRegistry', 'RemoteAccess',
-                'SessionEnv', 'TermService', 'UmRdpService', 'SharedAccess', 'hidserv',
-                'WbioSrvc', 'FrameServer', 'StiSvc', 'WiaRpc', 'icssvc', 'WlanSvc',
-                'WwanSvc', 'Spooler', 'AeLookupSvc', 'ALG', 'AppIDSvc', 'AppMgmt',
-                'AppReadiness', 'AppVClient', 'AssignedAccessManagerSvc', 'AxInstSV',
-                'BDESVC', 'BTAGService', 'BthAvctpSvc', 'BthHFSrv', 'bthserv',
-                'CertPropSvc', 'DcpSvc', 'DevQueryBroker', 'DeviceInstall',
-                'DmEnrollmentSvc', 'DsSvc', 'DsmSvc', 'Eaphost', 'EntAppSvc',
-                'FDResPub', 'Fax', 'fhsvc', 'GraphicsPerfSvc', 'HomeGroupListener',
-                'HomeGroupProvider', 'HvHost', 'IEEtwCollectorService', 'IKEEXT',
-                'InstallService', 'InventorySvc', 'IpxlatCfgSvc', 'KtmRm',
-                'LicenseManager', 'LxpSvc', 'MSiSCSI', 'MixedRealityOpenXRSvc',
-                'MsKeyboardFilter', 'NaturalAuthentication', 'NcaSvc', 'NcbService',
-                'NcdAutoSetup', 'NetSetupSvc', 'NetTcpPortSharing', 'NgcCtnrSvc',
-                'NgcSvc', 'PNRPAutoReg', 'PNRPsvc', 'PeerDistSvc', 'PerfHost',
-                'PrintNotify', 'PushToInstall', 'QWAVE', 'RasAuto', 'RasMan',
-                'RmSvc', 'SCPolicySvc', 'SCardSvr', 'SDRSVC', 'SEMgrSvc',
-                'SNMPTRAP', 'SSDPSRV', 'ScDeviceEnum', 'SensorDataService',
-                'SensorService', 'SensrSvc', 'SharedRealitySvc', 'SmsRouter',
-                'SstpSvc', 'TabletInputService', 'TapiSrv', 'TextInputManagementService',
-                'TieringEngineService', 'TimeBrokerSvc', 'TokenBroker',
-                'TroubleshootingSvc', 'UI0Detect', 'UevAgentService', 'VacSvc',
-                'VSS', 'W32Time', 'WEPHOSTSVC', 'WFDSConMgrSvc', 'WMPNetworkSvc',
-                'WManSvc', 'WPDBusEnum', 'WSService', 'WaaSMedicSvc', 'WalletService',
-                'WarpJITSvc', 'WcsPlugInService', 'WdiServiceHost', 'WdiSystemHost',
-                'WebClient', 'Wecsvc', 'WinHttpAutoProxySvc', 'WinRM', 'camsvc',
-                'cloudidsvc', 'dcsvc', 'defragsvc', 'diagnosticshub.standardcollector.service',
-                'diagsvc', 'dot3svc', 'embeddedmode', 'fdPHost', 'lltdsvc', 'lmhosts',
-                'p2pimsvc', 'p2psvc', 'perceptionsimulation', 'pla', 'seclogon',
-                'smphost', 'spectrum', 'sppsvc', 'ssh-agent', 'svsvc', 'swprv',
-                'uhssvc', 'upnphost', 'vds', 'vmicguestinterface', 'vmicheartbeat',
-                'vmickvpexchange', 'vmicrdv', 'vmicshutdown', 'vmictimesync',
-                'vmicvmsession', 'vmicvss', 'AJRouter', 'StorSvc', 'FontCache',
-                'Themes', 'edgeupdate', 'edgeupdatem', 'MicrosoftEdgeElevationService'
-            )
-
-            $servicesToManual = @(
-                'BITS', 'wuauserv', 'DoSvc', 'UsoSvc', 'Schedule', 'TrustedInstaller',
-                'AudioEndpointBuilder', 'Audiosrv', 'CDPSvc', 'CDPUserSvc',
-                'CoreMessagingRegistrar', 'UserManager', 'VaultSvc', 'Winmgmt',
-                'Wcmsvc', 'nsi', 'iphlpsvc', 'Dnscache', 'Dhcp', 'EventLog',
-                'EventSystem', 'gpsvc', 'ProfSvc', 'Power', 'DcomLaunch', 'RpcSs',
-                'RpcEptMapper', 'SamSs', 'LanmanServer', 'LanmanWorkstation',
-                'PlugPlay', 'SENS', 'ShellHWDetection', 'TrkWks', 'tiledatamodelsvc',
-                'BrokerInfrastructure', 'SystemEventsBroker', 'CryptSvc', 'DPS',
-                'MpsSvc', 'mpssvc', 'BFE', 'KeyIso', 'Netlogon', 'NlaSvc',
-                'PolicyAgent', 'SgrmBroker', 'AppXSvc', 'WerSvc', 'StateRepository'
+                @{Name = 'DiagTrack'}
+                @{Name = 'dmwappushservice'}
+                @{Name = 'WSearch'}
+                @{Name = 'XboxGipSvc'}
+                @{Name = 'XblAuthManager'}
+                @{Name = 'XblGameSave'}
+                @{Name = 'XboxNetApiSvc'}
+                @{Name = 'OneSyncSvc'}
+                @{Name = 'PcaSvc'}
+                @{Name = 'WpcMonSvc'}
+                @{Name = 'wisvc'}
+                @{Name = 'RetailDemo'}
+                @{Name = 'MessagingService'}
+                @{Name = 'lfsvc'}
+                @{Name = 'MapsBroker'}
+                @{Name = 'PimIndexMaintenanceSvc'}
+                @{Name = 'UnistoreSvc'}
+                @{Name = 'UserDataSvc'}
+                @{Name = 'WpnService'}
+                @{Name = 'WpnUserService'}
+                @{Name = 'WdNisSvc'}
+                @{Name = 'Sense'}
+                @{Name = 'wscsvc'}
+                @{Name = 'SysMain'}
+                @{Name = 'edgeupdate'}
+                @{Name = 'edgeupdatem'}
+                @{Name = 'MicrosoftEdgeElevationService'}
+                @{Name = 'BcastDVRUserService'}
+                @{Name = 'CaptureService'}
+                @{Name = 'cbdhsvc'}
+                @{Name = 'ConsentUxUserSvc'}
+                @{Name = 'CredentialEnrollmentManagerUserSvc'}
+                @{Name = 'DeviceAssociationBrokerSvc'}
+                @{Name = 'DevicePickerUserSvc'}
+                @{Name = 'DevicesFlowUserSvc'}
+                @{Name = 'NPSMSvc'}
+                @{Name = 'P9RdrService'}
+                @{Name = 'PenService'}
+                @{Name = 'PrintWorkflowUserSvc'}
+                @{Name = 'UdkUserSvc'}
+                @{Name = 'autotimesvc'}
+                @{Name = 'tzautoupdate'}
+                @{Name = 'shpamsvc'}
+                @{Name = 'PhoneSvc'}
+                @{Name = 'RemoteRegistry'}
+                @{Name = 'RemoteAccess'}
+                @{Name = 'SessionEnv'}
+                @{Name = 'TermService'}
+                @{Name = 'UmRdpService'}
+                @{Name = 'SharedAccess'}
+                @{Name = 'hidserv'}
+                @{Name = 'WbioSrvc'}
+                @{Name = 'FrameServer'}
+                @{Name = 'StiSvc'}
+                @{Name = 'WiaRpc'}
+                @{Name = 'icssvc'}
+                @{Name = 'WlanSvc'}
+                @{Name = 'WwanSvc'}
             )
             
-            foreach ($serviceName in $servicesToDisable) {
+            $servicesToManual = @(
+                @{Name = 'BITS'}
+                @{Name = 'wuauserv'}
+                @{Name = 'DoSvc'}
+                @{Name = 'UsoSvc'}
+                @{Name = 'Spooler'}
+                @{Name = 'W32Time'}
+                @{Name = 'FontCache'}
+                @{Name = 'Themes'}
+                @{Name = 'Schedule'}
+                @{Name = 'TrustedInstaller'}
+                @{Name = 'TabletInputService'}
+                @{Name = 'TextInputManagementService'}
+                @{Name = 'AudioEndpointBuilder'}
+                @{Name = 'Audiosrv'}
+                @{Name = 'CDPSvc'}
+                @{Name = 'CDPUserSvc'}
+                @{Name = 'CoreMessagingRegistrar'}
+                @{Name = 'StateRepository'}
+                @{Name = 'StorSvc'}
+                @{Name = 'TimeBrokerSvc'}
+                @{Name = 'TokenBroker'}
+                @{Name = 'UserManager'}
+                @{Name = 'VaultSvc'}
+                @{Name = 'WinHttpAutoProxySvc'}
+                @{Name = 'Winmgmt'}
+                @{Name = 'Wcmsvc'}
+                @{Name = 'nsi'}
+                @{Name = 'iphlpsvc'}
+                @{Name = 'Dnscache'}
+                @{Name = 'Dhcp'}
+                @{Name = 'EventLog'}
+                @{Name = 'EventSystem'}
+                @{Name = 'gpsvc'}
+                @{Name = 'ProfSvc'}
+                @{Name = 'Power'}
+                @{Name = 'DcomLaunch'}
+                @{Name = 'RpcSs'}
+                @{Name = 'RpcEptMapper'}
+                @{Name = 'SamSs'}
+                @{Name = 'LanmanServer'}
+                @{Name = 'LanmanWorkstation'}
+                @{Name = 'PlugPlay'}
+                @{Name = 'SENS'}
+                @{Name = 'ShellHWDetection'}
+                @{Name = 'TrkWks'}
+                @{Name = 'tiledatamodelsvc'}
+                @{Name = 'BrokerInfrastructure'}
+                @{Name = 'SystemEventsBroker'}
+                @{Name = 'CryptSvc'}
+                @{Name = 'DPS'}
+                @{Name = 'MpsSvc'}
+                @{Name = 'mpssvc'}
+                @{Name = 'BFE'}
+                @{Name = 'KeyIso'}
+                @{Name = 'Netlogon'}
+                @{Name = 'NlaSvc'}
+                @{Name = 'PolicyAgent'}
+                @{Name = 'SgrmBroker'}
+                @{Name = 'WinDefend'}
+                @{Name = 'SecurityHealthService'}
+            )
+            
+            foreach ($service in $servicesToDisable) {
                 try {
-                    $svc = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+                    $svc = Get-Service -Name $service.Name -ErrorAction SilentlyContinue
                     if ($svc) {
-                        Set-Service -Name $serviceName -StartupType Disabled -ErrorAction SilentlyContinue
+                        Stop-Service -Name $service.Name -Force -ErrorAction SilentlyContinue
+                        Set-Service -Name $service.Name -StartupType Disabled -ErrorAction SilentlyContinue
                     }
                 } catch {}
             }
             
-            foreach ($serviceName in $servicesToManual) {
+            foreach ($service in $servicesToManual) {
                 try {
-                    $svc = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+                    $svc = Get-Service -Name $service.Name -ErrorAction SilentlyContinue
                     if ($svc) {
-                        Set-Service -Name $serviceName -StartupType Manual -ErrorAction SilentlyContinue
+                        Set-Service -Name $service.Name -StartupType Manual -ErrorAction SilentlyContinue
                     }
                 } catch {}
             }
@@ -384,7 +412,7 @@ function Start-WindowsOptimization {
     function Remove-EdgeCompletely {
         try {
             Stop-Process -Name "*edge*" -Force -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 2
+            Start-Sleep -Milliseconds 500
             $edgePaths = @(
                 "C:\Program Files (x86)\Microsoft\Edge"
                 "C:\Program Files (x86)\Microsoft\EdgeWebView"
@@ -409,12 +437,12 @@ function Start-WindowsOptimization {
     function Remove-OneDrive {
         try {
             Stop-Process -Name "OneDrive" -Force -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 1
+            Start-Sleep -Milliseconds 250
             $OneDriveSetup32 = "$env:SystemRoot\System32\OneDriveSetup.exe"
             $OneDriveSetup64 = "$env:SystemRoot\SysWOW64\OneDriveSetup.exe"
-            if (Test-Path $OneDriveSetup32) { Start-Process $OneDriveSetup32 "/uninstall" -Wait -ErrorAction SilentlyContinue }
-            if (Test-Path $OneDriveSetup64) { Start-Process $OneDriveSetup64 "/uninstall" -Wait -ErrorAction SilentlyContinue }
-            Start-Sleep -Seconds 2
+            if (Test-Path $OneDriveSetup32) { Start-Process $OneDriveSetup32 "/uninstall" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue }
+            if (Test-Path $OneDriveSetup64) { Start-Process $OneDriveSetup64 "/uninstall" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue }
+            Start-Sleep -Milliseconds 250
             $oneDriveDirs = @(
                 "$env:SystemDrive\OneDriveTemp"
                 "$env:USERPROFILE\OneDrive"
@@ -439,7 +467,7 @@ function Start-WindowsOptimization {
     function Remove-Teams {
         try {
             Stop-Process -Name "Teams" -Force -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 1
+            Start-Sleep -Milliseconds 250
             Get-AppxPackage -AllUsers -Name "*Teams*" | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
             Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like "*Teams*" | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
             
@@ -522,7 +550,6 @@ public class Wallpaper {
     }
 
     Remove-CrapApps
-    Disable-Defender
     Optimize-Services
     Remove-EdgeCompletely
     Remove-OneDrive
@@ -539,17 +566,13 @@ public class Wallpaper {
 function Apply-RegistryTweaks {
     
     function Set-RegistryForce {
-        param([string]$Path,[string]$Name,[string]$Type,[string]$Value,[string]$Action = "Add")
+        param([string]$Path,[string]$Name,[string]$Type,[string]$Value)
         
         try {
-            if ($Action -eq "Add") {
-                if (-not (Test-Path $Path)) {
-                    New-Item -Path $Path -Force -ErrorAction SilentlyContinue | Out-Null
-                }
-                New-ItemProperty -Path $Path -Name $Name -PropertyType $Type -Value $Value -Force -ErrorAction SilentlyContinue | Out-Null
-            } elseif ($Action -eq "Delete") {
-                Remove-ItemProperty -Path $Path -Name $Name -Force -ErrorAction SilentlyContinue | Out-Null
+            if (-not (Test-Path $Path)) {
+                New-Item -Path $Path -Force -ErrorAction SilentlyContinue | Out-Null
             }
+            New-ItemProperty -Path $Path -Name $Name -PropertyType $Type -Value $Value -Force -ErrorAction SilentlyContinue | Out-Null
         } catch {}
     }
 
@@ -686,7 +709,7 @@ function Apply-RegistryTweaks {
 
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Notepad" -Name "ShowStoreBanner" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Name "OneDriveSetup" -Action "Delete"
+    Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Name "OneDriveSetup" -Force -ErrorAction SilentlyContinue
 
     Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Type "DWord" -Value 0
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Type "DWord" -Value 0
@@ -820,8 +843,8 @@ function Apply-RegistryTweaks {
 
     $OneDriveSetup32 = "$env:SystemRoot\System32\OneDriveSetup.exe"
     $OneDriveSetup64 = "$env:SystemRoot\SysWOW64\OneDriveSetup.exe"
-    if (Test-Path $OneDriveSetup32) { Start-Process $OneDriveSetup32 "/uninstall" -Wait -ErrorAction SilentlyContinue }
-    if (Test-Path $OneDriveSetup64) { Start-Process $OneDriveSetup64 "/uninstall" -Wait -ErrorAction SilentlyContinue }
+    if (Test-Path $OneDriveSetup32) { Start-Process $OneDriveSetup32 "/uninstall" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue }
+    if (Test-Path $OneDriveSetup64) { Start-Process $OneDriveSetup64 "/uninstall" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue }
 
     $oneDriveDirs = @(
         "$env:SystemDrive\OneDriveTemp"
@@ -995,28 +1018,15 @@ function Apply-RegistryTweaks {
         }
     }
 
-    try {
-        $dismArgs = "/Online /Cleanup-Image /RestoreHealth"
-        $dismOut = "$env:TEMP\dism_silent.txt"
-        $dismErr = "$env:TEMP\dism_silent_err.txt"
-        Dism.exe $dismArgs *>$dismOut 2>$dismErr
-    } catch {}
-
-    try {
-        $sfcOut = "$env:TEMP\sfc_silent.txt"
-        $sfcErr = "$env:TEMP\sfc_silent_err.txt"
-        sfc /scannow *>$sfcOut 2>$sfcErr
-    } catch {}
-
     $winget = "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe"
 
     if (-not (Test-Path $winget)) {
         $installerUrl = "https://aka.ms/getwinget"
         $tempFile = "$env:TEMP\Microsoft.DesktopAppInstaller.msixbundle"
 
-        Invoke-WebRequest -Uri $installerUrl -OutFile $tempFile
+        Invoke-WebRequest -Uri $installerUrl -OutFile $tempFile -UseBasicParsing
         Add-AppxPackage -Path $tempFile
-        Start-Sleep -Seconds 5
+        Start-Sleep -Seconds 2
     }
 
     if (-not (Test-Path $winget)) {
@@ -1034,15 +1044,11 @@ function Apply-RegistryTweaks {
 function Install-FixOS {
     Write-Host "[                    ] 0%" -NoNewline
     
-    Start-Sleep -Milliseconds 100
     $optimizationResult = Start-WindowsOptimization
     Write-Host "`r[####                ] 25%" -NoNewline
     
-    Start-Sleep -Milliseconds 100
     $registryResult = Apply-RegistryTweaks
     Write-Host "`r[##########          ] 50%" -NoNewline
-    
-    Start-Sleep -Milliseconds 100
     
     $finalRegKeys = @(
         "HKCU:\Software\Microsoft\OneDrive"
@@ -1062,7 +1068,6 @@ function Install-FixOS {
     }
     
     Write-Host "`r[###############     ] 75%" -NoNewline
-    Start-Sleep -Milliseconds 100
     
     Write-Host "`r[####################] 100%"
     Write-Host "Press any key to return to the Menu"
