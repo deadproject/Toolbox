@@ -401,6 +401,30 @@ function Start-WindowsOptimization {
         } catch {}
     }
 
+    function Remove-EdgeCompletely {
+        try {
+            Get-Process -Name "*edge*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+            $edgePaths = @(
+                "C:\Program Files (x86)\Microsoft\Edge"
+                "C:\Program Files (x86)\Microsoft\EdgeWebView"
+                "C:\Program Files (x86)\Microsoft\EdgeUpdate"
+                "C:\Program Files (x86)\Microsoft\EdgeCore"
+                "C:\Windows\System32\Microsoft-Edge-Webview"
+                "C:\Windows\SystemApps\Microsoft.MicrosoftEdge_8wekyb3d8bbwe"
+                "C:\Windows\SystemApps\Microsoft.MicrosoftEdgeDevToolsClient_8wekyb3d8bbwe"
+                "$env:LOCALAPPDATA\Microsoft\Edge"
+                "$env:ProgramData\Microsoft\Edge"
+            )
+            foreach ($path in $edgePaths) { if (Test-Path $path) { Remove-Item -Path $path -Recurse -Force -ErrorAction SilentlyContinue } }
+            
+            Remove-RegistryKey -Path "HKLM:\SOFTWARE\Microsoft\Edge"
+            Remove-RegistryKey -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Edge"
+            Remove-RegistryKey -Path "HKLM:\SOFTWARE\Microsoft\EdgeUpdate"
+            Remove-RegistryKey -Path "HKCU:\SOFTWARE\Microsoft\Edge"
+            Remove-RegistryKey -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
+        } catch {}
+    }
+
     function Disable-Telemetry {
         try {
             $telemetryRegistries = @(
