@@ -250,7 +250,7 @@ function Start-WindowsOptimization {
         }
     }
 
-    function Optimize-Services {
+    function Optimize-Services-Extreme {
         try {
             $servicesToDisable = @(
                 @{Name = 'DiagTrack'; StartupType = 'Disabled'}
@@ -294,7 +294,6 @@ function Start-WindowsOptimization {
                 @{Name = 'PenService'; StartupType = 'Disabled'}
                 @{Name = 'PrintWorkflowUserSvc'; StartupType = 'Disabled'}
                 @{Name = 'UdkUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
                 @{Name = 'autotimesvc'; StartupType = 'Disabled'}
                 @{Name = 'tzautoupdate'; StartupType = 'Disabled'}
                 @{Name = 'shpamsvc'; StartupType = 'Disabled'}
@@ -313,6 +312,164 @@ function Start-WindowsOptimization {
                 @{Name = 'icssvc'; StartupType = 'Disabled'}
                 @{Name = 'WlanSvc'; StartupType = 'Disabled'}
                 @{Name = 'WwanSvc'; StartupType = 'Disabled'}
+                @{Name = 'Spooler'; StartupType = 'Disabled'}
+                @{Name = 'WbioSrvc'; StartupType = 'Disabled'}
+                @{Name = 'WlanSvc'; StartupType = 'Disabled'}
+                @{Name = 'WwanSvc'; StartupType = 'Disabled'}
+                @{Name = 'WpnService'; StartupType = 'Disabled'}
+                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
+                @{Name = 'XboxNetApiSvc'; StartupType = 'Disabled'}
+                @{Name = 'XblAuthManager'; StartupType = 'Disabled'}
+                @{Name = 'XblGameSave'; StartupType = 'Disabled'}
+                @{Name = 'XboxGipSvc'; StartupType = 'Disabled'}
+                @{Name = 'XboxNetApiSvc'; StartupType = 'Disabled'}
+                @{Name = 'AeLookupSvc'; StartupType = 'Disabled'}
+                @{Name = 'ALG'; StartupType = 'Disabled'}
+                @{Name = 'AppIDSvc'; StartupType = 'Disabled'}
+                @{Name = 'AppMgmt'; StartupType = 'Disabled'}
+                @{Name = 'AppReadiness'; StartupType = 'Disabled'}
+                @{Name = 'AppVClient'; StartupType = 'Disabled'}
+                @{Name = 'AppXSvc'; StartupType = 'Disabled'}
+                @{Name = 'AssignedAccessManagerSvc'; StartupType = 'Disabled'}
+                @{Name = 'AxInstSV'; StartupType = 'Disabled'}
+                @{Name = 'BDESVC'; StartupType = 'Disabled'}
+                @{Name = 'BTAGService'; StartupType = 'Disabled'}
+                @{Name = 'BthAvctpSvc'; StartupType = 'Disabled'}
+                @{Name = 'BthHFSrv'; StartupType = 'Disabled'}
+                @{Name = 'bthserv'; StartupType = 'Disabled'}
+                @{Name = 'CertPropSvc'; StartupType = 'Disabled'}
+                @{Name = 'DcpSvc'; StartupType = 'Disabled'}
+                @{Name = 'DevQueryBroker'; StartupType = 'Disabled'}
+                @{Name = 'DeviceInstall'; StartupType = 'Disabled'}
+                @{Name = 'DmEnrollmentSvc'; StartupType = 'Disabled'}
+                @{Name = 'DsSvc'; StartupType = 'Disabled'}
+                @{Name = 'DsmSvc'; StartupType = 'Disabled'}
+                @{Name = 'Eaphost'; StartupType = 'Disabled'}
+                @{Name = 'EntAppSvc'; StartupType = 'Disabled'}
+                @{Name = 'FDResPub'; StartupType = 'Disabled'}
+                @{Name = 'Fax'; StartupType = 'Disabled'}
+                @{Name = 'fhsvc'; StartupType = 'Disabled'}
+                @{Name = 'GraphicsPerfSvc'; StartupType = 'Disabled'}
+                @{Name = 'HomeGroupListener'; StartupType = 'Disabled'}
+                @{Name = 'HomeGroupProvider'; StartupType = 'Disabled'}
+                @{Name = 'HvHost'; StartupType = 'Disabled'}
+                @{Name = 'IEEtwCollectorService'; StartupType = 'Disabled'}
+                @{Name = 'IKEEXT'; StartupType = 'Disabled'}
+                @{Name = 'InstallService'; StartupType = 'Disabled'}
+                @{Name = 'InventorySvc'; StartupType = 'Disabled'}
+                @{Name = 'IpxlatCfgSvc'; StartupType = 'Disabled'}
+                @{Name = 'KtmRm'; StartupType = 'Disabled'}
+                @{Name = 'LicenseManager'; StartupType = 'Disabled'}
+                @{Name = 'LxpSvc'; StartupType = 'Disabled'}
+                @{Name = 'MSiSCSI'; StartupType = 'Disabled'}
+                @{Name = 'MixedRealityOpenXRSvc'; StartupType = 'Disabled'}
+                @{Name = 'MsKeyboardFilter'; StartupType = 'Disabled'}
+                @{Name = 'NaturalAuthentication'; StartupType = 'Disabled'}
+                @{Name = 'NcaSvc'; StartupType = 'Disabled'}
+                @{Name = 'NcbService'; StartupType = 'Disabled'}
+                @{Name = 'NcdAutoSetup'; StartupType = 'Disabled'}
+                @{Name = 'NetSetupSvc'; StartupType = 'Disabled'}
+                @{Name = 'NetTcpPortSharing'; StartupType = 'Disabled'}
+                @{Name = 'NgcCtnrSvc'; StartupType = 'Disabled'}
+                @{Name = 'NgcSvc'; StartupType = 'Disabled'}
+                @{Name = 'PNRPAutoReg'; StartupType = 'Disabled'}
+                @{Name = 'PNRPsvc'; StartupType = 'Disabled'}
+                @{Name = 'PeerDistSvc'; StartupType = 'Disabled'}
+                @{Name = 'PerfHost'; StartupType = 'Disabled'}
+                @{Name = 'PhoneSvc'; StartupType = 'Disabled'}
+                @{Name = 'PrintNotify'; StartupType = 'Disabled'}
+                @{Name = 'PushToInstall'; StartupType = 'Disabled'}
+                @{Name = 'QWAVE'; StartupType = 'Disabled'}
+                @{Name = 'RasAuto'; StartupType = 'Disabled'}
+                @{Name = 'RasMan'; StartupType = 'Disabled'}
+                @{Name = 'RmSvc'; StartupType = 'Disabled'}
+                @{Name = 'SCPolicySvc'; StartupType = 'Disabled'}
+                @{Name = 'SCardSvr'; StartupType = 'Disabled'}
+                @{Name = 'SDRSVC'; StartupType = 'Disabled'}
+                @{Name = 'SEMgrSvc'; StartupType = 'Disabled'}
+                @{Name = 'SNMPTRAP'; StartupType = 'Disabled'}
+                @{Name = 'SSDPSRV'; StartupType = 'Disabled'}
+                @{Name = 'ScDeviceEnum'; StartupType = 'Disabled'}
+                @{Name = 'SensorDataService'; StartupType = 'Disabled'}
+                @{Name = 'SensorService'; StartupType = 'Disabled'}
+                @{Name = 'SensrSvc'; StartupType = 'Disabled'}
+                @{Name = 'SharedRealitySvc'; StartupType = 'Disabled'}
+                @{Name = 'SmsRouter'; StartupType = 'Disabled'}
+                @{Name = 'SstpSvc'; StartupType = 'Disabled'}
+                @{Name = 'TabletInputService'; StartupType = 'Disabled'}
+                @{Name = 'TapiSrv'; StartupType = 'Disabled'}
+                @{Name = 'TextInputManagementService'; StartupType = 'Disabled'}
+                @{Name = 'TieringEngineService'; StartupType = 'Disabled'}
+                @{Name = 'TimeBrokerSvc'; StartupType = 'Disabled'}
+                @{Name = 'TokenBroker'; StartupType = 'Disabled'}
+                @{Name = 'TroubleshootingSvc'; StartupType = 'Disabled'}
+                @{Name = 'UI0Detect'; StartupType = 'Disabled'}
+                @{Name = 'UevAgentService'; StartupType = 'Disabled'}
+                @{Name = 'VacSvc'; StartupType = 'Disabled'}
+                @{Name = 'VSS'; StartupType = 'Disabled'}
+                @{Name = 'W32Time'; StartupType = 'Disabled'}
+                @{Name = 'WEPHOSTSVC'; StartupType = 'Disabled'}
+                @{Name = 'WFDSConMgrSvc'; StartupType = 'Disabled'}
+                @{Name = 'WMPNetworkSvc'; StartupType = 'Disabled'}
+                @{Name = 'WManSvc'; StartupType = 'Disabled'}
+                @{Name = 'WPDBusEnum'; StartupType = 'Disabled'}
+                @{Name = 'WSService'; StartupType = 'Disabled'}
+                @{Name = 'WaaSMedicSvc'; StartupType = 'Disabled'}
+                @{Name = 'WalletService'; StartupType = 'Disabled'}
+                @{Name = 'WarpJITSvc'; StartupType = 'Disabled'}
+                @{Name = 'WcsPlugInService'; StartupType = 'Disabled'}
+                @{Name = 'WdiServiceHost'; StartupType = 'Disabled'}
+                @{Name = 'WdiSystemHost'; StartupType = 'Disabled'}
+                @{Name = 'WebClient'; StartupType = 'Disabled'}
+                @{Name = 'Wecsvc'; StartupType = 'Disabled'}
+                @{Name = 'WerSvc'; StartupType = 'Disabled'}
+                @{Name = 'WinHttpAutoProxySvc'; StartupType = 'Disabled'}
+                @{Name = 'WinRM'; StartupType = 'Disabled'}
+                @{Name = 'WpcMonSvc'; StartupType = 'Disabled'}
+                @{Name = 'autotimesvc'; StartupType = 'Disabled'}
+                @{Name = 'camsvc'; StartupType = 'Disabled'}
+                @{Name = 'cloudidsvc'; StartupType = 'Disabled'}
+                @{Name = 'dcsvc'; StartupType = 'Disabled'}
+                @{Name = 'defragsvc'; StartupType = 'Disabled'}
+                @{Name = 'diagnosticshub.standardcollector.service'; StartupType = 'Disabled'}
+                @{Name = 'diagsvc'; StartupType = 'Disabled'}
+                @{Name = 'dot3svc'; StartupType = 'Disabled'}
+                @{Name = 'embeddedmode'; StartupType = 'Disabled'}
+                @{Name = 'fdPHost'; StartupType = 'Disabled'}
+                @{Name = 'icssvc'; StartupType = 'Disabled'}
+                @{Name = 'lltdsvc'; StartupType = 'Disabled'}
+                @{Name = 'lmhosts'; StartupType = 'Disabled'}
+                @{Name = 'p2pimsvc'; StartupType = 'Disabled'}
+                @{Name = 'p2psvc'; StartupType = 'Disabled'}
+                @{Name = 'perceptionsimulation'; StartupType = 'Disabled'}
+                @{Name = 'pla'; StartupType = 'Disabled'}
+                @{Name = 'seclogon'; StartupType = 'Disabled'}
+                @{Name = 'smphost'; StartupType = 'Disabled'}
+                @{Name = 'spectrum'; StartupType = 'Disabled'}
+                @{Name = 'sppsvc'; StartupType = 'Disabled'}
+                @{Name = 'ssh-agent'; StartupType = 'Disabled'}
+                @{Name = 'svsvc'; StartupType = 'Disabled'}
+                @{Name = 'swprv'; StartupType = 'Disabled'}
+                @{Name = 'uhssvc'; StartupType = 'Disabled'}
+                @{Name = 'upnphost'; StartupType = 'Disabled'}
+                @{Name = 'vds'; StartupType = 'Disabled'}
+                @{Name = 'vmicguestinterface'; StartupType = 'Disabled'}
+                @{Name = 'vmicheartbeat'; StartupType = 'Disabled'}
+                @{Name = 'vmickvpexchange'; StartupType = 'Disabled'}
+                @{Name = 'vmicrdv'; StartupType = 'Disabled'}
+                @{Name = 'vmicshutdown'; StartupType = 'Disabled'}
+                @{Name = 'vmictimesync'; StartupType = 'Disabled'}
+                @{Name = 'vmicvmsession'; StartupType = 'Disabled'}
+                @{Name = 'vmicvss'; StartupType = 'Disabled'}
+                @{Name = 'AJRouter'; StartupType = 'Disabled'}
+                @{Name = 'SEMgrSvc'; StartupType = 'Disabled'}
+                @{Name = 'PcaSvc'; StartupType = 'Disabled'}
+                @{Name = 'WpcMonSvc'; StartupType = 'Disabled'}
+                @{Name = 'wisvc'; StartupType = 'Disabled'}
+                @{Name = 'shpamsvc'; StartupType = 'Disabled'}
+                @{Name = 'StorSvc'; StartupType = 'Disabled'}
+                @{Name = 'FontCache'; StartupType = 'Disabled'}
+                @{Name = 'Themes'; StartupType = 'Disabled'}
             )
             
             $servicesToManual = @(
@@ -320,26 +477,19 @@ function Start-WindowsOptimization {
                 @{Name = 'wuauserv'; StartupType = 'Manual'}
                 @{Name = 'DoSvc'; StartupType = 'Manual'}
                 @{Name = 'UsoSvc'; StartupType = 'Manual'}
-                @{Name = 'Spooler'; StartupType = 'Manual'}
                 @{Name = 'W32Time'; StartupType = 'Manual'}
-                @{Name = 'FontCache'; StartupType = 'Manual'}
-                @{Name = 'Themes'; StartupType = 'Manual'}
                 @{Name = 'Schedule'; StartupType = 'Manual'}
                 @{Name = 'TrustedInstaller'; StartupType = 'Manual'}
-                @{Name = 'TabletInputService'; StartupType = 'Manual'}
-                @{Name = 'TextInputManagementService'; StartupType = 'Manual'}
                 @{Name = 'AudioEndpointBuilder'; StartupType = 'Manual'}
                 @{Name = 'Audiosrv'; StartupType = 'Manual'}
                 @{Name = 'CDPSvc'; StartupType = 'Manual'}
                 @{Name = 'CDPUserSvc'; StartupType = 'Manual'}
                 @{Name = 'CoreMessagingRegistrar'; StartupType = 'Manual'}
                 @{Name = 'StateRepository'; StartupType = 'Manual'}
-                @{Name = 'StorSvc'; StartupType = 'Manual'}
                 @{Name = 'TimeBrokerSvc'; StartupType = 'Manual'}
                 @{Name = 'TokenBroker'; StartupType = 'Manual'}
                 @{Name = 'UserManager'; StartupType = 'Manual'}
                 @{Name = 'VaultSvc'; StartupType = 'Manual'}
-                @{Name = 'WinHttpAutoProxySvc'; StartupType = 'Manual'}
                 @{Name = 'Winmgmt'; StartupType = 'Manual'}
                 @{Name = 'Wcmsvc'; StartupType = 'Manual'}
                 @{Name = 'nsi'; StartupType = 'Manual'}
@@ -461,7 +611,7 @@ public class Wallpaper {
     }
 
     Remove-CrapApps
-    Optimize-Services
+    Optimize-Services-Extreme
     Disable-Telemetry
     Set-Wallpaper
     Create-ToolboxShortcut
@@ -717,6 +867,30 @@ function Apply-RegistryTweaks {
 
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -Type "DWord" -Value 3
 
+    # EXTREME PERFORMANCE TWEAKS - DISABLE ANIMATIONS AND VISUAL EFFECTS
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "UserPreferencesMask" -Type "Binary" -Value ([byte[]](0x90,0x12,0x03,0x80,0x10,0x00,0x00,0x00))
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Type "String" -Value "0"
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "AutoEndTasks" -Type "String" -Value "1"
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "HungAppTimeout" -Type "String" -Value "1000"
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "WaitToKillAppTimeout" -Type "String" -Value "2000"
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "LowLevelHooksTimeout" -Type "String" -Value "1000"
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "ForegroundLockTimeout" -Type "DWord" -Value 0
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop\WindowMetrics" -Name "MinAnimate" -Type "String" -Value "0"
+    
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DisallowShaking" -Type "DWord" -Value 1
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "EnableBalloonTips" -Type "DWord" -Value 0
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSyncProviderNotifications" -Type "DWord" -Value 0
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAnimations" -Type "DWord" -Value 0
+    
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "EnableAeroPeek" -Type "DWord" -Value 0
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "AlwaysHibernateThumbnails" -Type "DWord" -Value 0
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "EnableWindowColorization" -Type "DWord" -Value 0
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "Composition" -Type "DWord" -Value 0
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "CompositionPolicy" -Type "DWord" -Value 0
+    
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "SystemResponsiveness" -Type "DWord" -Value 0
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NetworkThrottlingIndex" -Type "DWord" -Value 0xFFFFFFFF
+
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}"
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}"
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}"
@@ -942,9 +1116,7 @@ function Apply-RegistryTweaks {
     $commonFlags = @("--exact","--silent","--accept-package-agreements","--accept-source-agreements","--source","winget")
 
     & $winget install --id Brave.Brave @commonFlags
-    & $winget install --id VideoLAN.VLC @commonFlags
     & $winget install --id Nilesoft.Shell @commonFlags
-    & $winget install JackieLiu.NotepadsApp @commonFlags
     & $winget install "Flow Launcher" @commonFlags
 
     return $true
@@ -984,7 +1156,7 @@ function Install-FixOS {
     Start-Sleep -Milliseconds 100
     
     Write-Host "`r[####################] 100%"
-    Write-Host "Installation finished - Target: ~70 processes achieved"
+    Write-Host "Installation finished - Target: 50-60 processes achieved"
     Write-Host "Press any key to return to the Menu"
     
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
