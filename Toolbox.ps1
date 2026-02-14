@@ -297,13 +297,11 @@ function Start-WindowsOptimization {
                 @{Name = 'DeviceAssociationBrokerSvc'; StartupType = 'Disabled'}
                 @{Name = 'DevicePickerUserSvc'; StartupType = 'Disabled'}
                 @{Name = 'DevicesFlowUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'MessagingService'; StartupType = 'Disabled'}
                 @{Name = 'NPSMSvc'; StartupType = 'Disabled'}
                 @{Name = 'P9RdrService'; StartupType = 'Disabled'}
                 @{Name = 'PenService'; StartupType = 'Disabled'}
                 @{Name = 'PrintWorkflowUserSvc'; StartupType = 'Disabled'}
                 @{Name = 'UdkUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
                 @{Name = 'autotimesvc'; StartupType = 'Disabled'}
                 @{Name = 'tzautoupdate'; StartupType = 'Disabled'}
                 @{Name = 'shpamsvc'; StartupType = 'Disabled'}
@@ -354,11 +352,9 @@ function Start-WindowsOptimization {
                 @{Name = 'HvHost'; StartupType = 'Disabled'}
                 @{Name = 'IEEtwCollectorService'; StartupType = 'Disabled'}
                 @{Name = 'IKEEXT'; StartupType = 'Disabled'}
-                @{Name = 'InstallService'; StartupType = 'Disabled'}
                 @{Name = 'InventorySvc'; StartupType = 'Disabled'}
                 @{Name = 'IpxlatCfgSvc'; StartupType = 'Disabled'}
                 @{Name = 'KtmRm'; StartupType = 'Disabled'}
-                @{Name = 'LicenseManager'; StartupType = 'Disabled'}
                 @{Name = 'LxpSvc'; StartupType = 'Disabled'}
                 @{Name = 'MSiSCSI'; StartupType = 'Disabled'}
                 @{Name = 'MixedRealityOpenXRSvc'; StartupType = 'Disabled'}
@@ -459,54 +455,34 @@ function Start-WindowsOptimization {
                 @{Name = 'StorSvc'; StartupType = 'Disabled'}
                 @{Name = 'FontCache'; StartupType = 'Disabled'}
                 @{Name = 'Themes'; StartupType = 'Disabled'}
-                @{Name = 'LicenseManager'; StartupType = 'Disabled'}
-                @{Name = 'BrokerInfrastructure'; StartupType = 'Disabled'}
-                @{Name = 'SystemEventsBroker'; StartupType = 'Disabled'}
-                @{Name = 'StateRepository'; StartupType = 'Manual'}
             )
-            
+
             $servicesToManual = @(
                 @{Name = 'BITS'; StartupType = 'Manual'}
                 @{Name = 'wuauserv'; StartupType = 'Manual'}
                 @{Name = 'DoSvc'; StartupType = 'Manual'}
                 @{Name = 'UsoSvc'; StartupType = 'Manual'}
                 @{Name = 'Schedule'; StartupType = 'Manual'}
-                @{Name = 'TrustedInstaller'; StartupType = 'Manual'}
                 @{Name = 'AudioEndpointBuilder'; StartupType = 'Manual'}
                 @{Name = 'Audiosrv'; StartupType = 'Manual'}
                 @{Name = 'CDPSvc'; StartupType = 'Manual'}
                 @{Name = 'CDPUserSvc'; StartupType = 'Manual'}
                 @{Name = 'CoreMessagingRegistrar'; StartupType = 'Manual'}
-                @{Name = 'TimeBrokerSvc'; StartupType = 'Manual'}
-                @{Name = 'TokenBroker'; StartupType = 'Manual'}
                 @{Name = 'UserManager'; StartupType = 'Manual'}
                 @{Name = 'VaultSvc'; StartupType = 'Manual'}
-                @{Name = 'Winmgmt'; StartupType = 'Manual'}
                 @{Name = 'Wcmsvc'; StartupType = 'Manual'}
-                @{Name = 'nsi'; StartupType = 'Manual'}
                 @{Name = 'iphlpsvc'; StartupType = 'Manual'}
                 @{Name = 'Dnscache'; StartupType = 'Manual'}
                 @{Name = 'Dhcp'; StartupType = 'Manual'}
-                @{Name = 'EventLog'; StartupType = 'Manual'}
-                @{Name = 'EventSystem'; StartupType = 'Manual'}
                 @{Name = 'gpsvc'; StartupType = 'Manual'}
                 @{Name = 'ProfSvc'; StartupType = 'Manual'}
-                @{Name = 'Power'; StartupType = 'Manual'}
-                @{Name = 'DcomLaunch'; StartupType = 'Manual'}
-                @{Name = 'RpcSs'; StartupType = 'Manual'}
-                @{Name = 'RpcEptMapper'; StartupType = 'Manual'}
-                @{Name = 'SamSs'; StartupType = 'Manual'}
                 @{Name = 'LanmanServer'; StartupType = 'Manual'}
                 @{Name = 'LanmanWorkstation'; StartupType = 'Manual'}
-                @{Name = 'PlugPlay'; StartupType = 'Manual'}
-                @{Name = 'SENS'; StartupType = 'Manual'}
                 @{Name = 'ShellHWDetection'; StartupType = 'Manual'}
                 @{Name = 'TrkWks'; StartupType = 'Manual'}
                 @{Name = 'tiledatamodelsvc'; StartupType = 'Manual'}
-                @{Name = 'CryptSvc'; StartupType = 'Manual'}
                 @{Name = 'DPS'; StartupType = 'Manual'}
                 @{Name = 'MpsSvc'; StartupType = 'Manual'}
-                @{Name = 'mpssvc'; StartupType = 'Manual'}
                 @{Name = 'BFE'; StartupType = 'Manual'}
                 @{Name = 'KeyIso'; StartupType = 'Manual'}
                 @{Name = 'Netlogon'; StartupType = 'Manual'}
@@ -515,32 +491,32 @@ function Start-WindowsOptimization {
                 @{Name = 'SgrmBroker'; StartupType = 'Manual'}
                 @{Name = 'WinDefend'; StartupType = 'Manual'}
                 @{Name = 'SecurityHealthService'; StartupType = 'Manual'}
-                @{Name = 'AppXSvc'; StartupType = 'Manual'}
                 @{Name = 'WerSvc'; StartupType = 'Manual'}
             )
-            
+
             foreach ($service in $servicesToDisable) {
                 try {
                     $svc = Get-Service -Name $service.Name -ErrorAction SilentlyContinue
                     if ($svc) {
-                        Set-Service -Name $service.Name -StartupType $service.StartupType -ErrorAction SilentlyContinue
+                        Set-Service -Name $service.Name -StartupType Disabled -ErrorAction SilentlyContinue
                         if ($svc.Status -eq 'Running') {
                             Stop-Service -Name $service.Name -Force -ErrorAction SilentlyContinue
                         }
                     }
                 } catch {}
             }
-            
+
             foreach ($service in $servicesToManual) {
                 try {
                     $svc = Get-Service -Name $service.Name -ErrorAction SilentlyContinue
                     if ($svc) {
-                        Set-Service -Name $service.Name -StartupType $service.StartupType -ErrorAction SilentlyContinue
+                        Set-Service -Name $service.Name -StartupType Manual -ErrorAction SilentlyContinue
                     }
                 } catch {}
             }
         } catch {}
     }
+
 
     function Remove-EdgeCompletely {
         try {
