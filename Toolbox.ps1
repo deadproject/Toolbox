@@ -97,7 +97,7 @@ function Show-Menu {
 
     Write-CenteredLine -Text ""
     Write-CenteredLine -Text ""
-    Write-CenteredLine -Text "[1] Install FixOS    [2] Learn More"
+    Write-CenteredLine -Text "[1] Install FixOS Extreme    [2] Learn More"
     Write-CenteredLine -Text ""
     Write-CenteredLine -Text "[3] Exit"
     Write-CenteredLine -Text ""
@@ -323,15 +323,12 @@ function Start-WindowsOptimization {
                 @{Name = 'WlanSvc'; StartupType = 'Disabled'}
                 @{Name = 'WwanSvc'; StartupType = 'Disabled'}
                 @{Name = 'Spooler'; StartupType = 'Disabled'}
-                @{Name = 'FontCache'; StartupType = 'Disabled'}
-                @{Name = 'Themes'; StartupType = 'Disabled'}
                 @{Name = 'AeLookupSvc'; StartupType = 'Disabled'}
                 @{Name = 'ALG'; StartupType = 'Disabled'}
                 @{Name = 'AppIDSvc'; StartupType = 'Disabled'}
                 @{Name = 'AppMgmt'; StartupType = 'Disabled'}
                 @{Name = 'AppReadiness'; StartupType = 'Disabled'}
                 @{Name = 'AppVClient'; StartupType = 'Disabled'}
-                @{Name = 'AppXSvc'; StartupType = 'Disabled'}
                 @{Name = 'AssignedAccessManagerSvc'; StartupType = 'Disabled'}
                 @{Name = 'AxInstSV'; StartupType = 'Disabled'}
                 @{Name = 'BDESVC'; StartupType = 'Disabled'}
@@ -460,6 +457,8 @@ function Start-WindowsOptimization {
                 @{Name = 'vmicvss'; StartupType = 'Disabled'}
                 @{Name = 'AJRouter'; StartupType = 'Disabled'}
                 @{Name = 'StorSvc'; StartupType = 'Disabled'}
+                @{Name = 'FontCache'; StartupType = 'Disabled'}
+                @{Name = 'Themes'; StartupType = 'Disabled'}
             )
             
             $servicesToManual = @(
@@ -509,7 +508,6 @@ function Start-WindowsOptimization {
                 @{Name = 'MpsSvc'; StartupType = 'Manual'}
                 @{Name = 'mpssvc'; StartupType = 'Manual'}
                 @{Name = 'BFE'; StartupType = 'Manual'}
-                @{Name = 'WerSvc'; StartupType = 'Manual'}
                 @{Name = 'KeyIso'; StartupType = 'Manual'}
                 @{Name = 'Netlogon'; StartupType = 'Manual'}
                 @{Name = 'NlaSvc'; StartupType = 'Manual'}
@@ -517,6 +515,8 @@ function Start-WindowsOptimization {
                 @{Name = 'SgrmBroker'; StartupType = 'Manual'}
                 @{Name = 'WinDefend'; StartupType = 'Manual'}
                 @{Name = 'SecurityHealthService'; StartupType = 'Manual'}
+                @{Name = 'AppXSvc'; StartupType = 'Manual'}
+                @{Name = 'WerSvc'; StartupType = 'Manual'}
             )
             
             foreach ($service in $servicesToDisable) {
@@ -1228,7 +1228,7 @@ function Install-FixOS {
     Start-Sleep -Milliseconds 100
     
     Write-Host "`r[####################] 100%"
-    Write-Host "Installation finished - Target: 40-50 processes achieved"
+    Write-Host "Installation finished - Target: 40-60 processes achieved"
     Write-Host "Press any key to return to the Menu"
     
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
