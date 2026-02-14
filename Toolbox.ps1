@@ -423,7 +423,6 @@ function Start-WindowsOptimization {
                 @{Name = 'WdiSystemHost'; StartupType = 'Disabled'}
                 @{Name = 'WebClient'; StartupType = 'Disabled'}
                 @{Name = 'Wecsvc'; StartupType = 'Disabled'}
-                @{Name = 'WerSvc'; StartupType = 'Disabled'}
                 @{Name = 'WinHttpAutoProxySvc'; StartupType = 'Disabled'}
                 @{Name = 'WinRM'; StartupType = 'Disabled'}
                 @{Name = 'camsvc'; StartupType = 'Disabled'}
@@ -510,6 +509,7 @@ function Start-WindowsOptimization {
                 @{Name = 'MpsSvc'; StartupType = 'Manual'}
                 @{Name = 'mpssvc'; StartupType = 'Manual'}
                 @{Name = 'BFE'; StartupType = 'Manual'}
+                @{Name = 'WerSvc'; StartupType = 'Manual'}
                 @{Name = 'KeyIso'; StartupType = 'Manual'}
                 @{Name = 'Netlogon'; StartupType = 'Manual'}
                 @{Name = 'NlaSvc'; StartupType = 'Manual'}
