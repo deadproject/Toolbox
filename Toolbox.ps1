@@ -1228,7 +1228,6 @@ function Install-FixOS {
     Start-Sleep -Milliseconds 100
     
     Write-Host "`r[####################] 100%"
-    Write-Host "Installation finished - Target: 40-60 processes achieved"
     Write-Host "Press any key to return to the Menu"
     
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
