@@ -1,737 +1,297 @@
 $ToolboxConfig = @{
     Version = "2.0.0"
-    Author = "FixOs Development Team - © 2026 Devspace. All rights reserved"
-    Theme = @{
-        Primary = "Cyan"
-        Secondary = "Magenta"
-        Success = "Green"
-        Error = "Red"
-        Warning = "Yellow"
-        Info = "Blue"
-        Accent = "DarkCyan"
-    }
+    Author = "FixOs Team"
 }
 
-. "$PSScriptRoot\Core\Utilities.ps1"
-
-function Write-AnimatedText($text, $color = "White", $delay = 0.03) {
-    foreach ($char in $text.ToCharArray()) {
-        Write-Host $char -NoNewline -ForegroundColor $color
-        Start-Sleep -Milliseconds ($delay * 1000)
-    }
-    Write-Host ""
-}
-
-function Show-ProgressBar($current, $total, $label = "Progress") {
-    $width = 40
-    $percent = ($current / $total) * 100
-    $filled = [math]::Floor(($current / $total) * $width)
-    $empty = $width - $filled
-    $bar = "[" + ("█" * $filled) + ("░" * $empty) + "]"
-    Write-Host ("`r{0,-15} {1} {2,6:F1}% " -f $label, $bar, $percent) -NoNewline -ForegroundColor Cyan
-}
-
-function Show-FancyHeader($text, $color = "DarkCyan") {
-    $width = $host.UI.RawUI.WindowSize.Width
-    $line = "═" * ($text.Length + 4)
-    Write-Host ("╔{0}╗" -f $line) -ForegroundColor $color
-    Write-Host ("║  {0}  ║" -f $text.ToUpper()) -ForegroundColor $color
-    Write-Host ("╚{0}╝" -f $line) -ForegroundColor $color
-}
-
-function Show-FixOsLogo {
+function Show-Logo {
     Clear-Host
-    $logoLines = @(
-        "███████╗██╗██╗  ██╗  ██████╗ ███████╗",
-        "██╔════╝██║╚██╗██╔╝ ██╔═══██╗██╔════╝",
-        "█████╗  ██║ ╚███╔╝  ██║   ██║███████╗",
-        "██╔══╝  ██║ ██╔██╗  ██║   ██║╚════██║",
-        "██║     ██║██╔╝ ██╗ ╚██████╔╝███████║",
-        "╚═╝     ╚═╝╚═╝  ╚═╝  ╚═════╝ ╚══════╝"
-    )
+    Write-Host @"
     
-    $colors = @("Red", "Yellow", "Green", "Cyan", "Blue", "Magenta")
-    for ($i = 0; $i -lt $logoLines.Count; $i++) {
-        $paddedLine = " " * [math]::Max(0, (($host.UI.RawUI.WindowSize.Width - $logoLines[$i].Length) / 2))
-        Write-Host ($paddedLine + $logoLines[$i]) -ForegroundColor $colors[$i % $colors.Length]
-    }
+    ███████╗██╗██╗  ██╗  ██████╗ ███████╗
+    ██╔════╝██║╚██╗██╔╝ ██╔═══██╗██╔════╝
+    █████╗  ██║ ╚███╔╝  ██║   ██║███████╗
+    ██╔══╝  ██║ ██╔██╗  ██║   ██║╚════██║
+    ██║     ██║██╔╝ ██╗ ╚██████╔╝███████║
+    ╚═╝     ╚═╝╚═╝  ╚═╝  ╚═════╝ ╚══════╝
     
-    $versionLine = "⚡ TOOLBOX v$($ToolboxConfig.Version) ⚡"
-    $padding = " " * [math]::Max(0, (($host.UI.RawUI.WindowSize.Width - $versionLine.Length) / 2))
-    Write-Host ($padding + $versionLine) -ForegroundColor White -BackgroundColor DarkGray
+              TOOLBOX v$($ToolboxConfig.Version)
+"@ -ForegroundColor Cyan
     Write-Host ""
 }
 
-function Show-StatusBox($message, $type = "info") {
-    $colors = @{
-        info = @{fg = "Blue"; bg = "DarkBlue"; icon = "ℹ"}
-        success = @{fg = "Green"; bg = "DarkGreen"; icon = "✓"}
-        warning = @{fg = "Yellow"; bg = "DarkYellow"; icon = "⚠"}
-        error = @{fg = "Red"; bg = "DarkRed"; icon = "✗"}
-    }
-    
-    $c = $colors[$type]
-    $line = "─" * ($message.Length + 4)
-    Write-Host ("┌{0}┐" -f $line) -ForegroundColor $c.fg
-    Write-Host ("│ {0} {1} │" -f $c.icon, $message) -ForegroundColor $c.fg
-    Write-Host ("└{0}┘" -f $line) -ForegroundColor $c.fg
-}
-
-function Initialize-Toolbox {
+function Check-Admin {
     if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        Show-StatusBox "Toolbox requires Administrator privileges! Please run as Administrator." "error"
-        Start-Sleep -Seconds 3
+        Write-Host "Run as Administrator dumbass!" -ForegroundColor Red
         Exit 1
     }
+}
+
+function Remove-Bloatware {
+    Write-Host "[*] Killing bloatware..." -ForegroundColor Yellow
     
-    Show-FixOsLogo
-    Write-AnimatedText "🚀 Initializing FixOs Toolbox..." "Green" 0.01
-    Start-Sleep -Milliseconds 500
-    
-    $checks = @(
-        @{Name = "Checking winget"; Command = {Get-Command winget -ErrorAction SilentlyContinue}},
-        @{Name = "Loading modules"; Command = {$null}},
-        @{Name = "Preparing environment"; Command = {$null}}
+    $bloat = @(
+        "Microsoft.BingWeather"
+        "Microsoft.BingNews"
+        "Microsoft.BingSports"
+        "Microsoft.BingFinance"
+        "Microsoft.GetHelp"
+        "Microsoft.Getstarted"
+        "Microsoft.Messaging"
+        "Microsoft.Microsoft3DViewer"
+        "Microsoft.MicrosoftOfficeHub"
+        "Microsoft.MicrosoftSolitaireCollection"
+        "Microsoft.MixedReality.Portal"
+        "Microsoft.Office.OneNote"
+        "Microsoft.OneConnect"
+        "Microsoft.People"
+        "Microsoft.Print3D"
+        "Microsoft.SkypeApp"
+        "Microsoft.Wallet"
+        "Microsoft.WindowsAlarms"
+        "Microsoft.WindowsCamera"
+        "Microsoft.WindowsCommunicationsApps"
+        "Microsoft.WindowsFeedbackHub"
+        "Microsoft.WindowsMaps"
+        "Microsoft.WindowsSoundRecorder"
+        "Microsoft.Xbox.TCUI"
+        "Microsoft.XboxApp"
+        "Microsoft.XboxGameCallableUI"
+        "Microsoft.XboxGamingOverlay"
+        "Microsoft.XboxIdentityProvider"
+        "Microsoft.XboxSpeechToTextOverlay"
+        "Microsoft.YourPhone"
+        "Microsoft.ZuneMusic"
+        "Microsoft.ZuneVideo"
+        "Microsoft.549981C3F5F10" # Cortana
+        "Microsoft.Windows.DevHome"
+        "Clipchamp.Clipchamp"
+        "SpotifyAB.SpotifyMusic"
+        "Disney.37853FC22B2CE"
+        "Netflix.Netflix"
+        "TikTok.TikTok"
     )
     
-    for ($i = 0; $i -lt $checks.Count; $i++) {
-        Show-ProgressBar ($i + 1) $checks.Count $checks[$i].Name
-        & $checks[$i].Command
-        Start-Sleep -Milliseconds 300
-    }
-    Write-Host ""
-    
-    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        Show-StatusBox "Winget not found! Installing..." "warning"
-        Start-Process "ms-appinstaller:?source=https://aka.ms/getwinget" -Wait
+    foreach ($app in $bloat) {
+        Write-Host "  Removing: $app" -ForegroundColor Gray
+        Get-AppxPackage $app | Remove-AppxPackage -ErrorAction SilentlyContinue
+        Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like "*$app*" | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
     }
     
-    Show-StatusBox "Toolbox initialized successfully!" "success"
-    Start-Sleep -Seconds 1.5
+    Write-Host "[✓] Bloatware removed" -ForegroundColor Green
 }
 
-function Show-MenuCard($options) {
-    $width = $host.UI.RawUI.WindowSize.Width - 10
-    $colWidth = [math]::Floor($width / 2)
+function Disable-Telemetry {
+    Write-Host "[*] Killing telemetry..." -ForegroundColor Yellow
     
-    Write-Host ("┌" + ("─" * ($width - 2)) + "┐") -ForegroundColor DarkCyan
-    
-    for ($i = 0; $i -lt $options.Count; $i += 2) {
-        $line = "│"
-        $line += (" {0,-2} {1,-25} " -f ($i + 1), $options[$i]).PadRight($colWidth)
-        if ($i + 1 -lt $options.Count) {
-            $line += (" {0,-2} {1,-25} " -f ($i + 2), $options[$i + 1]).PadRight($colWidth - 1)
-        } else {
-            $line += "".PadRight($colWidth - 1)
-        }
-        $line += "│"
-        Write-Host $line -ForegroundColor White
-    }
-    
-    Write-Host ("└" + ("─" * ($width - 2)) + "┘") -ForegroundColor DarkCyan
-}
-
-function Show-MainMenu {
-    Clear-Host
-    Show-FixOsLogo
-    
-    $menuOptions = @(
-        "📦 APPS INSTALLER", "⚡ RUN FIXOS PRESET",
-        "🔧 SYSTEM TWEAKS", "🧹 CLEANER",
-        "📊 SYSTEM INFO", "💾 BACKUP MANAGER",
-        "🌐 NETWORK TOOLS", "⚙️ ADVANCED",
-        "❌ EXIT TOOLBOX"
+    $services = @(
+        "DiagTrack"                    # Diagnostics Tracking
+        "dmwappushservice"             # Device Management WAP Push
+        "WMPNetworkSvc"                # Windows Media Player Network Sharing
+        "RemoteRegistry"                # Remote Registry
+        "RemoteAccess"                  # Routing and Remote Access
+        "lfsvc"                        # Geolocation Service
+        "MapsBroker"                    # Downloaded Maps Manager
+        "PcaSvc"                        # Program Compatibility Assistant
+        "WdiServiceHost"                 # Diagnostic Service Host
+        "WdiSystemHost"                  # Diagnostic System Host
     )
     
-    Write-Host "  SELECT AN OPTION" -ForegroundColor Yellow -BackgroundColor DarkGray
-    Write-Host ""
-    Show-MenuCard $menuOptions
-    Write-Host ""
-}
-
-function Install-AppModern($appId, $appName) {
-    try {
-        Show-StatusBox "Installing $appName..." "info"
-        
-        $job = Start-Job -ScriptBlock {
-            param($id)
-            winget install --id $id --exact --silent --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
-        } -ArgumentList $appId
-        
-        $animFrames = @('◴', '◷', '◶', '◵')
-        $i = 0
-        while ($job.State -eq 'Running') {
-            Write-Host ("`r  {0} Installing... Please wait" -f $animFrames[$i % 4]) -NoNewline -ForegroundColor Cyan
-            $i++
-            Start-Sleep -Milliseconds 250
-        }
-        
-        $result = Receive-Job -Job $job
-        Remove-Job -Job $job -Force
-        
-        Write-Host "`r  ✓ Installation complete!          " -ForegroundColor Green
-        Show-StatusBox "$appName installed successfully!" "success"
-        
-    } catch {
-        Show-StatusBox "Failed to install $appName" "error"
+    foreach ($service in $services) {
+        Stop-Service $service -Force -ErrorAction SilentlyContinue
+        Set-Service $service -StartupType Disabled -ErrorAction SilentlyContinue
+        Write-Host "  Disabled: $service" -ForegroundColor Gray
     }
-    Start-Sleep -Seconds 1.5
+    
+    # Registry tweaks
+    $paths = @(
+        "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection"
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection"
+        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
+    )
+    
+    foreach ($path in $paths) {
+        if (!(Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    }
+    
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "ContentDeliveryAllowed" -Type DWord -Value 0
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "OemPreInstalledAppsEnabled" -Type DWord -Value 0
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEnabled" -Type DWord -Value 0
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEverEnabled" -Type DWord -Value 0
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Type DWord -Value 0
+    
+    Write-Host "[✓] Telemetry disabled" -ForegroundColor Green
 }
 
-function Show-InteractiveGrid($title, $items, $columns = 3) {
+function Optimize-Performance {
+    Write-Host "[*] Optimizing performance..." -ForegroundColor Yellow
+    
+    # Disable animations
+    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Type DWord -Value 0
+    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop\WindowMetrics" -Name "MinAnimate" -Type DWord -Value 0
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAnimations" -Type DWord -Value 0
+    
+    # Power settings
+    powercfg -change -monitor-timeout-ac 0
+    powercfg -change -monitor-timeout-dc 5
+    powercfg -change -disk-timeout-ac 0
+    powercfg -change -disk-timeout-dc 10
+    powercfg -change -standby-timeout-ac 0
+    powercfg -change -standby-timeout-dc 15
+    powercfg -h off
+    
+    # Disable indexing on C:
+    if (Get-Service -Name "WSearch" -ErrorAction SilentlyContinue) {
+        Stop-Service WSearch -Force
+        Set-Service WSearch -StartupType Disabled
+    }
+    
+    Write-Host "[✓] Performance optimized" -ForegroundColor Green
+}
+
+function Install-Apps {
+    Write-Host "[*] Installing essential apps..." -ForegroundColor Yellow
+    
+    $apps = @(
+        @{Name = "Google Chrome"; ID = "Google.Chrome"}
+        @{Name = "Mozilla Firefox"; ID = "Mozilla.Firefox"}
+        @{Name = "Brave"; ID = "Brave.Brave"}
+        @{Name = "7-Zip"; ID = "7zip.7zip"}
+        @{Name = "WinRAR"; ID = "RARLab.WinRAR"}
+        @{Name = "VLC"; ID = "VideoLAN.VLC"}
+        @{Name = "qBittorrent"; ID = "qBittorrent.qBittorrent"}
+        @{Name = "Notepad++"; ID = "Notepad++.Notepad++"}
+        @{Name = "Git"; ID = "Git.Git"}
+        @{Name = "Discord"; ID = "Discord.Discord"}
+        @{Name = "Telegram"; ID = "Telegram.TelegramDesktop"}
+        @{Name = "Spotify"; ID = "Spotify.Spotify"}
+        @{Name = "OBS Studio"; ID = "OBSProject.OBSStudio"}
+        @{Name = "Steam"; ID = "Valve.Steam"}
+        @{Name = "Epic Games"; ID = "EpicGames.EpicGamesLauncher"}
+    )
+    
+    foreach ($app in $apps) {
+        Write-Host "  Installing: $($app.Name)" -ForegroundColor Gray
+        winget install --id $app.ID --silent --accept-package-agreements --accept-source-agreements -e > $null 2>&1
+    }
+    
+    Write-Host "[✓] Apps installed" -ForegroundColor Green
+}
+
+function Clean-System {
+    Write-Host "[*] Cleaning system..." -ForegroundColor Yellow
+    
+    # Clean temp files
+    $tempPaths = @(
+        "$env:TEMP\*"
+        "$env:WINDIR\Temp\*"
+        "$env:WINDIR\Prefetch\*"
+        "$env:USERPROFILE\Downloads\*" # Careful with this one
+    )
+    
+    foreach ($path in $tempPaths) {
+        Remove-Item $path -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    
+    # Clean DNS
+    ipconfig /flushdns > $null
+    
+    # Clean SxS
+    dism /online /cleanup-image /startcomponentcleanup /quiet > $null 2>&1
+    
+    Write-Host "[✓] System cleaned" -ForegroundColor Green
+}
+
+function Show-Status {
     Clear-Host
-    Show-FixOsLogo
-    Show-FancyHeader $title "Magenta"
-    Write-Host ""
+    Show-Logo
     
-    $maxLen = ($items | Measure-Object -Maximum Length).Maximum + 5
-    $colWidth = $maxLen + 10
-    
-    for ($i = 0; $i -lt $items.Count; $i += $columns) {
-        $line = "  "
-        for ($j = 0; $j -lt $columns; $j++) {
-            $idx = $i + $j
-            if ($idx -lt $items.Count) {
-                $num = ($idx + 1).ToString().PadLeft(2)
-                $line += "[$num] $($items[$idx])".PadRight($colWidth)
-            }
-        }
-        Write-Host $line -ForegroundColor White
-    }
-    
-    Write-Host ""
-    Write-Host "  " -NoNewline
-    Write-Host "⚡" -ForegroundColor Yellow -NoNewline
-    Write-Host " [A] Install All     " -ForegroundColor White -NoNewline
-    Write-Host "⚡" -ForegroundColor Yellow -NoNewline
-    Write-Host " [0] Back to Menu" -ForegroundColor White
-    Write-Host ""
-}
-
-function Get-SystemInfo {
     $os = Get-WmiObject Win32_OperatingSystem
     $cpu = Get-WmiObject Win32_Processor
     $ram = [math]::Round($os.TotalVisibleMemorySize / 1MB, 2)
     $disk = Get-WmiObject Win32_LogicalDisk -Filter "DeviceID='C:'"
-    $freeSpace = [math]::Round($disk.FreeSpace / 1GB, 2)
-    $totalSpace = [math]::Round($disk.Size / 1GB, 2)
+    $free = [math]::Round($disk.FreeSpace / 1GB, 2)
+    $total = [math]::Round($disk.Size / 1GB, 2)
     
-    return @{
-        OS = $os.Caption
-        Version = $os.Version
-        CPU = $cpu.Name
-        Cores = $cpu.NumberOfCores
-        RAM = $ram
-        DiskFree = $freeSpace
-        DiskTotal = $totalSpace
-        Uptime = (Get-Date) - $os.ConvertToDateTime($os.LastBootUpTime)
-    }
-}
-
-function Show-SystemInfo {
-    Clear-Host
-    Show-FixOsLogo
-    Show-FancyHeader "SYSTEM INFORMATION" "Blue"
-    
-    $info = Get-SystemInfo
-    
-    $data = @(
-        @{Label = "Operating System"; Value = $info.OS},
-        @{Label = "Version"; Value = $info.Version},
-        @{Label = "Processor"; Value = $info.CPU},
-        @{Label = "Cores"; Value = $info.Cores},
-        @{Label = "RAM"; Value = "$($info.RAM) GB"},
-        @{Label = "C: Drive"; Value = "$($info.DiskFree) GB / $($info.DiskTotal) GB Free"},
-        @{Label = "Uptime"; Value = "{0}d {1}h {2}m" -f $info.Uptime.Days, $info.Uptime.Hours, $info.Uptime.Minutes}
-    )
-    
+    Write-Host "SYSTEM INFO" -ForegroundColor Cyan
+    Write-Host "-----------"
+    Write-Host "OS: $($os.Caption)"
+    Write-Host "CPU: $($cpu.Name)"
+    Write-Host "RAM: ${ram}GB"
+    Write-Host "C: Drive: ${free}GB / ${total}GB free"
     Write-Host ""
-    foreach ($item in $data) {
-        Write-Host ("  {0,-20}: " -f $item.Label) -NoNewline -ForegroundColor Cyan
-        Write-Host $item.Value -ForegroundColor White
-    }
-    
-    Write-Host ""
-    Show-StatusBox "Press any key to continue..." "info"
+    Write-Host "Press any key..." -ForegroundColor Gray
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
 
-function Invoke-SystemTweaks {
+function Show-Menu {
     Clear-Host
-    Show-FixOsLogo
-    Show-FancyHeader "SYSTEM TWEAKS" "Yellow"
+    Show-Logo
     
-    $tweaks = @(
-        "Enable Ultimate Performance Power Plan",
-        "Disable Telemetry",
-        "Disable Cortana",
-        "Disable Game Bar",
-        "Optimize SSD/HDD",
-        "Disable Startup Programs",
-        "Clear DNS Cache",
-        "Reset Network Stack"
-    )
-    
-    Show-InteractiveGrid "SELECT TWEAKS TO APPLY" $tweaks 2
-    
-    Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-    $choice = Read-Host
-    
-    if ($choice -eq "0") { return }
-    
+    Write-Host "╔════════════════════════════════════╗" -ForegroundColor DarkGray
+    Write-Host "║           MAIN MENU                ║" -ForegroundColor DarkGray
+    Write-Host "╠════════════════════════════════════╣" -ForegroundColor DarkGray
+    Write-Host "║                                    ║" -ForegroundColor DarkGray
+    Write-Host "║  [1] Remove Bloatware              ║" -ForegroundColor DarkGray
+    Write-Host "║  [2] Disable Telemetry             ║" -ForegroundColor DarkGray
+    Write-Host "║  [3] Optimize Performance          ║" -ForegroundColor DarkGray
+    Write-Host "║  [4] Install Essential Apps        ║" -ForegroundColor DarkGray
+    Write-Host "║  [5] Clean System                   ║" -ForegroundColor DarkGray
+    Write-Host "║  [6] System Status                  ║" -ForegroundColor DarkGray
+    Write-Host "║  [7] RUN ALL (FixOs Preset)         ║" -ForegroundColor DarkGray
+    Write-Host "║  [8] Exit                           ║" -ForegroundColor DarkGray
+    Write-Host "║                                    ║" -ForegroundColor DarkGray
+    Write-Host "╚════════════════════════════════════╝" -ForegroundColor DarkGray
     Write-Host ""
-    foreach ($i in 1..$tweaks.Count) {
-        Show-ProgressBar $i $tweaks.Count "Applying tweaks"
-        Start-Sleep -Milliseconds 200
-    }
-    Write-Host ""
-    
-    Show-StatusBox "System tweaks applied successfully!" "success"
-    Start-Sleep -Seconds 2
 }
 
-function Invoke-Cleaner {
-    Clear-Host
-    Show-FixOsLogo
-    Show-FancyHeader "SYSTEM CLEANER" "Green"
+function Run-All {
+    Write-Host "[!] Running FixOs Preset..." -ForegroundColor Red
+    Write-Host "Press Enter to continue or Ctrl+C to cancel"
+    Read-Host
     
-    $cleanupTasks = @(
-        "Temporary Files",
-        "Recycle Bin",
-        "DNS Cache",
-        "Windows Temp",
-        "Prefetch Files",
-        "Browser Cache",
-        "Log Files",
-        "Memory Dumps"
-    )
-    
-    Show-InteractiveGrid "SELECT ITEMS TO CLEAN" $cleanupTasks 2
-    
-    Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-    $choice = Read-Host
-    
-    if ($choice -eq "0") { return }
+    Remove-Bloatware
+    Disable-Telemetry
+    Optimize-Performance
+    Clean-System
+    Install-Apps
     
     Write-Host ""
-    foreach ($i in 1..$cleanupTasks.Count) {
-        Show-ProgressBar $i $cleanupTasks.Count "Cleaning"
-        Start-Sleep -Milliseconds 150
-    }
-    Write-Host ""
-    
-    Show-StatusBox "Cleanup completed! Space reclaimed: 2.3 GB" "success"
-    Start-Sleep -Seconds 2
+    Write-Host "[✓] FixOs Preset Complete!" -ForegroundColor Green
+    Write-Host "Press any key..." -ForegroundColor Gray
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
 
-function Invoke-BackupManager {
-    Clear-Host
-    Show-FixOsLogo
-    Show-FancyHeader "BACKUP MANAGER" "Magenta"
-    
-    $backupOptions = @(
-        "Create System Restore Point",
-        "Backup Registry",
-        "Backup Drivers",
-        "Backup Hosts File",
-        "Restore from Backup"
-    )
-    
-    Show-InteractiveGrid "BACKUP OPTIONS" $backupOptions 2
-    
-    Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-    $choice = Read-Host
-    
-    if ($choice -eq "0") { return }
-    
-    Write-Host ""
-    Show-StatusBox "Creating backup..." "info"
-    Start-Sleep -Seconds 2
-    Show-StatusBox "Backup completed successfully!" "success"
-    Start-Sleep -Seconds 1.5
-}
-
-function Invoke-NetworkTools {
-    Clear-Host
-    Show-FixOsLogo
-    Show-FancyHeader "NETWORK TOOLS" "Blue"
-    
-    $netTools = @(
-        "Show Network Info",
-        "Flush DNS",
-        "Renew IP",
-        "Reset Winsock",
-        "Test Latency",
-        "Network Speed Test"
-    )
-    
-    Show-InteractiveGrid "NETWORK UTILITIES" $netTools 2
-    
-    Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-    $choice = Read-Host
-    
-    if ($choice -eq "0") { return }
-    
-    Write-Host ""
-    Show-StatusBox "Executing network tool..." "info"
-    Start-Sleep -Seconds 1.5
-    Show-StatusBox "Operation completed!" "success"
-    Start-Sleep -Seconds 1.5
-}
-
-# Category Functions
-function Invoke-BrowsersInstaller {
-    $browsers = @(
-        "Google Chrome", "Brave", "Firefox", "Edge",
-        "Thorium", "Waterfox", "LibreWolf", "Opera",
-        "Vivaldi", "Tor Browser"
-    )
-    
-    $browserIds = @(
-        "Google.Chrome", "Brave.Brave", "Mozilla.Firefox", "Microsoft.Edge",
-        "Alex313031.Thorium", "Waterfox.Waterfox", "LibreWolf.LibreWolf", "Opera.Opera",
-        "Vivaldi.Vivaldi", "TorProject.TorBrowser"
-    )
-    
-    while ($true) {
-        Show-InteractiveGrid "BROWSERS" $browsers 4
-        Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-        $choice = Read-Host
-        
-        if ($choice -eq "0") { return }
-        if ($choice -eq "A" -or $choice -eq "a") {
-            for ($i = 0; $i -lt $browsers.Count; $i++) {
-                Install-AppModern $browserIds[$i] $browsers[$i]
-            }
-            continue
-        }
-        
-        $index = [int]$choice - 1
-        if ($index -ge 0 -and $index -lt $browsers.Count) {
-            Install-AppModern $browserIds[$index] $browsers[$index]
-        }
-    }
-}
-
-function Invoke-DevToolsInstaller {
-    $tools = @(
-        "VS Code", "Notepad++", "Git", "GitHub Desktop",
-        "Docker", "Python", "Node.js", "Visual Studio 2022",
-        "Postman", "Figma", "Sublime Text", "Atom"
-    )
-    
-    $toolIds = @(
-        "Microsoft.VisualStudioCode", "Notepad++.Notepad++", "Git.Git", "GitHub.GitHubDesktop",
-        "Docker.DockerDesktop", "Python.Python.3.12", "OpenJS.NodeJS", "Microsoft.VisualStudio.2022.Community",
-        "Postman.Postman", "Figma.Figma", "SublimeHQ.SublimeText", "GitHub.Atom"
-    )
-    
-    while ($true) {
-        Show-InteractiveGrid "DEVELOPMENT TOOLS" $tools 4
-        Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-        $choice = Read-Host
-        
-        if ($choice -eq "0") { return }
-        if ($choice -eq "A" -or $choice -eq "a") {
-            for ($i = 0; $i -lt $tools.Count; $i++) {
-                Install-AppModern $toolIds[$i] $tools[$i]
-            }
-            continue
-        }
-        
-        $index = [int]$choice - 1
-        if ($index -ge 0 -and $index -lt $tools.Count) {
-            Install-AppModern $toolIds[$index] $tools[$index]
-        }
-    }
-}
-
-function Invoke-AppsInstaller {
-    while ($true) {
-        Clear-Host
-        Show-FixOsLogo
-        
-        $categories = @(
-            "🌐 BROWSERS", "📁 FILE TOOLS",
-            "💻 DEV TOOLS", "🎮 GAMING",
-            "💬 COMMUNICATION", "📺 MEDIA",
-            "📝 OFFICE", "🔧 UTILITIES",
-            "🎨 DESIGN", "🌍 BACK TO MAIN"
-        )
-        
-        Write-Host "  APP INSTALLER CATEGORIES" -ForegroundColor Yellow -BackgroundColor DarkGray
-        Write-Host ""
-        Show-MenuCard $categories
-        Write-Host ""
-        
-        Write-Host "  Enter category (1-10): " -NoNewline -ForegroundColor Cyan
-        $choice = Read-Host
-        
-        switch ($choice) {
-            "1" { Invoke-BrowsersInstaller }
-            "2" { 
-                $tools = @("WinRAR", "7-Zip", "PeaZip", "WinSCP")
-                $ids = @("RARLab.WinRAR", "7zip.7zip", "PeaZip.PeaZip", "WinSCP.WinSCP")
-                $menuTitle = "FILE TOOLS"
-                for ($i = 0; $i -lt $tools.Count; $i++) {
-                    Show-InteractiveGrid $menuTitle $tools 4
-                    Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-                    $choice = Read-Host
-                    if ($choice -eq "0") { break }
-                    if ($choice -eq "A" -or $choice -eq "a") {
-                        for ($j = 0; $j -lt $tools.Count; $j++) {
-                            Install-AppModern $ids[$j] $tools[$j]
-                        }
-                        break
-                    }
-                    $index = [int]$choice - 1
-                    if ($index -ge 0 -and $index -lt $tools.Count) {
-                        Install-AppModern $ids[$index] $tools[$index]
-                    }
-                }
-            }
-            "3" { Invoke-DevToolsInstaller }
-            "4" {
-                $apps = @("Steam", "Epic Games", "Ubisoft Connect", "EA App", "GOG Galaxy")
-                $ids = @("Valve.Steam", "EpicGames.EpicGamesLauncher", "Ubisoft.Connect", "ElectronicArts.EADesktop", "GOG.Galaxy")
-                Show-InteractiveGrid "GAMING" $apps 3
-                Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-                $choice = Read-Host
-                if ($choice -eq "0") { continue }
-                if ($choice -eq "A" -or $choice -eq "a") {
-                    for ($i = 0; $i -lt $apps.Count; $i++) {
-                        Install-AppModern $ids[$i] $apps[$i]
-                    }
-                } else {
-                    $index = [int]$choice - 1
-                    if ($index -ge 0 -and $index -lt $apps.Count) {
-                        Install-AppModern $ids[$index] $apps[$index]
-                    }
-                }
-            }
-            "5" {
-                $apps = @("Discord", "Telegram", "WhatsApp", "Slack", "Zoom", "Skype")
-                $ids = @("Discord.Discord", "Telegram.TelegramDesktop", "WhatsApp.WhatsApp", "SlackTechnologies.Slack", "Zoom.Zoom", "Microsoft.Skype")
-                Show-InteractiveGrid "COMMUNICATION" $apps 3
-                Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-                $choice = Read-Host
-                if ($choice -eq "0") { continue }
-                if ($choice -eq "A" -or $choice -eq "a") {
-                    for ($i = 0; $i -lt $apps.Count; $i++) {
-                        Install-AppModern $ids[$i] $apps[$i]
-                    }
-                } else {
-                    $index = [int]$choice - 1
-                    if ($index -ge 0 -and $index -lt $apps.Count) {
-                        Install-AppModern $ids[$index] $apps[$index]
-                    }
-                }
-            }
-            "6" {
-                $apps = @("VLC", "MPC-HC", "Spotify", "OBS Studio", "HandBrake", "Audacity")
-                $ids = @("VideoLAN.VLC", "clsid2.mpc-hc", "Spotify.Spotify", "OBSProject.OBSStudio", "HandBrake.HandBrake", "Audacity.Audacity")
-                Show-InteractiveGrid "MEDIA" $apps 3
-                Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-                $choice = Read-Host
-                if ($choice -eq "0") { continue }
-                if ($choice -eq "A" -or $choice -eq "a") {
-                    for ($i = 0; $i -lt $apps.Count; $i++) {
-                        Install-AppModern $ids[$i] $apps[$i]
-                    }
-                } else {
-                    $index = [int]$choice - 1
-                    if ($index -ge 0 -and $index -lt $apps.Count) {
-                        Install-AppModern $ids[$index] $apps[$index]
-                    }
-                }
-            }
-            "7" {
-                $apps = @("Office", "LibreOffice", "Notion", "Obsidian", "Foxit Reader")
-                $ids = @("Microsoft.Office", "TheDocumentFoundation.LibreOffice", "Notion.Notion", "Obsidian.Obsidian", "Foxit.FoxitReader")
-                Show-InteractiveGrid "OFFICE" $apps 3
-                Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-                $choice = Read-Host
-                if ($choice -eq "0") { continue }
-                if ($choice -eq "A" -or $choice -eq "a") {
-                    for ($i = 0; $i -lt $apps.Count; $i++) {
-                        Install-AppModern $ids[$i] $apps[$i]
-                    }
-                } else {
-                    $index = [int]$choice - 1
-                    if ($index -ge 0 -and $index -lt $apps.Count) {
-                        Install-AppModern $ids[$index] $apps[$index]
-                    }
-                }
-            }
-            "8" {
-                $apps = @("PowerToys", "Everything", "CPU-Z", "GPU-Z", "HWMonitor", "CrystalDiskInfo")
-                $ids = @("Microsoft.PowerToys", "voidtools.Everything", "CPUID.CPU-Z", "CPUID.GPU-Z", "CPUID.HWMonitor", "CrystalDewWorld.CrystalDiskInfo")
-                Show-InteractiveGrid "UTILITIES" $apps 3
-                Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-                $choice = Read-Host
-                if ($choice -eq "0") { continue }
-                if ($choice -eq "A" -or $choice -eq "a") {
-                    for ($i = 0; $i -lt $apps.Count; $i++) {
-                        Install-AppModern $ids[$i] $apps[$i]
-                    }
-                } else {
-                    $index = [int]$choice - 1
-                    if ($index -ge 0 -and $index -lt $apps.Count) {
-                        Install-AppModern $ids[$index] $apps[$index]
-                    }
-                }
-            }
-            "9" {
-                $apps = @("Figma", "GIMP", "Inkscape", "Blender", "Krita", "Paint.NET")
-                $ids = @("Figma.Figma", "GIMP.GIMP", "Inkscape.Inkscape", "BlenderFoundation.Blender", "Krita.Krita", "dotPDN.PaintDotNet")
-                Show-InteractiveGrid "DESIGN" $apps 3
-                Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-                $choice = Read-Host
-                if ($choice -eq "0") { continue }
-                if ($choice -eq "A" -or $choice -eq "a") {
-                    for ($i = 0; $i -lt $apps.Count; $i++) {
-                        Install-AppModern $ids[$i] $apps[$i]
-                    }
-                } else {
-                    $index = [int]$choice - 1
-                    if ($index -ge 0 -and $index -lt $apps.Count) {
-                        Install-AppModern $ids[$index] $apps[$index]
-                    }
-                }
-            }
-            "10" { return }
-            default {
-                Show-StatusBox "Invalid option!" "error"
-                Start-Sleep -Seconds 1.5
-            }
-        }
-    }
-}
-
-function Invoke-FullFixOsPreset {
-    Clear-Host
-    Show-FixOsLogo
-    Show-FancyHeader "FIXOS PRESET" "Magenta"
-    
-    Write-Host ""
-    Write-Host "  This will run the complete FixOs optimization preset" -ForegroundColor Yellow
-    Write-Host "  ⚡ Tweaks system settings" -ForegroundColor Cyan
-    Write-Host "  ⚡ Installs essential apps" -ForegroundColor Cyan
-    Write-Host "  ⚡ Cleans unnecessary files" -ForegroundColor Cyan
-    Write-Host "  ⚡ Optimizes performance" -ForegroundColor Cyan
-    Write-Host ""
-    
-    Write-Host "  Continue? [Y/N]: " -NoNewline -ForegroundColor Magenta
-    $confirm = Read-Host
-    
-    if ($confirm -ne "Y" -and $confirm -ne "y") { return }
-    
-    Write-Host ""
-    $steps = @(
-        "Preparing environment",
-        "Running system tweaks",
-        "Installing applications",
-        "Cleaning system",
-        "Optimizing performance",
-        "Finalizing"
-    )
-    
-    foreach ($step in $steps) {
-        Show-StatusBox $step "info"
-        for ($i = 1; $i -le 20; $i++) {
-            Show-ProgressBar $i 20 $step
-            Start-Sleep -Milliseconds 100
-        }
-        Write-Host ""
-    }
-    
-    try {
-        irm "DevelopmentSpace.pages.dev/FixOs.ps1" | iex
-        Show-StatusBox "FixOs executed successfully!" "success"
-    } catch {
-        Show-StatusBox "Error running FixOs" "error"
-    }
-    
-    Write-Host ""
-    Show-StatusBox "FixOs preset completed!" "success"
-    Start-Sleep -Seconds 2
-}
-
-function Invoke-AdvancedTools {
-    Clear-Host
-    Show-FixOsLogo
-    Show-FancyHeader "ADVANCED TOOLS" "Red"
-    
-    $advanced = @(
-        "🛡️ DISM & SFC Scan",
-        "💿 Create Bootable USB",
-        "🔑 Windows License Manager",
-        "📋 Export Installed Apps List",
-        "🧪 Windows Component Store Cleanup",
-        "⚡ Performance Benchmark"
-    )
-    
-    Show-InteractiveGrid "ADVANCED UTILITIES" $advanced 2
-    
-    Write-Host "  Enter selection: " -NoNewline -ForegroundColor Cyan
-    $choice = Read-Host
-    
-    if ($choice -eq "0") { return }
-    
-    switch ($choice) {
-        "1" {
-            Write-Host ""
-            Show-StatusBox "Running DISM and SFC scans..." "info"
-            Start-Process powershell -Verb RunAs -ArgumentList "sfc /scannow; DISM /Online /Cleanup-Image /RestoreHealth; pause"
-        }
-        "2" {
-            Show-StatusBox "Launching Windows Media Creation Tool..." "info"
-            Start-Process "ms-windows-store:"
-        }
-        "3" {
-            Show-StatusBox "Opening Windows Activation settings..." "info"
-            Start-Process "ms-settings:activation"
-        }
-        default {
-            Show-StatusBox "Feature coming soon!" "warning"
-        }
-    }
-    
-    Start-Sleep -Seconds 2
-}
-
-Initialize-Toolbox
+# Main
+Check-Admin
 
 while ($true) {
-    Show-MainMenu
-    Write-Host "  Enter choice (1-9): " -NoNewline -ForegroundColor Cyan
+    Show-Menu
+    Write-Host "Select: " -NoNewline
     $choice = Read-Host
     
     switch ($choice) {
-        "1" { Invoke-AppsInstaller }
-        "2" { Invoke-FullFixOsPreset }
-        "3" { Invoke-SystemTweaks }
-        "4" { Invoke-Cleaner }
-        "5" { Show-SystemInfo }
-        "6" { Invoke-BackupManager }
-        "7" { Invoke-NetworkTools }
-        "8" { Invoke-AdvancedTools }
-        "9" { 
-            Clear-Host
-            Show-FixOsLogo
-            Write-Host ""
-            Write-Host (" " * [math]::Floor(($host.UI.RawUI.WindowSize.Width - 25) / 2)) -NoNewline
-            Write-Host "🚀 THANKS FOR USING FIXOS! 🚀" -ForegroundColor Green
-            Write-Host ""
-            Write-Host (" " * [math]::Floor(($host.UI.RawUI.WindowSize.Width - 30) / 2)) -NoNewline
-            Write-Host "See you next time, legend! 👋" -ForegroundColor Yellow
-            Write-Host ""
-            Start-Sleep -Seconds 2
-            Exit 0
+        "1" { Remove-Bloatware }
+        "2" { Disable-Telemetry }
+        "3" { Optimize-Performance }
+        "4" { Install-Apps }
+        "5" { Clean-System }
+        "6" { Show-Status }
+        "7" { Run-All }
+        "8" { 
+            Write-Host "Peace out!" -ForegroundColor Green
+            Exit 
         }
-        default {
-            Show-StatusBox "Invalid option! Please try again." "error"
-            Start-Sleep -Seconds 1.5
+        default { 
+            Write-Host "Invalid option!" -ForegroundColor Red
+            Start-Sleep -Seconds 1
         }
+    }
+    
+    if ($choice -ne "6" -and $choice -ne "8") {
+        Write-Host ""
+        Write-Host "Done. Press any key..." -ForegroundColor Gray
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
 }
