@@ -18,506 +18,445 @@ $form = New-Object System.Windows.Forms.Form
 $form.Text = "FixOs Toolbox v$($ToolboxConfig.Version)"
 $form.Size = New-Object System.Drawing.Size(1200, 800)
 $form.StartPosition = "CenterScreen"
-$form.BackColor = "#0d1117"
-$form.ForeColor = "#e6edf3"
+$form.BackColor = "#0a1929"
+$form.ForeColor = "#ffffff"
 $form.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+$form.FormBorderStyle = "None"
 
-function Center-Text($text) {
-    $width = $host.UI.RawUI.WindowSize.Width
-    $textLength = $text.Length
-    $padding = [math]::Max(0, ($width - $textLength) / 2)
-    return (" " * [math]::Floor($padding)) + $text
-}
+$titleBar = New-Object System.Windows.Forms.Panel
+$titleBar.Height = 40
+$titleBar.Dock = "Top"
+$titleBar.BackColor = "#0a1929"
+
+$closeBtn = New-Object System.Windows.Forms.Button
+$closeBtn.Text = "×"
+$closeBtn.Size = New-Object System.Drawing.Size(40, 40)
+$closeBtn.Location = New-Object System.Drawing.Point(1150, 0)
+$closeBtn.FlatStyle = "Flat"
+$closeBtn.FlatAppearance.BorderSize = 0
+$closeBtn.BackColor = "#0a1929"
+$closeBtn.ForeColor = "#ffffff"
+$closeBtn.Font = New-Object System.Drawing.Font("Segoe UI", 20)
+$closeBtn.Cursor = "Hand"
+$closeBtn.Add_Click({ $form.Close() })
+$titleBar.Controls.Add($closeBtn)
+
+$form.Controls.Add($titleBar)
+
+$mainPanel = New-Object System.Windows.Forms.Panel
+$mainPanel.Location = New-Object System.Drawing.Point(20, 60)
+$mainPanel.Size = New-Object System.Drawing.Size(1160, 720)
+$mainPanel.BackColor = "#10243b"
+$mainPanel.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $mainPanel.Width, $mainPanel.Height), 20))
+$form.Controls.Add($mainPanel)
 
 function Show-FixOsLogo {
-    $logoLines = @(
-        " ███████╗██╗██╗  ██╗  ██████╗ ███████╗ ",
-        " ██╔════╝██║╚██╗██╔╝ ██╔═══██╗██╔════╝ ",
-        " █████╗  ██║ ╚███╔╝  ██║   ██║███████╗ ",
-        " ██╔══╝  ██║ ██╔██╗  ██║   ██║╚════██║ ",
-        " ██║     ██║██╔╝ ██╗ ╚██████╔╝███████║ ",
-        " ╚═╝     ╚═╝╚═╝  ╚═╝  ╚═════╝ ╚══════╝ "
-    )
-    
     $logoLabel = New-Object System.Windows.Forms.Label
-    $logoLabel.Text = [string]::Join([Environment]::NewLine, $logoLines)
+    $logoLabel.Text = @"
+███████╗██╗██╗  ██╗  ██████╗ ███████╗
+██╔════╝██║╚██╗██╔╝ ██╔═══██╗██╔════╝
+█████╗  ██║ ╚███╔╝  ██║   ██║███████╗
+██╔══╝  ██║ ██╔██╗  ██║   ██║╚════██║
+██║     ██║██╔╝ ██╗ ╚██████╔╝███████║
+╚═╝     ╚═╝╚═╝  ╚═╝  ╚═════╝ ╚══════╝
+"@
     $logoLabel.Font = New-Object System.Drawing.Font("Consolas", 14, [System.Drawing.FontStyle]::Bold)
-    $logoLabel.ForeColor = "#2f81f7"
-    $logoLabel.AutoSize = $true
-    $logoLabel.Location = New-Object System.Drawing.Point(20, 20)
+    $logoLabel.ForeColor = "#ffffff"
+    $logoLabel.Size = New-Object System.Drawing.Size(600, 150)
+    $logoLabel.Location = New-Object System.Drawing.Point(280, 40)
+    $logoLabel.TextAlign = "MiddleCenter"
     return $logoLabel
 }
 
-function Install-App($appId, $appName, $outputBox) {
-    try {
-        $outputBox.Text = "Installing $appName..."
-        $outputBox.ForeColor = "#d29922"
-        $form.Refresh()
-        
-        $process = Start-Process -FilePath "winget" -ArgumentList "install --id $appId --exact --silent --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity" -Wait -PassThru -NoNewWindow
-        
-        if ($process.ExitCode -eq 0) {
-            $outputBox.Text = "✓ $appName installed successfully"
-            $outputBox.ForeColor = "#3fb950"
-        } else {
-            $outputBox.Text = "✗ Failed to install $appName"
-            $outputBox.ForeColor = "#f85149"
-        }
-    } catch {
-        $outputBox.Text = "✗ Error installing $appName"
-        $outputBox.ForeColor = "#f85149"
-    }
-    $form.Refresh()
-    Start-Sleep -Milliseconds 500
+function Show-ToolboxLogo {
+    $toolboxLabel = New-Object System.Windows.Forms.Label
+    $toolboxLabel.Text = @"
+████████╗ ██████╗  ██████╗ ██╗     ██████╗  ██████╗ ██╗  ██╗
+╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██╔══██╗██╔═══██╗╚██╗██╔╝
+   ██║   ██║   ██║██║   ██║██║     ██████╔╝██║   ██║ ╚███╔╝ 
+   ██║   ██║   ██║██║   ██║██║     ██╔══██╗██║   ██║ ██╔██╗ 
+   ██║   ╚██████╔╝╚██████╔╝███████╗██████╔╝╚██████╔╝██╔╝ ██╗
+   ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝
+"@
+    $toolboxLabel.Font = New-Object System.Drawing.Font("Consolas", 14, [System.Drawing.FontStyle]::Bold)
+    $toolboxLabel.ForeColor = "#4a9eff"
+    $toolboxLabel.Size = New-Object System.Drawing.Size(600, 150)
+    $toolboxLabel.Location = New-Object System.Drawing.Point(280, 180)
+    $toolboxLabel.TextAlign = "MiddleCenter"
+    return $toolboxLabel
 }
 
-$mainPanel = New-Object System.Windows.Forms.Panel
-$mainPanel.Dock = "Fill"
-$mainPanel.Padding = New-Object System.Windows.Forms.Padding(20)
-$mainPanel.AutoScroll = $true
-
 $logo = Show-FixOsLogo
-$logo.Location = New-Object System.Drawing.Point(20, 20)
+$toolbox = Show-ToolboxLogo
 $mainPanel.Controls.Add($logo)
+$mainPanel.Controls.Add($toolbox)
 
-$versionLabel = New-Object System.Windows.Forms.Label
-$versionLabel.Text = "TOOLBOX v$($ToolboxConfig.Version)"
-$versionLabel.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
-$versionLabel.ForeColor = "#e6edf3"
-$versionLabel.Size = New-Object System.Drawing.Size(200, 30)
-$versionLabel.Location = New-Object System.Drawing.Point(900, 60)
-$versionLabel.TextAlign = "MiddleRight"
-$mainPanel.Controls.Add($versionLabel)
-
-$menuPanel = New-Object System.Windows.Forms.Panel
-$menuPanel.Location = New-Object System.Drawing.Point(20, 180)
-$menuPanel.Size = New-Object System.Drawing.Size(1140, 60)
+$centerPanel = New-Object System.Windows.Forms.Panel
+$centerPanel.Size = New-Object System.Drawing.Size(500, 300)
+$centerPanel.Location = New-Object System.Drawing.Point(330, 350)
+$centerPanel.BackColor = "#0a1929"
+$centerPanel.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $centerPanel.Width, $centerPanel.Height), 15))
 
 $appsBtn = New-Object System.Windows.Forms.Button
 $appsBtn.Text = "APPS INSTALLER"
-$appsBtn.Size = New-Object System.Drawing.Size(200, 50)
-$appsBtn.Location = New-Object System.Drawing.Point(200, 5)
-$appsBtn.BackColor = "#2f81f7"
-$appsBtn.ForeColor = "White"
+$appsBtn.Size = New-Object System.Drawing.Size(400, 60)
+$appsBtn.Location = New-Object System.Drawing.Point(50, 40)
+$appsBtn.BackColor = "#4a9eff"
+$appsBtn.ForeColor = "#ffffff"
 $appsBtn.FlatStyle = "Flat"
-$appsBtn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+$appsBtn.FlatAppearance.BorderSize = 0
+$appsBtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
 $appsBtn.Cursor = "Hand"
+$appsBtn.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $appsBtn.Width, $appsBtn.Height), 10))
 
 $fixosBtn = New-Object System.Windows.Forms.Button
 $fixosBtn.Text = "RUN FIXOS PRESET"
-$fixosBtn.Size = New-Object System.Drawing.Size(200, 50)
-$fixosBtn.Location = New-Object System.Drawing.Point(450, 5)
-$fixosBtn.BackColor = "#d29922"
-$fixosBtn.ForeColor = "Black"
+$fixosBtn.Size = New-Object System.Drawing.Size(400, 60)
+$fixosBtn.Location = New-Object System.Drawing.Point(50, 120)
+$fixosBtn.BackColor = "#1e3a6b"
+$fixosBtn.ForeColor = "#ffffff"
 $fixosBtn.FlatStyle = "Flat"
-$fixosBtn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+$fixosBtn.FlatAppearance.BorderSize = 0
+$fixosBtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
 $fixosBtn.Cursor = "Hand"
+$fixosBtn.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $fixosBtn.Width, $fixosBtn.Height), 10))
 
 $exitBtn = New-Object System.Windows.Forms.Button
 $exitBtn.Text = "EXIT"
-$exitBtn.Size = New-Object System.Drawing.Size(200, 50)
-$exitBtn.Location = New-Object System.Drawing.Point(700, 5)
-$exitBtn.BackColor = "#f85149"
-$exitBtn.ForeColor = "White"
+$exitBtn.Size = New-Object System.Drawing.Size(400, 60)
+$exitBtn.Location = New-Object System.Drawing.Point(50, 200)
+$exitBtn.BackColor = "#10243b"
+$exitBtn.ForeColor = "#ffffff"
 $exitBtn.FlatStyle = "Flat"
-$exitBtn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+$exitBtn.FlatAppearance.BorderSize = 1
+$exitBtn.FlatAppearance.BorderColor = "#4a9eff"
+$exitBtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
 $exitBtn.Cursor = "Hand"
+$exitBtn.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $exitBtn.Width, $exitBtn.Height), 10))
+$exitBtn.Add_Click({ $form.Close() })
 
-$menuPanel.Controls.AddRange(@($appsBtn, $fixosBtn, $exitBtn))
-$mainPanel.Controls.Add($menuPanel)
+$centerPanel.Controls.AddRange(@($appsBtn, $fixosBtn, $exitBtn))
+$mainPanel.Controls.Add($centerPanel)
+
+$statusBar = New-Object System.Windows.Forms.Panel
+$statusBar.Size = New-Object System.Drawing.Size(1160, 60)
+$statusBar.Location = New-Object System.Drawing.Point(0, 660)
+$statusBar.BackColor = "#0a1929"
+$statusBar.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $statusBar.Width, $statusBar.Height), 15))
+
+$progressBar = New-Object System.Windows.Forms.ProgressBar
+$progressBar.Size = New-Object System.Drawing.Size(800, 20)
+$progressBar.Location = New-Object System.Drawing.Point(180, 20)
+$progressBar.Style = "Continuous"
+$progressBar.ForeColor = "#4a9eff"
+$progressBar.BackColor = "#10243b"
+$progressBar.Value = 0
+
+$statusLabel = New-Object System.Windows.Forms.Label
+$statusLabel.Text = "Ready"
+$statusLabel.Size = New-Object System.Drawing.Size(200, 30)
+$statusLabel.Location = New-Object System.Drawing.Point(20, 15)
+$statusLabel.ForeColor = "#ffffff"
+$statusLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+
+$statusBar.Controls.AddRange(@($progressBar, $statusLabel))
+$mainPanel.Controls.Add($statusBar)
 
 $contentPanel = New-Object System.Windows.Forms.Panel
-$contentPanel.Location = New-Object System.Drawing.Point(20, 260)
-$contentPanel.Size = New-Object System.Drawing.Size(1140, 450)
-$contentPanel.BackColor = "#161b22"
+$contentPanel.Size = New-Object System.Drawing.Size(1120, 400)
+$contentPanel.Location = New-Object System.Drawing.Point(20, 220)
+$contentPanel.BackColor = "#10243b"
 $contentPanel.AutoScroll = $true
+$contentPanel.Visible = $false
 $mainPanel.Controls.Add($contentPanel)
 
-$statusBox = New-Object System.Windows.Forms.TextBox
-$statusBox.Location = New-Object System.Drawing.Point(20, 720)
-$statusBox.Size = New-Object System.Drawing.Size(1140, 30)
-$statusBox.ReadOnly = $true
-$statusBox.BackColor = "#161b22"
-$statusBox.ForeColor = "#3fb950"
-$statusBox.BorderStyle = "None"
-$statusBox.Font = New-Object System.Drawing.Font("Consolas", 10)
-$statusBox.Text = "Ready"
-$mainPanel.Controls.Add($statusBox)
+$backBtn = New-Object System.Windows.Forms.Button
+$backBtn.Text = "← BACK"
+$backBtn.Size = New-Object System.Drawing.Size(100, 35)
+$backBtn.Location = New-Object System.Drawing.Point(20, 20)
+$backBtn.BackColor = "#1e3a6b"
+$backBtn.ForeColor = "#ffffff"
+$backBtn.FlatStyle = "Flat"
+$backBtn.FlatAppearance.BorderSize = 0
+$backBtn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+$backBtn.Cursor = "Hand"
+$backBtn.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $backBtn.Width, $backBtn.Height), 8))
+$backBtn.Visible = $false
+$mainPanel.Controls.Add($backBtn)
 
-function Show-MainMenuUI {
-    $contentPanel.Controls.Clear()
-    
-    $title = New-Object System.Windows.Forms.Label
-    $title.Text = "SELECT AN OPTION"
-    $title.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
-    $title.ForeColor = "#e6edf3"
-    $title.Size = New-Object System.Drawing.Size(400, 40)
-    $title.Location = New-Object System.Drawing.Point(370, 20)
-    $contentPanel.Controls.Add($title)
-    
-    $appsMainBtn = New-Object System.Windows.Forms.Button
-    $appsMainBtn.Text = "APPS INSTALLER"
-    $appsMainBtn.Size = New-Object System.Drawing.Size(300, 80)
-    $appsMainBtn.Location = New-Object System.Drawing.Point(420, 100)
-    $appsMainBtn.BackColor = "#2f81f7"
-    $appsMainBtn.ForeColor = "White"
-    $appsMainBtn.FlatStyle = "Flat"
-    $appsMainBtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
-    $appsMainBtn.Cursor = "Hand"
-    $appsMainBtn.Add_Click({
-        Show-CategoriesUI
-    })
-    
-    $fixosMainBtn = New-Object System.Windows.Forms.Button
-    $fixosMainBtn.Text = "RUN FIXOS PRESET"
-    $fixosMainBtn.Size = New-Object System.Drawing.Size(300, 80)
-    $fixosMainBtn.Location = New-Object System.Drawing.Point(420, 200)
-    $fixosMainBtn.BackColor = "#d29922"
-    $fixosMainBtn.ForeColor = "Black"
-    $fixosMainBtn.FlatStyle = "Flat"
-    $fixosMainBtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
-    $fixosMainBtn.Cursor = "Hand"
-    $fixosMainBtn.Add_Click({
-        Invoke-FullFixOsPresetUI
-    })
-    
-    $exitMainBtn = New-Object System.Windows.Forms.Button
-    $exitMainBtn.Text = "EXIT"
-    $exitMainBtn.Size = New-Object System.Drawing.Size(300, 80)
-    $exitMainBtn.Location = New-Object System.Drawing.Point(420, 300)
-    $exitMainBtn.BackColor = "#f85149"
-    $exitMainBtn.ForeColor = "White"
-    $exitMainBtn.FlatStyle = "Flat"
-    $exitMainBtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
-    $exitMainBtn.Cursor = "Hand"
-    $exitMainBtn.Add_Click({
-        $form.Close()
-    })
-    
-    $contentPanel.Controls.AddRange(@($appsMainBtn, $fixosMainBtn, $exitMainBtn))
+function Update-Progress {
+    param($Current, $Total, $Message)
+    $percent = ($Current / $Total) * 100
+    $progressBar.Value = $percent
+    $statusLabel.Text = "$Message - $([math]::Round($percent, 0))%"
+    $form.Refresh()
 }
 
-function Show-CategoriesUI {
+function Install-App {
+    param($appId, $appName, $appList, $currentIndex, $totalApps)
+    
+    $statusLabel.Text = "Installing $appName..."
+    $form.Refresh()
+    
+    $process = Start-Process -FilePath "winget" -ArgumentList "install --id $appId --exact --silent --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity" -Wait -PassThru -NoNewWindow
+    
+    if ($process.ExitCode -eq 0) {
+        Update-Progress -Current $currentIndex -Total $totalApps -Message "Installed $appName"
+    } else {
+        $statusLabel.Text = "Failed to install $appName"
+        $form.Refresh()
+        Start-Sleep -Milliseconds 1000
+    }
+}
+
+function Show-Categories {
+    $contentPanel.Visible = $true
+    $backBtn.Visible = $true
+    $centerPanel.Visible = $false
+    $logo.Visible = $false
+    $toolbox.Visible = $false
     $contentPanel.Controls.Clear()
     
     $title = New-Object System.Windows.Forms.Label
-    $title.Text = "APP CATEGORIES MENU"
+    $title.Text = "SELECT CATEGORY"
     $title.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
-    $title.ForeColor = "#e6edf3"
+    $title.ForeColor = "#ffffff"
     $title.Size = New-Object System.Drawing.Size(400, 40)
-    $title.Location = New-Object System.Drawing.Point(370, 10)
+    $title.Location = New-Object System.Drawing.Point(360, 10)
     $contentPanel.Controls.Add($title)
     
-    $backBtn = New-Object System.Windows.Forms.Button
-    $backBtn.Text = "← BACK"
-    $backBtn.Size = New-Object System.Drawing.Size(100, 30)
-    $backBtn.Location = New-Object System.Drawing.Point(20, 10)
-    $backBtn.BackColor = "#30363d"
-    $backBtn.ForeColor = "#e6edf3"
-    $backBtn.FlatStyle = "Flat"
-    $backBtn.Cursor = "Hand"
-    $backBtn.Add_Click({ Show-MainMenuUI })
-    $contentPanel.Controls.Add($backBtn)
-    
     $categories = @(
-        @{Name="Browsers"; X=50; Y=70},
-        @{Name="File Tools"; X=400; Y=70},
-        @{Name="Dev Tools"; X=750; Y=70},
-        @{Name=".NET Tools"; X=50; Y=190},
-        @{Name="Communication"; X=400; Y=190},
-        @{Name="Gaming Apps"; X=750; Y=190},
-        @{Name="Microsoft Apps"; X=50; Y=310},
-        @{Name="Media Apps"; X=400; Y=310},
-        @{Name="Productivity"; X=750; Y=310}
+        @{Name="BROWSERS"; X=100; Y=60},
+        @{Name="FILE TOOLS"; X=450; Y=60},
+        @{Name="DEV TOOLS"; X=800; Y=60},
+        @{Name=".NET TOOLS"; X=100; Y=140},
+        @{Name="COMMUNICATION"; X=450; Y=140},
+        @{Name="GAMING APPS"; X=800; Y=140},
+        @{Name="MICROSOFT APPS"; X=100; Y=220},
+        @{Name="MEDIA APPS"; X=450; Y=220},
+        @{Name="PRODUCTIVITY"; X=800; Y=220}
     )
     
     foreach ($cat in $categories) {
         $btn = New-Object System.Windows.Forms.Button
         $btn.Text = $cat.Name
-        $btn.Size = New-Object System.Drawing.Size(300, 80)
+        $btn.Size = New-Object System.Drawing.Size(300, 60)
         $btn.Location = New-Object System.Drawing.Point($cat.X, $cat.Y)
-        $btn.BackColor = "#2d2d2d"
-        $btn.ForeColor = "#e6edf3"
+        $btn.BackColor = "#1e3a6b"
+        $btn.ForeColor = "#ffffff"
         $btn.FlatStyle = "Flat"
+        $btn.FlatAppearance.BorderSize = 0
         $btn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
         $btn.Cursor = "Hand"
+        $btn.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $btn.Width, $btn.Height), 10))
         
         switch ($cat.Name) {
-            "Browsers" { $btn.Add_Click({ Show-BrowsersUI }) }
-            "File Tools" { $btn.Add_Click({ Show-FileToolsUI }) }
-            "Dev Tools" { $btn.Add_Click({ Show-DevToolsUI }) }
-            ".NET Tools" { $btn.Add_Click({ Show-DotNetUI }) }
-            "Communication" { $btn.Add_Click({ Show-CommunicationUI }) }
-            "Gaming Apps" { $btn.Add_Click({ Show-GamingUI }) }
-            "Microsoft Apps" { $btn.Add_Click({ Show-MicrosoftUI }) }
-            "Media Apps" { $btn.Add_Click({ Show-MediaUI }) }
-            "Productivity" { $btn.Add_Click({ Show-ProductivityUI }) }
+            "BROWSERS" { $btn.Add_Click({ Show-AppGrid "BROWSERS" @("Google Chrome","Brave","Firefox","Edge","Thorium","Waterfox","LibreWolf","Floorp") @("Google.Chrome","Brave.Brave","Mozilla.Firefox","Microsoft.Edge","Alex313031.Thorium","Waterfox.Waterfox","LibreWolf.LibreWolf","Floorp.Floorp") }) }
+            "FILE TOOLS" { $btn.Add_Click({ Show-AppGrid "FILE TOOLS" @("WinRAR","7-Zip") @("RARLab.WinRAR","7zip.7zip") }) }
+            "DEV TOOLS" { $btn.Add_Click({ Show-AppGrid "DEV TOOLS" @("VS Code","Notepad++","Sublime Text","Git","GitHub Desktop","PowerShell 7","Docker") @("Microsoft.VisualStudioCode","Notepad++.Notepad++","SublimeHQ.SublimeText","Git.Git","GitHub.GitHubDesktop","Microsoft.PowerShell","Docker.DockerDesktop") }) }
+            ".NET TOOLS" { $btn.Add_Click({ Show-AppGrid ".NET TOOLS" @(".NET SDK 8",".NET Runtime 8",".NET Desktop 8",".NET SDK 7",".NET Runtime 7") @("Microsoft.DotNet.SDK.8","Microsoft.DotNet.Runtime.8","Microsoft.DotNet.DesktopRuntime.8","Microsoft.DotNet.SDK.7","Microsoft.DotNet.Runtime.7") }) }
+            "COMMUNICATION" { $btn.Add_Click({ Show-AppGrid "COMMUNICATION" @("Telegram","Discord","WhatsApp","Slack","Zoom") @("Telegram.TelegramDesktop","Discord.Discord","WhatsApp.WhatsApp","SlackTechnologies.Slack","Zoom.Zoom") }) }
+            "GAMING APPS" { $btn.Add_Click({ Show-AppGrid "GAMING APPS" @("Steam","Epic Games","Ubisoft","EA Desktop") @("Valve.Steam","EpicGames.EpicGamesLauncher","Ubisoft.Connect","ElectronicArts.EADesktop") }) }
+            "MICROSOFT APPS" { $btn.Add_Click({ Show-AppGrid "MICROSOFT APPS" @("Windows Terminal","PowerToys","Microsoft Office","Microsoft Store") @("Microsoft.WindowsTerminal","Microsoft.PowerToys","Microsoft.Office","Microsoft.Store") }) }
+            "MEDIA APPS" { $btn.Add_Click({ Show-AppGrid "MEDIA APPS" @("VLC Player","OBS Studio","Handbrake") @("VideoLAN.VLC","OBSProject.OBSStudio","Handbrake.Handbrake") }) }
+            "PRODUCTIVITY" { $btn.Add_Click({ Show-AppGrid "PRODUCTIVITY" @("Obsidian","Notion","AnyDesk","TeamViewer") @("Obsidian.Obsidian","Notion.Notion","AnyDeskSoftwareGmbH.AnyDesk","TeamViewer.TeamViewer") }) }
         }
         
         $contentPanel.Controls.Add($btn)
     }
+    
+    $backBtn.Add_Click({
+        $contentPanel.Visible = $false
+        $backBtn.Visible = $false
+        $centerPanel.Visible = $true
+        $logo.Visible = $true
+        $toolbox.Visible = $true
+        $progressBar.Value = 0
+        $statusLabel.Text = "Ready"
+    })
 }
 
-function Show-AppGrid($title, $apps, $appIds) {
+function Show-AppGrid {
+    param($title, $apps, $appIds)
+    
     $contentPanel.Controls.Clear()
     
     $titleLabel = New-Object System.Windows.Forms.Label
     $titleLabel.Text = $title
     $titleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
-    $titleLabel.ForeColor = "#e6edf3"
-    $titleLabel.Size = New-Object System.Drawing.Size(500, 40)
-    $titleLabel.Location = New-Object System.Drawing.Point(320, 10)
+    $titleLabel.ForeColor = "#ffffff"
+    $titleLabel.Size = New-Object System.Drawing.Size(400, 40)
+    $titleLabel.Location = New-Object System.Drawing.Point(360, 10)
     $contentPanel.Controls.Add($titleLabel)
-    
-    $backBtn = New-Object System.Windows.Forms.Button
-    $backBtn.Text = "← BACK"
-    $backBtn.Size = New-Object System.Drawing.Size(100, 30)
-    $backBtn.Location = New-Object System.Drawing.Point(20, 10)
-    $backBtn.BackColor = "#30363d"
-    $backBtn.ForeColor = "#e6edf3"
-    $backBtn.FlatStyle = "Flat"
-    $backBtn.Cursor = "Hand"
-    $backBtn.Add_Click({ Show-CategoriesUI })
-    $contentPanel.Controls.Add($backBtn)
     
     $installAllBtn = New-Object System.Windows.Forms.Button
     $installAllBtn.Text = "INSTALL ALL"
-    $installAllBtn.Size = New-Object System.Drawing.Size(120, 30)
-    $installAllBtn.Location = New-Object System.Drawing.Point(1000, 10)
-    $installAllBtn.BackColor = "#d29922"
-    $installAllBtn.ForeColor = "Black"
+    $installAllBtn.Size = New-Object System.Drawing.Size(150, 35)
+    $installAllBtn.Location = New-Object System.Drawing.Point(900, 10)
+    $installAllBtn.BackColor = "#4a9eff"
+    $installAllBtn.ForeColor = "#ffffff"
     $installAllBtn.FlatStyle = "Flat"
+    $installAllBtn.FlatAppearance.BorderSize = 0
+    $installAllBtn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
     $installAllBtn.Cursor = "Hand"
+    $installAllBtn.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $installAllBtn.Width, $installAllBtn.Height), 8))
     $installAllBtn.Add_Click({
-        for ($i = 0; $i -lt $apps.Count; $i++) {
-            Install-App -appId $appIds[$i] -appName $apps[$i] -outputBox $statusBox
+        $progressBar.Value = 0
+        $total = $apps.Count
+        for ($i = 0; $i -lt $total; $i++) {
+            Install-App -appId $appIds[$i] -appName $apps[$i] -appList $apps -currentIndex ($i + 1) -totalApps $total
         }
+        $statusLabel.Text = "All installations completed"
+        $progressBar.Value = 100
     })
     $contentPanel.Controls.Add($installAllBtn)
     
-    $x = 50
-    $y = 70
+    $x = 100
+    $y = 60
     $col = 0
     
     for ($i = 0; $i -lt $apps.Count; $i++) {
         $panel = New-Object System.Windows.Forms.Panel
-        $panel.Size = New-Object System.Drawing.Size(250, 100)
+        $panel.Size = New-Object System.Drawing.Size(300, 100)
         $panel.Location = New-Object System.Drawing.Point($x, $y)
-        $panel.BackColor = "#2d2d2d"
-        $panel.BorderStyle = "FixedSingle"
+        $panel.BackColor = "#0a1929"
+        $panel.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $panel.Width, $panel.Height), 10))
         
         $nameLabel = New-Object System.Windows.Forms.Label
         $nameLabel.Text = $apps[$i]
-        $nameLabel.Size = New-Object System.Drawing.Size(230, 30)
+        $nameLabel.Size = New-Object System.Drawing.Size(280, 30)
         $nameLabel.Location = New-Object System.Drawing.Point(10, 10)
-        $nameLabel.ForeColor = "#e6edf3"
+        $nameLabel.ForeColor = "#ffffff"
         $nameLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
         $panel.Controls.Add($nameLabel)
         
         $installBtn = New-Object System.Windows.Forms.Button
         $installBtn.Text = "INSTALL"
-        $installBtn.Size = New-Object System.Drawing.Size(100, 30)
-        $installBtn.Location = New-Object System.Drawing.Point(70, 50)
-        $installBtn.BackColor = "#2f81f7"
-        $installBtn.ForeColor = "White"
+        $installBtn.Size = New-Object System.Drawing.Size(120, 35)
+        $installBtn.Location = New-Object System.Drawing.Point(90, 50)
+        $installBtn.BackColor = "#4a9eff"
+        $installBtn.ForeColor = "#ffffff"
         $installBtn.FlatStyle = "Flat"
+        $installBtn.FlatAppearance.BorderSize = 0
+        $installBtn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
         $installBtn.Cursor = "Hand"
+        $installBtn.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $installBtn.Width, $installBtn.Height), 8))
         $installBtn.Tag = @($appIds[$i], $apps[$i])
         $installBtn.Add_Click({
             $tag = $this.Tag
-            Install-App -appId $tag[0] -appName $tag[1] -outputBox $statusBox
+            $progressBar.Value = 0
+            Install-App -appId $tag[0] -appName $tag[1] -appList @($tag[1]) -currentIndex 1 -totalApps 1
+            $progressBar.Value = 100
         })
         $panel.Controls.Add($installBtn)
         
         $contentPanel.Controls.Add($panel)
         
         $col++
-        if ($col -eq 4) {
+        if ($col -eq 3) {
             $col = 0
-            $x = 50
+            $x = 100
             $y += 120
         } else {
-            $x += 270
+            $x += 320
         }
     }
 }
 
-function Show-BrowsersUI {
-    $browsers = @(
-        "Google Chrome", "Brave Browser", "Mozilla Firefox",
-        "Microsoft Edge", "Thorium Browser", "Waterfox",
-        "LibreWolf", "Floorp Browser"
-    )
-    
-    $browserIds = @(
-        "Google.Chrome", "Brave.Brave", "Mozilla.Firefox",
-        "Microsoft.Edge", "Alex313031.Thorium", "Waterfox.Waterfox",
-        "LibreWolf.LibreWolf", "Floorp.Floorp"
-    )
-    
-    Show-AppGrid "BROWSERS SELECTION" $browsers $browserIds
-}
-
-function Show-FileToolsUI {
-    $tools = @("WinRAR", "7-Zip")
-    $toolIds = @("RARLab.WinRAR", "7zip.7zip")
-    Show-AppGrid "FILE TOOLS" $tools $toolIds
-}
-
-function Show-DevToolsUI {
-    $tools = @(
-        "VS Code", "Notepad++", "Sublime Text",
-        "Git", "GitHub Desktop", "PowerShell 7", "Docker"
-    )
-    
-    $toolIds = @(
-        "Microsoft.VisualStudioCode", "Notepad++.Notepad++", "SublimeHQ.SublimeText",
-        "Git.Git", "GitHub.GitHubDesktop", "Microsoft.PowerShell", "Docker.DockerDesktop"
-    )
-    
-    Show-AppGrid "DEV TOOLS" $tools $toolIds
-}
-
-function Show-DotNetUI {
-    $tools = @(".NET SDK 8", ".NET Runtime 8", ".NET Desktop 8", ".NET SDK 7", ".NET Runtime 7")
-    $toolIds = @(
-        "Microsoft.DotNet.SDK.8", "Microsoft.DotNet.Runtime.8", "Microsoft.DotNet.DesktopRuntime.8",
-        "Microsoft.DotNet.SDK.7", "Microsoft.DotNet.Runtime.7"
-    )
-    
-    Show-AppGrid ".NET TOOLS" $tools $toolIds
-}
-
-function Show-CommunicationUI {
-    $apps = @("Telegram", "Discord", "WhatsApp", "Slack", "Zoom")
-    $appIds = @(
-        "Telegram.TelegramDesktop", "Discord.Discord", "WhatsApp.WhatsApp",
-        "SlackTechnologies.Slack", "Zoom.Zoom"
-    )
-    
-    Show-AppGrid "COMMUNICATION APPS" $apps $appIds
-}
-
-function Show-GamingUI {
-    $apps = @("Steam", "Epic Games", "Ubisoft", "EA Desktop")
-    $appIds = @(
-        "Valve.Steam", "EpicGames.EpicGamesLauncher",
-        "Ubisoft.Connect", "ElectronicArts.EADesktop"
-    )
-    
-    Show-AppGrid "GAMING APPS" $apps $appIds
-}
-
-function Show-MicrosoftUI {
-    $apps = @("Windows Terminal", "PowerToys", "Microsoft Office", "Microsoft Store")
-    $appIds = @(
-        "Microsoft.WindowsTerminal", "Microsoft.PowerToys",
-        "Microsoft.Office", "Microsoft.Store"
-    )
-    
-    Show-AppGrid "MICROSOFT APPS" $apps $appIds
-}
-
-function Show-MediaUI {
-    $apps = @("VLC Player", "OBS Studio", "Handbrake")
-    $appIds = @("VideoLAN.VLC", "OBSProject.OBSStudio", "Handbrake.Handbrake")
-    
-    Show-AppGrid "MEDIA APPS" $apps $appIds
-}
-
-function Show-ProductivityUI {
-    $tools = @("Obsidian", "Notion", "AnyDesk", "TeamViewer")
-    $toolIds = @(
-        "Obsidian.Obsidian", "Notion.Notion",
-        "AnyDeskSoftwareGmbH.AnyDesk", "TeamViewer.TeamViewer"
-    )
-    
-    Show-AppGrid "PRODUCTIVITY TOOLS" $tools $toolIds
-}
-
-function Invoke-FullFixOsPresetUI {
+function Show-FixOsPreset {
+    $contentPanel.Visible = $true
+    $backBtn.Visible = $true
+    $centerPanel.Visible = $false
+    $logo.Visible = $false
+    $toolbox.Visible = $false
     $contentPanel.Controls.Clear()
     
     $title = New-Object System.Windows.Forms.Label
     $title.Text = "RUN FIXOS PRESET"
     $title.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
-    $title.ForeColor = "#e6edf3"
+    $title.ForeColor = "#ffffff"
     $title.Size = New-Object System.Drawing.Size(400, 40)
-    $title.Location = New-Object System.Drawing.Point(370, 50)
+    $title.Location = New-Object System.Drawing.Point(360, 30)
     $contentPanel.Controls.Add($title)
     
     $message = New-Object System.Windows.Forms.Label
-    $message.Text = "This will run FixOs installer"
+    $message.Text = "This will run the FixOs installer script"
     $message.Font = New-Object System.Drawing.Font("Segoe UI", 12)
-    $message.ForeColor = "#e6edf3"
-    $message.Size = New-Object System.Drawing.Size(300, 30)
-    $message.Location = New-Object System.Drawing.Point(420, 120)
+    $message.ForeColor = "#ffffff"
+    $message.Size = New-Object System.Drawing.Size(400, 30)
+    $message.Location = New-Object System.Drawing.Point(360, 100)
     $contentPanel.Controls.Add($message)
     
     $confirmLabel = New-Object System.Windows.Forms.Label
     $confirmLabel.Text = "Continue?"
-    $confirmLabel.Font = New-Object System.Drawing.Font("Segoe UI", 12)
-    $confirmLabel.ForeColor = "#e6edf3"
-    $confirmLabel.Size = New-Object System.Drawing.Size(100, 30)
-    $confirmLabel.Location = New-Object System.Drawing.Point(420, 170)
+    $confirmLabel.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
+    $confirmLabel.ForeColor = "#ffffff"
+    $confirmLabel.Size = New-Object System.Drawing.Size(200, 40)
+    $confirmLabel.Location = New-Object System.Drawing.Point(460, 160)
     $contentPanel.Controls.Add($confirmLabel)
     
     $yesBtn = New-Object System.Windows.Forms.Button
     $yesBtn.Text = "YES"
-    $yesBtn.Size = New-Object System.Drawing.Size(100, 40)
-    $yesBtn.Location = New-Object System.Drawing.Point(520, 165)
-    $yesBtn.BackColor = "#3fb950"
-    $yesBtn.ForeColor = "Black"
+    $yesBtn.Size = New-Object System.Drawing.Size(150, 50)
+    $yesBtn.Location = New-Object System.Drawing.Point(360, 220)
+    $yesBtn.BackColor = "#4a9eff"
+    $yesBtn.ForeColor = "#ffffff"
     $yesBtn.FlatStyle = "Flat"
-    $yesBtn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+    $yesBtn.FlatAppearance.BorderSize = 0
+    $yesBtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
     $yesBtn.Cursor = "Hand"
+    $yesBtn.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $yesBtn.Width, $yesBtn.Height), 10))
     $yesBtn.Add_Click({
-        $statusBox.Text = "Running FixOs..."
-        $statusBox.ForeColor = "#d29922"
+        $progressBar.Value = 10
+        $statusLabel.Text = "Running FixOs..."
         $form.Refresh()
         
         try {
+            $progressBar.Value = 30
             irm "DevelopmentSpace.pages.dev/FixOs.ps1" | iex
-            $statusBox.Text = "FixOs executed successfully!"
-            $statusBox.ForeColor = "#3fb950"
+            $progressBar.Value = 100
+            $statusLabel.Text = "FixOs completed successfully"
         } catch {
-            $statusBox.Text = "Error running FixOs"
-            $statusBox.ForeColor = "#f85149"
+            $progressBar.Value = 0
+            $statusLabel.Text = "Error running FixOs"
         }
-        
-        $statusBox.Text = "FixOs preset completed"
     })
     
     $noBtn = New-Object System.Windows.Forms.Button
     $noBtn.Text = "NO"
-    $noBtn.Size = New-Object System.Drawing.Size(100, 40)
-    $noBtn.Location = New-Object System.Drawing.Point(630, 165)
-    $noBtn.BackColor = "#f85149"
-    $noBtn.ForeColor = "White"
+    $noBtn.Size = New-Object System.Drawing.Size(150, 50)
+    $noBtn.Location = New-Object System.Drawing.Point(570, 220)
+    $noBtn.BackColor = "#1e3a6b"
+    $noBtn.ForeColor = "#ffffff"
     $noBtn.FlatStyle = "Flat"
-    $noBtn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+    $noBtn.FlatAppearance.BorderSize = 0
+    $noBtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
     $noBtn.Cursor = "Hand"
-    $noBtn.Add_Click({ Show-MainMenuUI })
+    $noBtn.Region = [System.Drawing.Region]::FromHrunc((New-Object System.Drawing.Drawing2D.GraphicsPath).GetHrunc(New-Object System.Drawing.Rectangle(0, 0, $noBtn.Width, $noBtn.Height), 10))
+    $noBtn.Add_Click({
+        $contentPanel.Visible = $false
+        $backBtn.Visible = $false
+        $centerPanel.Visible = $true
+        $logo.Visible = $true
+        $toolbox.Visible = $true
+        $progressBar.Value = 0
+        $statusLabel.Text = "Ready"
+    })
     
     $contentPanel.Controls.AddRange(@($yesBtn, $noBtn))
-    
-    $backBtn = New-Object System.Windows.Forms.Button
-    $backBtn.Text = "← BACK"
-    $backBtn.Size = New-Object System.Drawing.Size(100, 30)
-    $backBtn.Location = New-Object System.Drawing.Point(20, 20)
-    $backBtn.BackColor = "#30363d"
-    $backBtn.ForeColor = "#e6edf3"
-    $backBtn.FlatStyle = "Flat"
-    $backBtn.Cursor = "Hand"
-    $backBtn.Add_Click({ Show-MainMenuUI })
-    $contentPanel.Controls.Add($backBtn)
 }
 
-$appsBtn.Add_Click({ Show-CategoriesUI })
-$fixosBtn.Add_Click({ Invoke-FullFixOsPresetUI })
-$exitBtn.Add_Click({ $form.Close() })
+$appsBtn.Add_Click({ Show-Categories })
+$fixosBtn.Add_Click({ Show-FixOsPreset })
 
-Show-MainMenuUI
+$backBtn.Add_Click({
+    $contentPanel.Visible = $false
+    $backBtn.Visible = $false
+    $centerPanel.Visible = $true
+    $logo.Visible = $true
+    $toolbox.Visible = $true
+    $progressBar.Value = 0
+    $statusLabel.Text = "Ready"
+})
 
-$form.Controls.Add($mainPanel)
 $form.ShowDialog()
