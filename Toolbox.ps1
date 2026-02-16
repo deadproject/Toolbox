@@ -1,828 +1,523 @@
 $ToolboxConfig = @{
-    Version = "2.0.0"
+    Version = "1.0.0"
     Author = "FixOs Development Team - © 2026 Devspace. All rights reserved"
 }
 
+. "$PSScriptRoot\Core\Utilities.ps1"
+
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "`n[!] Administrator required" -ForegroundColor Red
-    Start-Sleep -Seconds 2
-    exit
+    Write-Host "Toolbox requires Administrator privileges. Please run as Administrator." -ForegroundColor Red
+    Start-Sleep -Seconds 3
+    Exit 1
 }
 
-# Create temp HTML file
-$htmlPath = "$env:TEMP\fixos_toolbox.html"
-
-$htmlContent = @"
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FixOs Toolbox v$($ToolboxConfig.Version)</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            animation: gradientBG 15s ease infinite;
-            background-size: 400% 400%;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .container {
-            max-width: 1400px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 40px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-            animation: slideUp 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            transform-origin: center;
-        }
-
-        @keyframes slideUp {
-            0% {
-                opacity: 0;
-                transform: translateY(100px) scale(0.9);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            padding: 30px;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .logo {
-            font-family: 'Consolas', monospace;
-            font-size: 24px;
-            font-weight: bold;
-            line-height: 1.4;
-            position: relative;
-            z-index: 1;
-            text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
-            animation: glow 2s ease-in-out infinite;
-        }
-
-        @keyframes glow {
-            0%, 100% { text-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
-            50% { text-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
-        }
-
-        .logo span {
-            display: inline-block;
-            animation: bounce 2s ease infinite;
-            animation-delay: calc(var(--i) * 0.1s);
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .version {
-            position: relative;
-            z-index: 1;
-            font-size: 14px;
-            opacity: 0.8;
-            margin-top: 10px;
-            letter-spacing: 2px;
-        }
-
-        .nav {
-            display: flex;
-            padding: 20px 30px;
-            background: white;
-            border-bottom: 1px solid #eaeaea;
-            gap: 10px;
-        }
-
-        .nav-btn {
-            padding: 12px 24px;
-            border: none;
-            background: transparent;
-            color: #666;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 30px;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nav-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(102, 126, 234, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .nav-btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .nav-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 10px 20px -5px rgba(102, 126, 234, 0.5);
-        }
-
-        .nav-btn:hover:not(.active) {
-            background: #f0f0f0;
-            transform: translateY(-2px);
-        }
-
-        .main-content {
-            padding: 30px;
-            min-height: 500px;
-        }
-
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .category-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .category-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .category-card:hover::after {
-            left: 100%;
-        }
-
-        .category-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 30px -10px rgba(102, 126, 234, 0.3);
-        }
-
-        .category-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #1a1a2e;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eaeaea;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .category-title .count {
-            background: #667eea;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-        }
-
-        .app-list {
-            max-height: 300px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-
-        .app-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .app-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        .app-list::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 10px;
-        }
-
-        .app-item {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            margin: 5px 0;
-            border-radius: 10px;
-            transition: all 0.2s;
-            animation: slideIn 0.3s ease-out;
-            animation-fill-mode: both;
-        }
-
-        .app-item:hover {
-            background: #f8f9fa;
-            transform: translateX(5px);
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .app-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            margin-right: 10px;
-            cursor: pointer;
-            accent-color: #667eea;
-            transition: all 0.2s;
-        }
-
-        .app-item input[type="checkbox"]:checked {
-            transform: scale(1.1);
-        }
-
-        .app-item label {
-            flex: 1;
-            cursor: pointer;
-            font-size: 14px;
-            color: #4a4a4a;
-            transition: color 0.2s;
-        }
-
-        .app-item:hover label {
-            color: #667eea;
-        }
-
-        .bottom-bar {
-            background: white;
-            padding: 20px 30px;
-            border-top: 1px solid #eaeaea;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-        }
-
-        .action-btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .action-btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255,255,255,0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
-        }
-
-        .action-btn:focus:not(:active)::after {
-            animation: ripple 1s ease-out;
-        }
-
-        @keyframes ripple {
-            0% {
-                transform: scale(0, 0);
-                opacity: 1;
-            }
-            20% {
-                transform: scale(25, 25);
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-                transform: scale(40, 40);
-            }
-        }
-
-        .install-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            box-shadow: 0 10px 20px -5px rgba(40, 167, 69, 0.4);
-        }
-
-        .install-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px -5px rgba(40, 167, 69, 0.6);
-        }
-
-        .fixos-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 10px 20px -5px rgba(102, 126, 234, 0.4);
-        }
-
-        .fixos-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px -5px rgba(102, 126, 234, 0.6);
-        }
-
-        .select-btn {
-            background: #f8f9fa;
-            color: #666;
-            border: 1px solid #eaeaea;
-        }
-
-        .select-btn:hover {
-            background: #eaeaea;
-            transform: translateY(-2px);
-        }
-
-        .status {
-            flex: 1;
-            text-align: right;
-            color: #666;
-            font-size: 14px;
-            padding: 10px 20px;
-            background: #f8f9fa;
-            border-radius: 30px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
-
-        .progress-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #28a745, #20c997, #667eea, #764ba2);
-            background-size: 300% 100%;
-            transition: width 0.3s ease;
-            animation: gradientMove 3s ease infinite;
-        }
-
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            border-radius: 30px;
-            padding: 15px 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            z-index: 1000;
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast.success {
-            background: #28a745;
-            color: white;
-        }
-
-        .toast.error {
-            background: #dc3545;
-            color: white;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">
-                ███████╗██╗██╗  ██╗  ██████╗ ███████╗<br>
-                ██╔════╝██║╚██╗██╔╝ ██╔═══██╗██╔════╝<br>
-                █████╗  ██║ ╚███╔╝  ██║   ██║███████╗<br>
-                ██╔══╝  ██║ ██╔██╗  ██║   ██║╚════██║<br>
-                ██║     ██║██╔╝ ██╗ ╚██████╔╝███████║<br>
-                ╚═╝     ╚═╝╚═╝  ╚═╝  ╚═════╝ ╚══════╝
-            </div>
-            <div class="version">TOOLBOX v$($ToolboxConfig.Version)</div>
-        </div>
-
-        <div class="nav">
-            <button class="nav-btn active" onclick="showCategory('all')">ALL APPS</button>
-            <button class="nav-btn" onclick="showCategory('browsers')">BROWSERS</button>
-            <button class="nav-btn" onclick="showCategory('dev')">DEV TOOLS</button>
-            <button class="nav-btn" onclick="showCategory('communication')">COMMUNICATION</button>
-            <button class="nav-btn" onclick="showCategory('gaming')">GAMING</button>
-            <button class="nav-btn" onclick="showCategory('media')">MEDIA</button>
-            <button class="nav-btn" onclick="showCategory('utilities')">UTILITIES</button>
-        </div>
-
-        <div class="main-content" id="mainContent">
-            <!-- Dynamic content will be loaded here -->
-        </div>
-
-        <div class="bottom-bar">
-            <button class="action-btn select-btn" onclick="selectAll()">SELECT ALL</button>
-            <button class="action-btn select-btn" onclick="deselectAll()">DESELECT ALL</button>
-            <button class="action-btn install-btn" onclick="installSelected()">INSTALL</button>
-            <button class="action-btn fixos-btn" onclick="runFixOs()">RUN FIXOS</button>
-            <div class="status" id="status">✓ Ready</div>
-            <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
-        </div>
-    </div>
-
-    <div class="toast" id="toast"></div>
-
-    <script>
-        const categories = {
-            browsers: {
-                name: 'Browsers',
-                apps: [
-                    'Google Chrome', 'Brave', 'Firefox', 'Edge', 'Thorium', 'LibreWolf'
-                ]
-            },
-            dev: {
-                name: 'Development Tools',
-                apps: [
-                    'VS Code', 'Git', 'Docker', 'Python', 'Node.js', 'PowerShell 7', 'Windows Terminal', 'Notepad++'
-                ]
-            },
-            communication: {
-                name: 'Communication',
-                apps: [
-                    'Discord', 'Telegram', 'WhatsApp', 'Slack', 'Zoom', 'Teams'
-                ]
-            },
-            gaming: {
-                name: 'Gaming',
-                apps: [
-                    'Steam', 'Epic Games', 'Ubisoft Connect', 'EA Desktop', 'GOG Galaxy', 'Battle.net'
-                ]
-            },
-            media: {
-                name: 'Media',
-                apps: [
-                    'VLC', 'Spotify', 'OBS Studio', 'GIMP', 'HandBrake', 'Audacity'
-                ]
-            },
-            utilities: {
-                name: 'Utilities',
-                apps: [
-                    '7-Zip', 'PowerToys', 'WinRAR', 'CPU-Z', 'HWMonitor', 'CrystalDiskInfo'
-                ]
-            }
-        };
-
-        const appIds = {
-            'Google Chrome': 'Google.Chrome',
-            'Brave': 'Brave.Brave',
-            'Firefox': 'Mozilla.Firefox',
-            'Edge': 'Microsoft.Edge',
-            'Thorium': 'Alex313031.Thorium',
-            'LibreWolf': 'LibreWolf.LibreWolf',
-            'VS Code': 'Microsoft.VisualStudioCode',
-            'Git': 'Git.Git',
-            'Docker': 'Docker.DockerDesktop',
-            'Python': 'Python.Python.3',
-            'Node.js': 'OpenJS.NodeJS',
-            'PowerShell 7': 'Microsoft.PowerShell',
-            'Windows Terminal': 'Microsoft.WindowsTerminal',
-            'Notepad++': 'Notepad++.Notepad++',
-            'Discord': 'Discord.Discord',
-            'Telegram': 'Telegram.TelegramDesktop',
-            'WhatsApp': 'WhatsApp.WhatsApp',
-            'Slack': 'SlackTechnologies.Slack',
-            'Zoom': 'Zoom.Zoom',
-            'Teams': 'Microsoft.Teams',
-            'Steam': 'Valve.Steam',
-            'Epic Games': 'EpicGames.EpicGamesLauncher',
-            'Ubisoft Connect': 'Ubisoft.Connect',
-            'EA Desktop': 'ElectronicArts.EADesktop',
-            'GOG Galaxy': 'GOG.Galaxy',
-            'Battle.net': 'Battle.net.Battle.net',
-            'VLC': 'VideoLAN.VLC',
-            'Spotify': 'Spotify.Spotify',
-            'OBS Studio': 'OBSProject.OBSStudio',
-            'GIMP': 'GIMP.GIMP',
-            'HandBrake': 'Handbrake.Handbrake',
-            'Audacity': 'Audacity.Audacity',
-            '7-Zip': '7zip.7zip',
-            'PowerToys': 'Microsoft.PowerToys',
-            'WinRAR': 'RARLab.WinRAR',
-            'CPU-Z': 'CPUID.CPU-Z',
-            'HWMonitor': 'CPUID.HWMonitor',
-            'CrystalDiskInfo': 'CrystalDewWorld.CrystalDiskInfo'
-        };
-
-        let currentCategory = 'all';
-        let selectedApps = new Set();
-
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast ${type} show`;
-            setTimeout(() => {
-                toast.className = 'toast';
-            }, 3000);
-        }
-
-        function updateStatus(message, type = 'success') {
-            const status = document.getElementById('status');
-            status.textContent = message;
-            status.style.animation = 'none';
-            status.offsetHeight;
-            status.style.animation = 'pulse 2s infinite';
-        }
-
-        function updateProgress(percent) {
-            document.getElementById('progressBar').style.width = percent + '%';
-        }
-
-        function renderCategory(category) {
-            currentCategory = category;
-            const content = document.getElementById('mainContent');
-            
-            if (category === 'all') {
-                let html = '<div class="categories-grid">';
-                for (let [key, cat] of Object.entries(categories)) {
-                    html += `
-                        <div class="category-card" onclick="toggleCategory('${key}')">
-                            <div class="category-title">
-                                ${cat.name}
-                                <span class="count">${cat.apps.length}</span>
-                            </div>
-                            <div class="app-list">
-                    `;
-                    
-                    cat.apps.forEach((app, index) => {
-                        const checked = selectedApps.has(app) ? 'checked' : '';
-                        html += `
-                            <div class="app-item" style="animation-delay: ${index * 0.05}s" onclick="event.stopPropagation()">
-                                <input type="checkbox" id="app-${app}" value="${app}" ${checked} onchange="toggleApp('${app}')">
-                                <label for="app-${app}">${app}</label>
-                            </div>
-                        `;
-                    });
-                    
-                    html += `
-                            </div>
-                        </div>
-                    `;
-                }
-                html += '</div>';
-                content.innerHTML = html;
-            } else {
-                const cat = categories[category];
-                let html = '<div class="categories-grid">';
-                html += `
-                    <div class="category-card" style="grid-column: 1 / -1;">
-                        <div class="category-title">
-                            ${cat.name}
-                            <span class="count">${cat.apps.length}</span>
-                        </div>
-                        <div class="app-list">
-                `;
-                
-                cat.apps.forEach((app, index) => {
-                    const checked = selectedApps.has(app) ? 'checked' : '';
-                    html += `
-                        <div class="app-item" style="animation-delay: ${index * 0.05}s">
-                            <input type="checkbox" id="app-${app}" value="${app}" ${checked} onchange="toggleApp('${app}')">
-                            <label for="app-${app}">${app}</label>
-                        </div>
-                    `;
-                });
-                
-                html += `
-                        </div>
-                    </div>
-                `;
-                html += '</div>';
-                content.innerHTML = html;
-            }
-
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.nav-btn[onclick*="${category}"]`).classList.add('active');
-        }
-
-        function showCategory(category) {
-            renderCategory(category);
-        }
-
-        function toggleApp(app) {
-            const checkbox = document.getElementById(`app-${app}`);
-            if (checkbox.checked) {
-                selectedApps.add(app);
-            } else {
-                selectedApps.delete(app);
-            }
-            updateStatus(`${selectedApps.size} apps selected`);
-        }
-
-        function selectAll() {
-            if (currentCategory === 'all') {
-                for (let cat of Object.values(categories)) {
-                    cat.apps.forEach(app => {
-                        selectedApps.add(app);
-                        const checkbox = document.getElementById(`app-${app}`);
-                        if (checkbox) checkbox.checked = true;
-                    });
-                }
-            } else {
-                categories[currentCategory].apps.forEach(app => {
-                    selectedApps.add(app);
-                    const checkbox = document.getElementById(`app-${app}`);
-                    if (checkbox) checkbox.checked = true;
-                });
-            }
-            updateStatus(`${selectedApps.size} apps selected`);
-        }
-
-        function deselectAll() {
-            selectedApps.clear();
-            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            updateStatus('No apps selected');
-        }
-
-        function installSelected() {
-            if (selectedApps.size === 0) {
-                showToast('No apps selected', 'error');
-                return;
-            }
-
-            const apps = Array.from(selectedApps);
-            showToast(`Installing ${apps.length} apps...`, 'success');
-            updateStatus('Installing...', 'warning');
-            updateProgress(10);
-
-            let completed = 0;
-            apps.forEach((app, index) => {
-                const id = appIds[app];
-                if (!id) {
-                    console.log(`No ID for ${app}`);
-                    completed++;
-                    updateProgress((completed / apps.length) * 100);
-                    return;
-                }
-
-                const command = `winget install --id ${id} --exact --silent --accept-package-agreements --accept-source-agreements`;
-                
-                fetch('http://localhost:3000/execute', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ command: command })
-                }).then(response => response.json())
-                .then(data => {
-                    completed++;
-                    updateProgress((completed / apps.length) * 100);
-                    
-                    if (completed === apps.length) {
-                        showToast(`✅ Installed ${apps.length} apps`, 'success');
-                        updateStatus('Ready');
-                        updateProgress(0);
-                    }
-                }).catch(err => {
-                    console.error(err);
-                    completed++;
-                    if (completed === apps.length) {
-                        showToast(`⚠️ Installation completed with errors`, 'error');
-                        updateStatus('Ready');
-                        updateProgress(0);
-                    }
-                });
-            });
-        }
-
-        function runFixOs() {
-            updateStatus('Running FixOs...', 'warning');
-            showToast('Running FixOs preset...', 'success');
-            updateProgress(50);
-            
-            fetch('http://localhost:3000/fixos', {
-                method: 'POST'
-            }).then(() => {
-                updateStatus('FixOs completed');
-                showToast('✅ FixOs completed', 'success');
-                updateProgress(0);
-            }).catch(() => {
-                updateStatus('FixOs failed');
-                showToast('❌ FixOs failed', 'error');
-                updateProgress(0);
-            });
-        }
-
-        function toggleCategory(category) {
-            showCategory(category);
-        }
-
-        // Initialize
-        renderCategory('all');
-    </script>
-</body>
-</html>
-"@
-
-
-$htmlContent | Out-File -FilePath $htmlPath -Encoding UTF8
-
-Write-Host "Starting FixOs Toolbox..." -ForegroundColor Cyan
-Write-Host "Opening browser..." -ForegroundColor Yellow
-
-Start-Process $htmlPath
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$form = New-Object System.Windows.Forms.Form
+$form.Text = "FixOs Toolbox v$($ToolboxConfig.Version)"
+$form.Size = New-Object System.Drawing.Size(1200, 800)
+$form.StartPosition = "CenterScreen"
+$form.BackColor = "#0d1117"
+$form.ForeColor = "#e6edf3"
+$form.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+
+function Center-Text($text) {
+    $width = $host.UI.RawUI.WindowSize.Width
+    $textLength = $text.Length
+    $padding = [math]::Max(0, ($width - $textLength) / 2)
+    return (" " * [math]::Floor($padding)) + $text
+}
+
+function Show-FixOsLogo {
+    $logoLines = @(
+        " ███████╗██╗██╗  ██╗  ██████╗ ███████╗ ",
+        " ██╔════╝██║╚██╗██╔╝ ██╔═══██╗██╔════╝ ",
+        " █████╗  ██║ ╚███╔╝  ██║   ██║███████╗ ",
+        " ██╔══╝  ██║ ██╔██╗  ██║   ██║╚════██║ ",
+        " ██║     ██║██╔╝ ██╗ ╚██████╔╝███████║ ",
+        " ╚═╝     ╚═╝╚═╝  ╚═╝  ╚═════╝ ╚══════╝ "
+    )
+    
+    $logoLabel = New-Object System.Windows.Forms.Label
+    $logoLabel.Text = [string]::Join([Environment]::NewLine, $logoLines)
+    $logoLabel.Font = New-Object System.Drawing.Font("Consolas", 14, [System.Drawing.FontStyle]::Bold)
+    $logoLabel.ForeColor = "#2f81f7"
+    $logoLabel.AutoSize = $true
+    $logoLabel.Location = New-Object System.Drawing.Point(20, 20)
+    return $logoLabel
+}
+
+function Install-App($appId, $appName, $outputBox) {
+    try {
+        $outputBox.Text = "Installing $appName..."
+        $outputBox.ForeColor = "#d29922"
+        $form.Refresh()
+        
+        $process = Start-Process -FilePath "winget" -ArgumentList "install --id $appId --exact --silent --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity" -Wait -PassThru -NoNewWindow
+        
+        if ($process.ExitCode -eq 0) {
+            $outputBox.Text = "✓ $appName installed successfully"
+            $outputBox.ForeColor = "#3fb950"
+        } else {
+            $outputBox.Text = "✗ Failed to install $appName"
+            $outputBox.ForeColor = "#f85149"
+        }
+    } catch {
+        $outputBox.Text = "✗ Error installing $appName"
+        $outputBox.ForeColor = "#f85149"
+    }
+    $form.Refresh()
+    Start-Sleep -Milliseconds 500
+}
+
+$mainPanel = New-Object System.Windows.Forms.Panel
+$mainPanel.Dock = "Fill"
+$mainPanel.Padding = New-Object System.Windows.Forms.Padding(20)
+$mainPanel.AutoScroll = $true
+
+$logo = Show-FixOsLogo
+$logo.Location = New-Object System.Drawing.Point(20, 20)
+$mainPanel.Controls.Add($logo)
+
+$versionLabel = New-Object System.Windows.Forms.Label
+$versionLabel.Text = "TOOLBOX v$($ToolboxConfig.Version)"
+$versionLabel.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+$versionLabel.ForeColor = "#e6edf3"
+$versionLabel.Size = New-Object System.Drawing.Size(200, 30)
+$versionLabel.Location = New-Object System.Drawing.Point(900, 60)
+$versionLabel.TextAlign = "MiddleRight"
+$mainPanel.Controls.Add($versionLabel)
+
+$menuPanel = New-Object System.Windows.Forms.Panel
+$menuPanel.Location = New-Object System.Drawing.Point(20, 180)
+$menuPanel.Size = New-Object System.Drawing.Size(1140, 60)
+
+$appsBtn = New-Object System.Windows.Forms.Button
+$appsBtn.Text = "APPS INSTALLER"
+$appsBtn.Size = New-Object System.Drawing.Size(200, 50)
+$appsBtn.Location = New-Object System.Drawing.Point(200, 5)
+$appsBtn.BackColor = "#2f81f7"
+$appsBtn.ForeColor = "White"
+$appsBtn.FlatStyle = "Flat"
+$appsBtn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+$appsBtn.Cursor = "Hand"
+
+$fixosBtn = New-Object System.Windows.Forms.Button
+$fixosBtn.Text = "RUN FIXOS PRESET"
+$fixosBtn.Size = New-Object System.Drawing.Size(200, 50)
+$fixosBtn.Location = New-Object System.Drawing.Point(450, 5)
+$fixosBtn.BackColor = "#d29922"
+$fixosBtn.ForeColor = "Black"
+$fixosBtn.FlatStyle = "Flat"
+$fixosBtn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+$fixosBtn.Cursor = "Hand"
+
+$exitBtn = New-Object System.Windows.Forms.Button
+$exitBtn.Text = "EXIT"
+$exitBtn.Size = New-Object System.Drawing.Size(200, 50)
+$exitBtn.Location = New-Object System.Drawing.Point(700, 5)
+$exitBtn.BackColor = "#f85149"
+$exitBtn.ForeColor = "White"
+$exitBtn.FlatStyle = "Flat"
+$exitBtn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+$exitBtn.Cursor = "Hand"
+
+$menuPanel.Controls.AddRange(@($appsBtn, $fixosBtn, $exitBtn))
+$mainPanel.Controls.Add($menuPanel)
+
+$contentPanel = New-Object System.Windows.Forms.Panel
+$contentPanel.Location = New-Object System.Drawing.Point(20, 260)
+$contentPanel.Size = New-Object System.Drawing.Size(1140, 450)
+$contentPanel.BackColor = "#161b22"
+$contentPanel.AutoScroll = $true
+$mainPanel.Controls.Add($contentPanel)
+
+$statusBox = New-Object System.Windows.Forms.TextBox
+$statusBox.Location = New-Object System.Drawing.Point(20, 720)
+$statusBox.Size = New-Object System.Drawing.Size(1140, 30)
+$statusBox.ReadOnly = $true
+$statusBox.BackColor = "#161b22"
+$statusBox.ForeColor = "#3fb950"
+$statusBox.BorderStyle = "None"
+$statusBox.Font = New-Object System.Drawing.Font("Consolas", 10)
+$statusBox.Text = "Ready"
+$mainPanel.Controls.Add($statusBox)
+
+function Show-MainMenuUI {
+    $contentPanel.Controls.Clear()
+    
+    $title = New-Object System.Windows.Forms.Label
+    $title.Text = "SELECT AN OPTION"
+    $title.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
+    $title.ForeColor = "#e6edf3"
+    $title.Size = New-Object System.Drawing.Size(400, 40)
+    $title.Location = New-Object System.Drawing.Point(370, 20)
+    $contentPanel.Controls.Add($title)
+    
+    $appsMainBtn = New-Object System.Windows.Forms.Button
+    $appsMainBtn.Text = "APPS INSTALLER"
+    $appsMainBtn.Size = New-Object System.Drawing.Size(300, 80)
+    $appsMainBtn.Location = New-Object System.Drawing.Point(420, 100)
+    $appsMainBtn.BackColor = "#2f81f7"
+    $appsMainBtn.ForeColor = "White"
+    $appsMainBtn.FlatStyle = "Flat"
+    $appsMainBtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
+    $appsMainBtn.Cursor = "Hand"
+    $appsMainBtn.Add_Click({
+        Show-CategoriesUI
+    })
+    
+    $fixosMainBtn = New-Object System.Windows.Forms.Button
+    $fixosMainBtn.Text = "RUN FIXOS PRESET"
+    $fixosMainBtn.Size = New-Object System.Drawing.Size(300, 80)
+    $fixosMainBtn.Location = New-Object System.Drawing.Point(420, 200)
+    $fixosMainBtn.BackColor = "#d29922"
+    $fixosMainBtn.ForeColor = "Black"
+    $fixosMainBtn.FlatStyle = "Flat"
+    $fixosMainBtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
+    $fixosMainBtn.Cursor = "Hand"
+    $fixosMainBtn.Add_Click({
+        Invoke-FullFixOsPresetUI
+    })
+    
+    $exitMainBtn = New-Object System.Windows.Forms.Button
+    $exitMainBtn.Text = "EXIT"
+    $exitMainBtn.Size = New-Object System.Drawing.Size(300, 80)
+    $exitMainBtn.Location = New-Object System.Drawing.Point(420, 300)
+    $exitMainBtn.BackColor = "#f85149"
+    $exitMainBtn.ForeColor = "White"
+    $exitMainBtn.FlatStyle = "Flat"
+    $exitMainBtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
+    $exitMainBtn.Cursor = "Hand"
+    $exitMainBtn.Add_Click({
+        $form.Close()
+    })
+    
+    $contentPanel.Controls.AddRange(@($appsMainBtn, $fixosMainBtn, $exitMainBtn))
+}
+
+function Show-CategoriesUI {
+    $contentPanel.Controls.Clear()
+    
+    $title = New-Object System.Windows.Forms.Label
+    $title.Text = "APP CATEGORIES MENU"
+    $title.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
+    $title.ForeColor = "#e6edf3"
+    $title.Size = New-Object System.Drawing.Size(400, 40)
+    $title.Location = New-Object System.Drawing.Point(370, 10)
+    $contentPanel.Controls.Add($title)
+    
+    $backBtn = New-Object System.Windows.Forms.Button
+    $backBtn.Text = "← BACK"
+    $backBtn.Size = New-Object System.Drawing.Size(100, 30)
+    $backBtn.Location = New-Object System.Drawing.Point(20, 10)
+    $backBtn.BackColor = "#30363d"
+    $backBtn.ForeColor = "#e6edf3"
+    $backBtn.FlatStyle = "Flat"
+    $backBtn.Cursor = "Hand"
+    $backBtn.Add_Click({ Show-MainMenuUI })
+    $contentPanel.Controls.Add($backBtn)
+    
+    $categories = @(
+        @{Name="Browsers"; X=50; Y=70},
+        @{Name="File Tools"; X=400; Y=70},
+        @{Name="Dev Tools"; X=750; Y=70},
+        @{Name=".NET Tools"; X=50; Y=190},
+        @{Name="Communication"; X=400; Y=190},
+        @{Name="Gaming Apps"; X=750; Y=190},
+        @{Name="Microsoft Apps"; X=50; Y=310},
+        @{Name="Media Apps"; X=400; Y=310},
+        @{Name="Productivity"; X=750; Y=310}
+    )
+    
+    foreach ($cat in $categories) {
+        $btn = New-Object System.Windows.Forms.Button
+        $btn.Text = $cat.Name
+        $btn.Size = New-Object System.Drawing.Size(300, 80)
+        $btn.Location = New-Object System.Drawing.Point($cat.X, $cat.Y)
+        $btn.BackColor = "#2d2d2d"
+        $btn.ForeColor = "#e6edf3"
+        $btn.FlatStyle = "Flat"
+        $btn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+        $btn.Cursor = "Hand"
+        
+        switch ($cat.Name) {
+            "Browsers" { $btn.Add_Click({ Show-BrowsersUI }) }
+            "File Tools" { $btn.Add_Click({ Show-FileToolsUI }) }
+            "Dev Tools" { $btn.Add_Click({ Show-DevToolsUI }) }
+            ".NET Tools" { $btn.Add_Click({ Show-DotNetUI }) }
+            "Communication" { $btn.Add_Click({ Show-CommunicationUI }) }
+            "Gaming Apps" { $btn.Add_Click({ Show-GamingUI }) }
+            "Microsoft Apps" { $btn.Add_Click({ Show-MicrosoftUI }) }
+            "Media Apps" { $btn.Add_Click({ Show-MediaUI }) }
+            "Productivity" { $btn.Add_Click({ Show-ProductivityUI }) }
+        }
+        
+        $contentPanel.Controls.Add($btn)
+    }
+}
+
+function Show-AppGrid($title, $apps, $appIds) {
+    $contentPanel.Controls.Clear()
+    
+    $titleLabel = New-Object System.Windows.Forms.Label
+    $titleLabel.Text = $title
+    $titleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
+    $titleLabel.ForeColor = "#e6edf3"
+    $titleLabel.Size = New-Object System.Drawing.Size(500, 40)
+    $titleLabel.Location = New-Object System.Drawing.Point(320, 10)
+    $contentPanel.Controls.Add($titleLabel)
+    
+    $backBtn = New-Object System.Windows.Forms.Button
+    $backBtn.Text = "← BACK"
+    $backBtn.Size = New-Object System.Drawing.Size(100, 30)
+    $backBtn.Location = New-Object System.Drawing.Point(20, 10)
+    $backBtn.BackColor = "#30363d"
+    $backBtn.ForeColor = "#e6edf3"
+    $backBtn.FlatStyle = "Flat"
+    $backBtn.Cursor = "Hand"
+    $backBtn.Add_Click({ Show-CategoriesUI })
+    $contentPanel.Controls.Add($backBtn)
+    
+    $installAllBtn = New-Object System.Windows.Forms.Button
+    $installAllBtn.Text = "INSTALL ALL"
+    $installAllBtn.Size = New-Object System.Drawing.Size(120, 30)
+    $installAllBtn.Location = New-Object System.Drawing.Point(1000, 10)
+    $installAllBtn.BackColor = "#d29922"
+    $installAllBtn.ForeColor = "Black"
+    $installAllBtn.FlatStyle = "Flat"
+    $installAllBtn.Cursor = "Hand"
+    $installAllBtn.Add_Click({
+        for ($i = 0; $i -lt $apps.Count; $i++) {
+            Install-App -appId $appIds[$i] -appName $apps[$i] -outputBox $statusBox
+        }
+    })
+    $contentPanel.Controls.Add($installAllBtn)
+    
+    $x = 50
+    $y = 70
+    $col = 0
+    
+    for ($i = 0; $i -lt $apps.Count; $i++) {
+        $panel = New-Object System.Windows.Forms.Panel
+        $panel.Size = New-Object System.Drawing.Size(250, 100)
+        $panel.Location = New-Object System.Drawing.Point($x, $y)
+        $panel.BackColor = "#2d2d2d"
+        $panel.BorderStyle = "FixedSingle"
+        
+        $nameLabel = New-Object System.Windows.Forms.Label
+        $nameLabel.Text = $apps[$i]
+        $nameLabel.Size = New-Object System.Drawing.Size(230, 30)
+        $nameLabel.Location = New-Object System.Drawing.Point(10, 10)
+        $nameLabel.ForeColor = "#e6edf3"
+        $nameLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+        $panel.Controls.Add($nameLabel)
+        
+        $installBtn = New-Object System.Windows.Forms.Button
+        $installBtn.Text = "INSTALL"
+        $installBtn.Size = New-Object System.Drawing.Size(100, 30)
+        $installBtn.Location = New-Object System.Drawing.Point(70, 50)
+        $installBtn.BackColor = "#2f81f7"
+        $installBtn.ForeColor = "White"
+        $installBtn.FlatStyle = "Flat"
+        $installBtn.Cursor = "Hand"
+        $installBtn.Tag = @($appIds[$i], $apps[$i])
+        $installBtn.Add_Click({
+            $tag = $this.Tag
+            Install-App -appId $tag[0] -appName $tag[1] -outputBox $statusBox
+        })
+        $panel.Controls.Add($installBtn)
+        
+        $contentPanel.Controls.Add($panel)
+        
+        $col++
+        if ($col -eq 4) {
+            $col = 0
+            $x = 50
+            $y += 120
+        } else {
+            $x += 270
+        }
+    }
+}
+
+function Show-BrowsersUI {
+    $browsers = @(
+        "Google Chrome", "Brave Browser", "Mozilla Firefox",
+        "Microsoft Edge", "Thorium Browser", "Waterfox",
+        "LibreWolf", "Floorp Browser"
+    )
+    
+    $browserIds = @(
+        "Google.Chrome", "Brave.Brave", "Mozilla.Firefox",
+        "Microsoft.Edge", "Alex313031.Thorium", "Waterfox.Waterfox",
+        "LibreWolf.LibreWolf", "Floorp.Floorp"
+    )
+    
+    Show-AppGrid "BROWSERS SELECTION" $browsers $browserIds
+}
+
+function Show-FileToolsUI {
+    $tools = @("WinRAR", "7-Zip")
+    $toolIds = @("RARLab.WinRAR", "7zip.7zip")
+    Show-AppGrid "FILE TOOLS" $tools $toolIds
+}
+
+function Show-DevToolsUI {
+    $tools = @(
+        "VS Code", "Notepad++", "Sublime Text",
+        "Git", "GitHub Desktop", "PowerShell 7", "Docker"
+    )
+    
+    $toolIds = @(
+        "Microsoft.VisualStudioCode", "Notepad++.Notepad++", "SublimeHQ.SublimeText",
+        "Git.Git", "GitHub.GitHubDesktop", "Microsoft.PowerShell", "Docker.DockerDesktop"
+    )
+    
+    Show-AppGrid "DEV TOOLS" $tools $toolIds
+}
+
+function Show-DotNetUI {
+    $tools = @(".NET SDK 8", ".NET Runtime 8", ".NET Desktop 8", ".NET SDK 7", ".NET Runtime 7")
+    $toolIds = @(
+        "Microsoft.DotNet.SDK.8", "Microsoft.DotNet.Runtime.8", "Microsoft.DotNet.DesktopRuntime.8",
+        "Microsoft.DotNet.SDK.7", "Microsoft.DotNet.Runtime.7"
+    )
+    
+    Show-AppGrid ".NET TOOLS" $tools $toolIds
+}
+
+function Show-CommunicationUI {
+    $apps = @("Telegram", "Discord", "WhatsApp", "Slack", "Zoom")
+    $appIds = @(
+        "Telegram.TelegramDesktop", "Discord.Discord", "WhatsApp.WhatsApp",
+        "SlackTechnologies.Slack", "Zoom.Zoom"
+    )
+    
+    Show-AppGrid "COMMUNICATION APPS" $apps $appIds
+}
+
+function Show-GamingUI {
+    $apps = @("Steam", "Epic Games", "Ubisoft", "EA Desktop")
+    $appIds = @(
+        "Valve.Steam", "EpicGames.EpicGamesLauncher",
+        "Ubisoft.Connect", "ElectronicArts.EADesktop"
+    )
+    
+    Show-AppGrid "GAMING APPS" $apps $appIds
+}
+
+function Show-MicrosoftUI {
+    $apps = @("Windows Terminal", "PowerToys", "Microsoft Office", "Microsoft Store")
+    $appIds = @(
+        "Microsoft.WindowsTerminal", "Microsoft.PowerToys",
+        "Microsoft.Office", "Microsoft.Store"
+    )
+    
+    Show-AppGrid "MICROSOFT APPS" $apps $appIds
+}
+
+function Show-MediaUI {
+    $apps = @("VLC Player", "OBS Studio", "Handbrake")
+    $appIds = @("VideoLAN.VLC", "OBSProject.OBSStudio", "Handbrake.Handbrake")
+    
+    Show-AppGrid "MEDIA APPS" $apps $appIds
+}
+
+function Show-ProductivityUI {
+    $tools = @("Obsidian", "Notion", "AnyDesk", "TeamViewer")
+    $toolIds = @(
+        "Obsidian.Obsidian", "Notion.Notion",
+        "AnyDeskSoftwareGmbH.AnyDesk", "TeamViewer.TeamViewer"
+    )
+    
+    Show-AppGrid "PRODUCTIVITY TOOLS" $tools $toolIds
+}
+
+function Invoke-FullFixOsPresetUI {
+    $contentPanel.Controls.Clear()
+    
+    $title = New-Object System.Windows.Forms.Label
+    $title.Text = "RUN FIXOS PRESET"
+    $title.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
+    $title.ForeColor = "#e6edf3"
+    $title.Size = New-Object System.Drawing.Size(400, 40)
+    $title.Location = New-Object System.Drawing.Point(370, 50)
+    $contentPanel.Controls.Add($title)
+    
+    $message = New-Object System.Windows.Forms.Label
+    $message.Text = "This will run FixOs installer"
+    $message.Font = New-Object System.Drawing.Font("Segoe UI", 12)
+    $message.ForeColor = "#e6edf3"
+    $message.Size = New-Object System.Drawing.Size(300, 30)
+    $message.Location = New-Object System.Drawing.Point(420, 120)
+    $contentPanel.Controls.Add($message)
+    
+    $confirmLabel = New-Object System.Windows.Forms.Label
+    $confirmLabel.Text = "Continue?"
+    $confirmLabel.Font = New-Object System.Drawing.Font("Segoe UI", 12)
+    $confirmLabel.ForeColor = "#e6edf3"
+    $confirmLabel.Size = New-Object System.Drawing.Size(100, 30)
+    $confirmLabel.Location = New-Object System.Drawing.Point(420, 170)
+    $contentPanel.Controls.Add($confirmLabel)
+    
+    $yesBtn = New-Object System.Windows.Forms.Button
+    $yesBtn.Text = "YES"
+    $yesBtn.Size = New-Object System.Drawing.Size(100, 40)
+    $yesBtn.Location = New-Object System.Drawing.Point(520, 165)
+    $yesBtn.BackColor = "#3fb950"
+    $yesBtn.ForeColor = "Black"
+    $yesBtn.FlatStyle = "Flat"
+    $yesBtn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+    $yesBtn.Cursor = "Hand"
+    $yesBtn.Add_Click({
+        $statusBox.Text = "Running FixOs..."
+        $statusBox.ForeColor = "#d29922"
+        $form.Refresh()
+        
+        try {
+            irm "DevelopmentSpace.pages.dev/FixOs.ps1" | iex
+            $statusBox.Text = "FixOs executed successfully!"
+            $statusBox.ForeColor = "#3fb950"
+        } catch {
+            $statusBox.Text = "Error running FixOs"
+            $statusBox.ForeColor = "#f85149"
+        }
+        
+        $statusBox.Text = "FixOs preset completed"
+    })
+    
+    $noBtn = New-Object System.Windows.Forms.Button
+    $noBtn.Text = "NO"
+    $noBtn.Size = New-Object System.Drawing.Size(100, 40)
+    $noBtn.Location = New-Object System.Drawing.Point(630, 165)
+    $noBtn.BackColor = "#f85149"
+    $noBtn.ForeColor = "White"
+    $noBtn.FlatStyle = "Flat"
+    $noBtn.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+    $noBtn.Cursor = "Hand"
+    $noBtn.Add_Click({ Show-MainMenuUI })
+    
+    $contentPanel.Controls.AddRange(@($yesBtn, $noBtn))
+    
+    $backBtn = New-Object System.Windows.Forms.Button
+    $backBtn.Text = "← BACK"
+    $backBtn.Size = New-Object System.Drawing.Size(100, 30)
+    $backBtn.Location = New-Object System.Drawing.Point(20, 20)
+    $backBtn.BackColor = "#30363d"
+    $backBtn.ForeColor = "#e6edf3"
+    $backBtn.FlatStyle = "Flat"
+    $backBtn.Cursor = "Hand"
+    $backBtn.Add_Click({ Show-MainMenuUI })
+    $contentPanel.Controls.Add($backBtn)
+}
+
+$appsBtn.Add_Click({ Show-CategoriesUI })
+$fixosBtn.Add_Click({ Invoke-FullFixOsPresetUI })
+$exitBtn.Add_Click({ $form.Close() })
+
+Show-MainMenuUI
+
+$form.Controls.Add($mainPanel)
+$form.ShowDialog()
