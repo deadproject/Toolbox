@@ -1,5 +1,5 @@
 $ToolboxConfig = @{
-    Version = "2.0.0"
+    Version = "1.0.0"
     Author = "FixOs Development Team - © 2026 Devspace. All rights reserved"
 }
 
@@ -13,52 +13,40 @@ function Center-Text($text) {
 }
 
 function Show-FixOsLogo {
-    Clear-Host
     $logoLines = @(
-        "███████╗██╗██╗  ██╗  ██████╗ ███████╗",
-        "██╔════╝██║╚██╗██╔╝ ██╔═══██╗██╔════╝",
-        "█████╗  ██║ ╚███╔╝  ██║   ██║███████╗",
-        "██╔══╝  ██║ ██╔██╗  ██║   ██║╚════██║",
-        "██║     ██║██╔╝ ██╗ ╚██████╔╝███████║",
-        "╚═╝     ╚═╝╚═╝  ╚═╝  ╚═════╝ ╚══════╝"
+        " ███████╗██╗██╗  ██╗  ██████╗ ███████╗ ",
+        " ██╔════╝██║╚██╗██╔╝ ██╔═══██╗██╔════╝ ",
+        " █████╗  ██║ ╚███╔╝  ██║   ██║███████╗ ",
+        " ██╔══╝  ██║ ██╔██╗  ██║   ██║╚════██║ ",
+        " ██║     ██║██╔╝ ██╗ ╚██████╔╝███████║ ",
+        " ╚═╝     ╚═╝╚═╝  ╚═╝  ╚═════╝ ╚══════╝ ",
+        "",
+        "          ████████╗ ██████╗  ██████╗ ██╗     ██████╗  ██████╗ ██╗  ██╗          ",
+        "          ╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██╔══██╗██╔═══██╗╚██╗██╔╝          ",
+        "             ██║   ██║   ██║██║   ██║██║     ██████╔╝██║   ██║ ╚███╔╝           ",
+        "             ██║   ██║   ██║██║   ██║██║     ██╔══██╗██║   ██║ ██╔██╗           ",
+        "             ██║   ╚██████╔╝╚██████╔╝███████╗██████╔╝╚██████╔╝██╔╝ ██╗          ",
+        "             ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝          ",
+        "",
+        "                          v$($ToolboxConfig.Version)                          "
     )
     
-    $colors = @("Red", "Yellow", "Green", "Cyan", "Blue", "Magenta")
-    
     foreach ($line in $logoLines) {
-        $coloredLine = ""
-        $chars = $line.ToCharArray()
-        for ($i = 0; $i -lt $chars.Count; $i++) {
-            $colorIndex = $i % $colors.Count
-            $coloredLine += "$($chars[$i])"
-        }
-        Write-Host (Center-Text $coloredLine) -ForegroundColor $colors[$i % $colors.Count]
+        Write-Host (Center-Text $line) -ForegroundColor White
     }
-    
-    $versionLine = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-    Write-Host (Center-Text $versionLine) -ForegroundColor DarkGray
-    Write-Host (Center-Text "        T O O L B O X   v$($ToolboxConfig.Version)        ") -ForegroundColor White -BackgroundColor DarkBlue
-    Write-Host (Center-Text $versionLine) -ForegroundColor DarkGray
     Write-Host ""
 }
 
 function Initialize-Toolbox {
     if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        Write-Host (Center-Text "╔════════════════════════════════════════════╗") -ForegroundColor Red
-        Write-Host (Center-Text "║  X Toolbox requires Administrator privileges ║") -ForegroundColor Red
-        Write-Host (Center-Text "║     Please run as Administrator. Exiting...  ║") -ForegroundColor Red
-        Write-Host (Center-Text "╚════════════════════════════════════════════╝") -ForegroundColor Red
+        Write-Host "Toolbox requires Administrator privileges. Please run as Administrator." -ForegroundColor Red
         Exit 1
     }
     
     Clear-Host
     Show-FixOsLogo
-    
-    $statusLine = ">> System Check: [████████████████████] 100% - ADMIN ACCESS GRANTED"
-    Write-Host (Center-Text $statusLine) -ForegroundColor Green
-    Write-Host (Center-Text ">> Initialized at $(Get-Date -Format 'HH:mm:ss')") -ForegroundColor Cyan
+    Write-Host (Center-Text "Initialized successfully at $(Get-Date)") -ForegroundColor Yellow
     Write-Host ""
-    Start-Sleep -Seconds 1.5
 }
 
 function Show-MainMenu {
@@ -66,36 +54,19 @@ function Show-MainMenu {
     Show-FixOsLogo
     
     $menuOptions = @(
-        "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓",
-        "┃                 >> CONTROL PANEL <<                 ┃",
-        "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫",
-        "┃                                                     ┃",
-        "┃          ███╗   ███╗ █████╗ ██╗███╗   ██╗          ┃",
-        "┃          ████╗ ████║██╔══██╗██║████╗  ██║          ┃",
-        "┃          ██╔████╔██║███████║██║██╔██╗ ██║          ┃",
-        "┃          ██║╚██╔╝██║██╔══██║██║██║╚██╗██║          ┃",
-        "┃          ██║ ╚═╝ ██║██║  ██║██║██║ ╚████║          ┃",
-        "┃          ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝          ┃",
-        "┃                                                     ┃",
-        "┃                 ╔══════════════════╗               ┃",
-        "┃                 ║  [1] APP INSTALL ║               ┃",
-        "┃                 ║  [2] FIXOS CORE  ║               ┃",
-        "┃                 ║  [3] SYSTEM EXIT ║               ┃",
-        "┃                 ╚══════════════════╝               ┃",
-        "┃                                                     ┃",
-        "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+        "╔════════════════════════════════════════════════╗",
+        "║                SELECT AN OPTION                ║",
+        "╠════════════════════════════════════════════════╣",
+        "║  ┌──────────────────────────────────────────┐  ║",
+        "║  │           [1] APPS INSTALLER             │  ║",
+        "║  │           [2] RUN FIXOS PRESET           │  ║",
+        "║  │           [3] EXIT TOOLBOX               │  ║",
+        "║  └──────────────────────────────────────────┘  ║",
+        "╚════════════════════════════════════════════════╝"
     )
     
     foreach ($line in $menuOptions) {
-        if ($line -match "CONTROL PANEL") {
-            Write-Host (Center-Text $line) -ForegroundColor Yellow
-        } elseif ($line -match "╔|╚|╣|╠|┏|┓|┗|┛|━|┃") {
-            Write-Host (Center-Text $line) -ForegroundColor DarkCyan
-        } elseif ($line -match "█") {
-            Write-Host (Center-Text $line) -ForegroundColor Cyan
-        } else {
-            Write-Host (Center-Text $line) -ForegroundColor White
-        }
+        Write-Host (Center-Text $line) -ForegroundColor White
     }
     Write-Host ""
 }
@@ -103,9 +74,7 @@ function Show-MainMenu {
 function Install-App($appId, $appName) {
     try {
         Write-Host ""
-        Write-Host (Center-Text "┌────────────────────────────────────────────┐") -ForegroundColor Yellow
-        Write-Host (Center-Text "│      >> DEPLOYING: $($appName.ToUpper())") -ForegroundColor Yellow
-        Write-Host (Center-Text "└────────────────────────────────────────────┘") -ForegroundColor Yellow
+        Write-Host (Center-Text "Installing $appName...") -ForegroundColor Yellow
         Write-Host ""
         
         $job = Start-Job -ScriptBlock {
@@ -113,15 +82,14 @@ function Install-App($appId, $appName) {
             winget install --id $appId --exact --silent --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
         } -ArgumentList $appId
         
-        $frames = @('◴', '◷', '◶', '◵')
+        $frames = @('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
         $i = 0
         $startTime = Get-Date
         
         while ($job.State -eq 'Running') {
             $elapsed = [math]::Round(((Get-Date) - $startTime).TotalSeconds, 1)
-            $progressBar = "[" + ("▓" * ($i % 10)) + ("░" * (10 - ($i % 10))) + "]"
-            Write-Host (Center-Text "  $($frames[$i % 4]) $progressBar Installing... $elapsed s") -ForegroundColor Cyan -NoNewline
-            Start-Sleep -Milliseconds 150
+            Write-Host (Center-Text "  $($frames[$i % 10]) Installing... $elapsed seconds") -ForegroundColor White -NoNewline
+            Start-Sleep -Milliseconds 100
             Write-Host "`r" -NoNewline
             $i++
         }
@@ -130,15 +98,15 @@ function Install-App($appId, $appName) {
         Remove-Job -Job $job -Force
         
         Write-Host ""
-        Write-Host (Center-Text "  ╔══════════════════════════════════════╗") -ForegroundColor Green
-        Write-Host (Center-Text "  ║  >> $appName INSTALLED!               ║") -ForegroundColor Green
-        Write-Host (Center-Text "  ╚══════════════════════════════════════╝") -ForegroundColor Green
+        Write-Host (Center-Text "  ╔══════════════════════════════╗") -ForegroundColor Green
+        Write-Host (Center-Text "  ║  ✓ $appName installed!      ║") -ForegroundColor Green
+        Write-Host (Center-Text "  ╚══════════════════════════════╝") -ForegroundColor Green
         
     } catch {
         Write-Host ""
-        Write-Host (Center-Text "  ╔══════════════════════════════════════╗") -ForegroundColor Red
-        Write-Host (Center-Text "  ║  X ERROR: $appName FAILED            ║") -ForegroundColor Red
-        Write-Host (Center-Text "  ╚══════════════════════════════════════╝") -ForegroundColor Red
+        Write-Host (Center-Text "  ╔══════════════════════════════╗") -ForegroundColor Red
+        Write-Host (Center-Text "  ║  ✗ Error installing $appName ║") -ForegroundColor Red
+        Write-Host (Center-Text "  ╚══════════════════════════════╝") -ForegroundColor Red
     }
     Write-Host ""
     Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
@@ -149,16 +117,13 @@ function Show-GridMenu($title, $options, $gridColumns = 3) {
     Clear-Host
     Show-FixOsLogo
     
-    $border = "═" * 60
-    Write-Host (Center-Text "╔$border╗") -ForegroundColor Magenta
-    Write-Host (Center-Text ("║" + " " * 60 + "║")) -ForegroundColor Magenta
-    Write-Host (Center-Text ("║" + " " * ((60 - $title.Length) / 2) + $title + " " * ((60 - $title.Length) / 2) + "║")) -ForegroundColor White
-    Write-Host (Center-Text ("║" + " " * 60 + "║")) -ForegroundColor Magenta
-    Write-Host (Center-Text "╚$border╝") -ForegroundColor Magenta
+    Write-Host (Center-Text "==============================================") -ForegroundColor Yellow
+    Write-Host (Center-Text "  $title  ") -ForegroundColor White
+    Write-Host (Center-Text "==============================================") -ForegroundColor Yellow
     Write-Host ""
     
-    $maxLength = ($options | Measure-Object -Property Length -Maximum).Maximum + 8
-    $colWidth = $maxLength + 6
+    $maxLength = ($options | Measure-Object -Property Length -Maximum).Maximum + 6
+    $colWidth = $maxLength + 4
     
     for ($i = 0; $i -lt $options.Count; $i += $gridColumns) {
         $line = ""
@@ -170,88 +135,38 @@ function Show-GridMenu($title, $options, $gridColumns = 3) {
                 $line += $optionText.PadRight($colWidth)
             }
         }
-        Write-Host (Center-Text "  " + $line.Trim()) -ForegroundColor White
+        Write-Host (Center-Text $line.Trim()) -ForegroundColor White
     }
     
     Write-Host ""
-    Write-Host (Center-Text "════════════════════════════════════════════════════════") -ForegroundColor Gray
-    Write-Host (Center-Text ">> [A] INSTALL ALL    |    [0] RETURN TO MAIN <<") -ForegroundColor Yellow
-    Write-Host ""
-}
-
-function Show-CategoriesMenu {
-    Clear-Host
-    Show-FixOsLogo
-    
-    $header = @"
-╔══════════════════════════════════════════════════════════╗
-║                    ▄▄▄·  ▄▄▄· ▄▄▄  ▄▄▄ .                 ║
-║                   ▐█ ▄█ ▐█ ▀█ ▀▄ █·▀▄.▀·                 ║
-║                    ██▀· ▄█▀▀█ ▐▀▀▄ ▐▀▀▪▄                 ║
-║                   ▐█▪·•▐█ ▪▐▌▐█•█▌▐█▄▄▌                 ║
-║                   .▀    ▀  ▀ .▀  ▀ ▀▀▀                  ║
-║                  APPLICATION CATEGORIES                  ║
-╚══════════════════════════════════════════════════════════╝
-"@
-    
-    $headerLines = $header -split "`n"
-    foreach ($line in $headerLines) {
-        if ($line -match "▄|▀|·|▪") {
-            Write-Host (Center-Text $line) -ForegroundColor DarkCyan
-        } else {
-            Write-Host (Center-Text $line) -ForegroundColor Cyan
-        }
-    }
-    
-    Write-Host ""
-    
-    $categories = @(
-        "┌─────────────────────┬─────────────────────┬─────────────────────┐",
-        "│  [01] BROWSERS      │  [02] FILE TOOLS    │  [03] DEV TOOLS     │",
-        "│  [04] .NET TOOLS    │  [05] COMMUNICATION │  [06] GAMING APPS   │",
-        "│  [07] MICROSOFT     │  [08] MEDIA APPS    │  [09] PRODUCTIVITY  │",
-        "└─────────────────────┴─────────────────────┴─────────────────────┘"
-    )
-    
-    foreach ($line in $categories) {
-        if ($line -match "┌|┐|└|┘|─|┬|┴") {
-            Write-Host (Center-Text $line) -ForegroundColor DarkGray
-        } else {
-            Write-Host (Center-Text $line) -ForegroundColor White
-        }
-    }
-    Write-Host ""
-    Write-Host (Center-Text "╔══════════════════════════════════════════════════════╗") -ForegroundColor Gray
-    Write-Host (Center-Text "║  SELECT CATEGORY [1-9] OR [0] FOR MAIN MENU        ║") -ForegroundColor Cyan
-    Write-Host (Center-Text "╚══════════════════════════════════════════════════════╝") -ForegroundColor Gray
+    Write-Host (Center-Text "[A] Install All") -ForegroundColor Magenta
+    Write-Host (Center-Text "[0] Back") -ForegroundColor Gray
     Write-Host ""
 }
 
 function Invoke-BrowsersInstaller {
     $browsers = @(
-        "GOOGLE CHROME", "BRAVE", "FIREFOX",
-        "EDGE", "THORIUM", "WATERFOX",
-        "LIBREWOLF", "FLOORP", "OPERA"
+        "Google Chrome", "Brave Browser", "Mozilla Firefox",
+        "Microsoft Edge", "Thorium Browser", "Waterfox",
+        "LibreWolf", "Floorp Browser"
     )
     
     $browserIds = @(
         "Google.Chrome", "Brave.Brave", "Mozilla.Firefox",
         "Microsoft.Edge", "Alex313031.Thorium", "Waterfox.Waterfox",
-        "LibreWolf.LibreWolf", "Floorp.Floorp", "Opera.Opera"
+        "LibreWolf.LibreWolf", "Floorp.Floorp"
     )
     
     while ($true) {
-        Show-GridMenu ">> WEB BROWSERS <<" $browsers 3
+        Show-GridMenu "BROWSERS SELECTION" $browsers 4
         
-        Write-Host (Center-Text ">> ENTER SELECTION: ") -NoNewline -ForegroundColor Cyan
+        Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
         
         if ($choice -eq "0") { return }
         if ($choice -eq "A" -or $choice -eq "a") {
             Write-Host ""
-            Write-Host (Center-Text "┌────────────────────────────────────────────┐") -ForegroundColor Yellow
-            Write-Host (Center-Text "│      >> MASS DEPLOYMENT INITIATED           │") -ForegroundColor Yellow
-            Write-Host (Center-Text "└────────────────────────────────────────────┘") -ForegroundColor Yellow
+            Write-Host (Center-Text "Installing all browsers...") -ForegroundColor Yellow
             for ($i = 0; $i -lt $browsers.Count; $i++) {
                 Install-App $browserIds[$i] $browsers[$i]
             }
@@ -263,9 +178,7 @@ function Invoke-BrowsersInstaller {
             Install-App $browserIds[$index] $browsers[$index]
         } else {
             Write-Host ""
-            Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-            Write-Host (Center-Text "║     X INVALID SELECTION              ║") -ForegroundColor Red
-            Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
+            Write-Host (Center-Text "Invalid selection!") -ForegroundColor Red
             Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         }
@@ -273,21 +186,19 @@ function Invoke-BrowsersInstaller {
 }
 
 function Invoke-FileToolsInstaller {
-    $tools = @("WINRAR", "7-ZIP", "PEAZIP", "WINSCP", "FILEZILLA")
-    $toolIds = @("RARLab.WinRAR", "7zip.7zip", "PeaZip.PeaZip", "WinSCP.WinSCP", "FileZilla.FileZilla")
+    $tools = @("WinRAR", "7-Zip")
+    $toolIds = @("RARLab.WinRAR", "7zip.7zip")
     
     while ($true) {
-        Show-GridMenu ">> FILE MANAGEMENT <<" $tools 3
+        Show-GridMenu "FILE TOOLS" $tools 3
         
-        Write-Host (Center-Text ">> ENTER SELECTION: ") -NoNewline -ForegroundColor Cyan
+        Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
         
         if ($choice -eq "0") { return }
         if ($choice -eq "A" -or $choice -eq "a") {
             Write-Host ""
-            Write-Host (Center-Text "┌────────────────────────────────────────────┐") -ForegroundColor Yellow
-            Write-Host (Center-Text "│      >> MASS DEPLOYMENT INITIATED           │") -ForegroundColor Yellow
-            Write-Host (Center-Text "└────────────────────────────────────────────┘") -ForegroundColor Yellow
+            Write-Host (Center-Text "Installing all file tools...") -ForegroundColor Yellow
             for ($i = 0; $i -lt $tools.Count; $i++) {
                 Install-App $toolIds[$i] $tools[$i]
             }
@@ -299,9 +210,7 @@ function Invoke-FileToolsInstaller {
             Install-App $toolIds[$index] $tools[$index]
         } else {
             Write-Host ""
-            Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-            Write-Host (Center-Text "║     X INVALID SELECTION              ║") -ForegroundColor Red
-            Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
+            Write-Host (Center-Text "Invalid selection!") -ForegroundColor Red
             Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         }
@@ -310,29 +219,25 @@ function Invoke-FileToolsInstaller {
 
 function Invoke-DevToolsInstaller {
     $tools = @(
-        "VS CODE", "NOTEPAD++", "SUBLIME",
-        "GIT", "GITHUB DESKTOP", "POWERSHELL 7",
-        "DOCKER", "PYTHON", "NODE.JS"
+        "VS Code", "Notepad++", "Sublime Text",
+        "Git", "GitHub Desktop", "PowerShell 7", "Docker"
     )
     
     $toolIds = @(
         "Microsoft.VisualStudioCode", "Notepad++.Notepad++", "SublimeHQ.SublimeText",
-        "Git.Git", "GitHub.GitHubDesktop", "Microsoft.PowerShell",
-        "Docker.DockerDesktop", "Python.Python.3.12", "OpenJS.NodeJS"
+        "Git.Git", "GitHub.GitHubDesktop", "Microsoft.PowerShell", "Docker.DockerDesktop"
     )
     
     while ($true) {
-        Show-GridMenu ">> DEVELOPMENT TOOLS <<" $tools 3
+        Show-GridMenu "DEV TOOLS" $tools 4
         
-        Write-Host (Center-Text ">> ENTER SELECTION: ") -NoNewline -ForegroundColor Cyan
+        Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
         
         if ($choice -eq "0") { return }
         if ($choice -eq "A" -or $choice -eq "a") {
             Write-Host ""
-            Write-Host (Center-Text "┌────────────────────────────────────────────┐") -ForegroundColor Yellow
-            Write-Host (Center-Text "│      >> MASS DEPLOYMENT INITIATED           │") -ForegroundColor Yellow
-            Write-Host (Center-Text "└────────────────────────────────────────────┘") -ForegroundColor Yellow
+            Write-Host (Center-Text "Installing all dev tools...") -ForegroundColor Yellow
             for ($i = 0; $i -lt $tools.Count; $i++) {
                 Install-App $toolIds[$i] $tools[$i]
             }
@@ -344,165 +249,7 @@ function Invoke-DevToolsInstaller {
             Install-App $toolIds[$index] $tools[$index]
         } else {
             Write-Host ""
-            Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-            Write-Host (Center-Text "║     X INVALID SELECTION              ║") -ForegroundColor Red
-            Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
-            Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
-            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-        }
-    }
-}
-
-function Invoke-CommunicationInstaller {
-    $apps = @("TELEGRAM", "DISCORD", "WHATSAPP", "SLACK", "ZOOM", "SIGNAL")
-    $appIds = @(
-        "Telegram.TelegramDesktop", "Discord.Discord", "WhatsApp.WhatsApp",
-        "SlackTechnologies.Slack", "Zoom.Zoom", "OpenWhisperSystems.Signal"
-    )
-    
-    while ($true) {
-        Show-GridMenu ">> COMMUNICATION <<" $apps 3
-        
-        Write-Host (Center-Text ">> ENTER SELECTION: ") -NoNewline -ForegroundColor Cyan
-        $choice = Read-Host
-        
-        if ($choice -eq "0") { return }
-        if ($choice -eq "A" -or $choice -eq "a") {
-            Write-Host ""
-            Write-Host (Center-Text "┌────────────────────────────────────────────┐") -ForegroundColor Yellow
-            Write-Host (Center-Text "│      >> MASS DEPLOYMENT INITIATED           │") -ForegroundColor Yellow
-            Write-Host (Center-Text "└────────────────────────────────────────────┘") -ForegroundColor Yellow
-            for ($i = 0; $i -lt $apps.Count; $i++) {
-                Install-App $appIds[$i] $apps[$i]
-            }
-            continue
-        }
-        
-        $index = [int]$choice - 1
-        if ($index -ge 0 -and $index -lt $apps.Count) {
-            Install-App $appIds[$index] $apps[$index]
-        } else {
-            Write-Host ""
-            Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-            Write-Host (Center-Text "║     X INVALID SELECTION              ║") -ForegroundColor Red
-            Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
-            Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
-            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-        }
-    }
-}
-
-function Invoke-GamingInstaller {
-    $apps = @("STEAM", "EPIC GAMES", "UBISOFT", "EA APP", "GOG GALAXY", "BATTLENET")
-    $appIds = @(
-        "Valve.Steam", "EpicGames.EpicGamesLauncher", "Ubisoft.Connect",
-        "ElectronicArts.EADesktop", "GOG.Galaxy", "Battle.net"
-    )
-    
-    while ($true) {
-        Show-GridMenu ">> GAMING <<" $apps 3
-        
-        Write-Host (Center-Text ">> ENTER SELECTION: ") -NoNewline -ForegroundColor Cyan
-        $choice = Read-Host
-        
-        if ($choice -eq "0") { return }
-        if ($choice -eq "A" -or $choice -eq "a") {
-            Write-Host ""
-            Write-Host (Center-Text "┌────────────────────────────────────────────┐") -ForegroundColor Yellow
-            Write-Host (Center-Text "│      >> MASS DEPLOYMENT INITIATED           │") -ForegroundColor Yellow
-            Write-Host (Center-Text "└────────────────────────────────────────────┘") -ForegroundColor Yellow
-            for ($i = 0; $i -lt $apps.Count; $i++) {
-                Install-App $appIds[$i] $apps[$i]
-            }
-            continue
-        }
-        
-        $index = [int]$choice - 1
-        if ($index -ge 0 -and $index -lt $apps.Count) {
-            Install-App $appIds[$index] $apps[$index]
-        } else {
-            Write-Host ""
-            Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-            Write-Host (Center-Text "║     X INVALID SELECTION              ║") -ForegroundColor Red
-            Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
-            Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
-            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-        }
-    }
-}
-
-function Invoke-MediaInstaller {
-    $apps = @("VLC", "OBS STUDIO", "HANDBRAKE", "SPOTIFY", "AUDACITY", "KODI")
-    $appIds = @(
-        "VideoLAN.VLC", "OBSProject.OBSStudio", "HandBrake.HandBrake",
-        "Spotify.Spotify", "Audacity.Audacity", "XBMCFoundation.Kodi"
-    )
-    
-    while ($true) {
-        Show-GridMenu ">> MEDIA <<" $apps 3
-        
-        Write-Host (Center-Text ">> ENTER SELECTION: ") -NoNewline -ForegroundColor Cyan
-        $choice = Read-Host
-        
-        if ($choice -eq "0") { return }
-        if ($choice -eq "A" -or $choice -eq "a") {
-            Write-Host ""
-            Write-Host (Center-Text "┌────────────────────────────────────────────┐") -ForegroundColor Yellow
-            Write-Host (Center-Text "│      >> MASS DEPLOYMENT INITIATED           │") -ForegroundColor Yellow
-            Write-Host (Center-Text "└────────────────────────────────────────────┘") -ForegroundColor Yellow
-            for ($i = 0; $i -lt $apps.Count; $i++) {
-                Install-App $appIds[$i] $apps[$i]
-            }
-            continue
-        }
-        
-        $index = [int]$choice - 1
-        if ($index -ge 0 -and $index -lt $apps.Count) {
-            Install-App $appIds[$index] $apps[$index]
-        } else {
-            Write-Host ""
-            Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-            Write-Host (Center-Text "║     X INVALID SELECTION              ║") -ForegroundColor Red
-            Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
-            Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
-            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-        }
-    }
-}
-
-function Invoke-ProductivityInstaller {
-    $tools = @("OBSIDIAN", "NOTION", "ANYDESK", "TEAMVIEWER", "EVERNOTE", "TRELLO")
-    $toolIds = @(
-        "Obsidian.Obsidian", "Notion.Notion", "AnyDeskSoftwareGmbH.AnyDesk",
-        "TeamViewer.TeamViewer", "Evernote.Evernote", "Trello.Trello"
-    )
-    
-    while ($true) {
-        Show-GridMenu ">> PRODUCTIVITY <<" $tools 3
-        
-        Write-Host (Center-Text ">> ENTER SELECTION: ") -NoNewline -ForegroundColor Cyan
-        $choice = Read-Host
-        
-        if ($choice -eq "0") { return }
-        if ($choice -eq "A" -or $choice -eq "a") {
-            Write-Host ""
-            Write-Host (Center-Text "┌────────────────────────────────────────────┐") -ForegroundColor Yellow
-            Write-Host (Center-Text "│      >> MASS DEPLOYMENT INITIATED           │") -ForegroundColor Yellow
-            Write-Host (Center-Text "└────────────────────────────────────────────┘") -ForegroundColor Yellow
-            for ($i = 0; $i -lt $tools.Count; $i++) {
-                Install-App $toolIds[$i] $tools[$i]
-            }
-            continue
-        }
-        
-        $index = [int]$choice - 1
-        if ($index -ge 0 -and $index -lt $tools.Count) {
-            Install-App $toolIds[$index] $tools[$index]
-        } else {
-            Write-Host ""
-            Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-            Write-Host (Center-Text "║     X INVALID SELECTION              ║") -ForegroundColor Red
-            Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
+            Write-Host (Center-Text "Invalid selection!") -ForegroundColor Red
             Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         }
@@ -510,24 +257,22 @@ function Invoke-ProductivityInstaller {
 }
 
 function Invoke-DotNetInstaller {
-    $tools = @(".NET SDK 8", ".NET RUNTIME 8", ".NET DESKTOP 8", ".NET SDK 7", ".NET RUNTIME 7", ".NET SDK 6")
+    $tools = @(".NET SDK 8", ".NET Runtime 8", ".NET Desktop 8", ".NET SDK 7", ".NET Runtime 7")
     $toolIds = @(
         "Microsoft.DotNet.SDK.8", "Microsoft.DotNet.Runtime.8", "Microsoft.DotNet.DesktopRuntime.8",
-        "Microsoft.DotNet.SDK.7", "Microsoft.DotNet.Runtime.7", "Microsoft.DotNet.SDK.6"
+        "Microsoft.DotNet.SDK.7", "Microsoft.DotNet.Runtime.7"
     )
     
     while ($true) {
-        Show-GridMenu ">> .NET FRAMEWORK <<" $tools 3
+        Show-GridMenu ".NET TOOLS" $tools 3
         
-        Write-Host (Center-Text ">> ENTER SELECTION: ") -NoNewline -ForegroundColor Cyan
+        Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
         
         if ($choice -eq "0") { return }
         if ($choice -eq "A" -or $choice -eq "a") {
             Write-Host ""
-            Write-Host (Center-Text "┌────────────────────────────────────────────┐") -ForegroundColor Yellow
-            Write-Host (Center-Text "│      >> MASS DEPLOYMENT INITIATED           │") -ForegroundColor Yellow
-            Write-Host (Center-Text "└────────────────────────────────────────────┘") -ForegroundColor Yellow
+            Write-Host (Center-Text "Installing all .NET tools...") -ForegroundColor Yellow
             for ($i = 0; $i -lt $tools.Count; $i++) {
                 Install-App $toolIds[$i] $tools[$i]
             }
@@ -539,34 +284,30 @@ function Invoke-DotNetInstaller {
             Install-App $toolIds[$index] $tools[$index]
         } else {
             Write-Host ""
-            Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-            Write-Host (Center-Text "║     X INVALID SELECTION              ║") -ForegroundColor Red
-            Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
+            Write-Host (Center-Text "Invalid selection!") -ForegroundColor Red
             Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         }
     }
 }
 
-function Invoke-MicrosoftInstaller {
-    $apps = @("WINDOWS TERMINAL", "POWERTOYS", "OFFICE", "STORE", "WHITEBOARD", "CALCULATOR")
+function Invoke-CommunicationInstaller {
+    $apps = @("Telegram", "Discord", "WhatsApp", "Slack", "Zoom")
     $appIds = @(
-        "Microsoft.WindowsTerminal", "Microsoft.PowerToys", "Microsoft.Office",
-        "Microsoft.Store", "Microsoft.Whiteboard", "Microsoft.WindowsCalculator"
+        "Telegram.TelegramDesktop", "Discord.Discord", "WhatsApp.WhatsApp",
+        "SlackTechnologies.Slack", "Zoom.Zoom"
     )
     
     while ($true) {
-        Show-GridMenu ">> MICROSOFT <<" $apps 3
+        Show-GridMenu "COMMUNICATION APPS" $apps 3
         
-        Write-Host (Center-Text ">> ENTER SELECTION: ") -NoNewline -ForegroundColor Cyan
+        Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
         
         if ($choice -eq "0") { return }
         if ($choice -eq "A" -or $choice -eq "a") {
             Write-Host ""
-            Write-Host (Center-Text "┌────────────────────────────────────────────┐") -ForegroundColor Yellow
-            Write-Host (Center-Text "│      >> MASS DEPLOYMENT INITIATED           │") -ForegroundColor Yellow
-            Write-Host (Center-Text "└────────────────────────────────────────────┘") -ForegroundColor Yellow
+            Write-Host (Center-Text "Installing all communication apps...") -ForegroundColor Yellow
             for ($i = 0; $i -lt $apps.Count; $i++) {
                 Install-App $appIds[$i] $apps[$i]
             }
@@ -578,20 +319,177 @@ function Invoke-MicrosoftInstaller {
             Install-App $appIds[$index] $apps[$index]
         } else {
             Write-Host ""
-            Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-            Write-Host (Center-Text "║     X INVALID SELECTION              ║") -ForegroundColor Red
-            Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
+            Write-Host (Center-Text "Invalid selection!") -ForegroundColor Red
             Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         }
     }
 }
 
+function Invoke-GamingInstaller {
+    $apps = @("Steam", "Epic Games", "Ubisoft", "EA Desktop")
+    $appIds = @(
+        "Valve.Steam", "EpicGames.EpicGamesLauncher",
+        "Ubisoft.Connect", "ElectronicArts.EADesktop"
+    )
+    
+    while ($true) {
+        Show-GridMenu "GAMING APPS" $apps 2
+        
+        Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
+        $choice = Read-Host
+        
+        if ($choice -eq "0") { return }
+        if ($choice -eq "A" -or $choice -eq "a") {
+            Write-Host ""
+            Write-Host (Center-Text "Installing all gaming apps...") -ForegroundColor Yellow
+            for ($i = 0; $i -lt $apps.Count; $i++) {
+                Install-App $appIds[$i] $apps[$i]
+            }
+            continue
+        }
+        
+        $index = [int]$choice - 1
+        if ($index -ge 0 -and $index -lt $apps.Count) {
+            Install-App $appIds[$index] $apps[$index]
+        } else {
+            Write-Host ""
+            Write-Host (Center-Text "Invalid selection!") -ForegroundColor Red
+            Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
+    }
+}
+
+function Invoke-MicrosoftInstaller {
+    $apps = @("Windows Terminal", "PowerToys", "Microsoft Office", "Microsoft Store")
+    $appIds = @(
+        "Microsoft.WindowsTerminal", "Microsoft.PowerToys",
+        "Microsoft.Office", "Microsoft.Store"
+    )
+    
+    while ($true) {
+        Show-GridMenu "MICROSOFT APPS" $apps 2
+        
+        Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
+        $choice = Read-Host
+        
+        if ($choice -eq "0") { return }
+        if ($choice -eq "A" -or $choice -eq "a") {
+            Write-Host ""
+            Write-Host (Center-Text "Installing all Microsoft apps...") -ForegroundColor Yellow
+            for ($i = 0; $i -lt $apps.Count; $i++) {
+                Install-App $appIds[$i] $apps[$i]
+            }
+            continue
+        }
+        
+        $index = [int]$choice - 1
+        if ($index -ge 0 -and $index -lt $apps.Count) {
+            Install-App $appIds[$index] $apps[$index]
+        } else {
+            Write-Host ""
+            Write-Host (Center-Text "Invalid selection!") -ForegroundColor Red
+            Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
+    }
+}
+
+function Invoke-MediaInstaller {
+    $apps = @("VLC Player", "OBS Studio", "Handbrake")
+    $appIds = @("VideoLAN.VLC", "OBSProject.OBSStudio", "Handbrake.Handbrake")
+    
+    while ($true) {
+        Show-GridMenu "MEDIA APPS" $apps 3
+        
+        Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
+        $choice = Read-Host
+        
+        if ($choice -eq "0") { return }
+        if ($choice -eq "A" -or $choice -eq "a") {
+            Write-Host ""
+            Write-Host (Center-Text "Installing all media apps...") -ForegroundColor Yellow
+            for ($i = 0; $i -lt $apps.Count; $i++) {
+                Install-App $appIds[$i] $apps[$i]
+            }
+            continue
+        }
+        
+        $index = [int]$choice - 1
+        if ($index -ge 0 -and $index -lt $apps.Count) {
+            Install-App $appIds[$index] $apps[$index]
+        } else {
+            Write-Host ""
+            Write-Host (Center-Text "Invalid selection!") -ForegroundColor Red
+            Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
+    }
+}
+
+function Invoke-ProductivityInstaller {
+    $tools = @("Obsidian", "Notion", "AnyDesk", "TeamViewer")
+    $toolIds = @(
+        "Obsidian.Obsidian", "Notion.Notion",
+        "AnyDeskSoftwareGmbH.AnyDesk", "TeamViewer.TeamViewer"
+    )
+    
+    while ($true) {
+        Show-GridMenu "PRODUCTIVITY TOOLS" $tools 2
+        
+        Write-Host (Center-Text "Enter selection: ") -NoNewline -ForegroundColor Cyan
+        $choice = Read-Host
+        
+        if ($choice -eq "0") { return }
+        if ($choice -eq "A" -or $choice -eq "a") {
+            Write-Host ""
+            Write-Host (Center-Text "Installing all productivity tools...") -ForegroundColor Yellow
+            for ($i = 0; $i -lt $tools.Count; $i++) {
+                Install-App $toolIds[$i] $tools[$i]
+            }
+            continue
+        }
+        
+        $index = [int]$choice - 1
+        if ($index -ge 0 -and $index -lt $tools.Count) {
+            Install-App $toolIds[$index] $tools[$index]
+        } else {
+            Write-Host ""
+            Write-Host (Center-Text "Invalid selection!") -ForegroundColor Red
+            Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
+    }
+}
+
+function Show-CategoriesMenu {
+    Clear-Host
+    Show-FixOsLogo
+    
+    Write-Host (Center-Text "==================================================================") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "                       APP CATEGORIES MENU                        ") -ForegroundColor DarkCyan
+    Write-Host (Center-Text "==================================================================") -ForegroundColor DarkCyan
+    
+    $categories = @(
+        "  [1] Browsers         [2] File Tools      [3] Dev Tools",
+        "  [4] .NET Tools       [5] Communication   [6] Gaming Apps",
+        "  [7] Microsoft Apps   [8] Media Apps      [9] Productivity"
+    )
+    
+    foreach ($line in $categories) {
+        Write-Host (Center-Text $line) -ForegroundColor White
+    }
+    Write-Host ""
+    Write-Host (Center-Text "              Enter number (1-9) or [0] to go back                ") -ForegroundColor Gray 
+    Write-Host ""
+}
+
 function Invoke-AppsInstaller {
     while ($true) {
         Show-CategoriesMenu
         
-        Write-Host (Center-Text ">> SELECT CATEGORY: ") -NoNewline -ForegroundColor Cyan
+        Write-Host (Center-Text "Select category (1-9): ") -NoNewline -ForegroundColor Cyan
         $choice = Read-Host
         
         switch ($choice) {
@@ -607,9 +505,7 @@ function Invoke-AppsInstaller {
             "0" { return }
             default {
                 Write-Host ""
-                Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-                Write-Host (Center-Text "║        X INVALID OPTION              ║") -ForegroundColor Red
-                Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
+                Write-Host (Center-Text "Invalid option!") -ForegroundColor Red
                 Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
                 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
             }
@@ -621,9 +517,7 @@ function Invoke-FullFixOsPreset {
     Clear-Host
     Show-FixOsLogo
 
-    Write-Host (Center-Text "┌────────────────────────────────────────────┐") -ForegroundColor White
-    Write-Host (Center-Text "│  >> This will run FixOs installer          │") -ForegroundColor White
-    Write-Host (Center-Text "└────────────────────────────────────────────┘") -ForegroundColor White
+    Write-Host (Center-Text "  This will run FixOs installer ") -ForegroundColor White
     
     Write-Host (Center-Text "Continue? [Y/N]: ") -NoNewline -ForegroundColor Magenta
     $confirm = Read-Host
@@ -631,23 +525,19 @@ function Invoke-FullFixOsPreset {
     if ($confirm -ne "Y" -and $confirm -ne "y") { return }
     
     Write-Host ""
-    Write-Host (Center-Text ">> Running FixOs...") -ForegroundColor Yellow
+    Write-Host (Center-Text "Running FixOs...") -ForegroundColor Yellow
     
     try {
         irm "DevelopmentSpace.pages.dev/FixOs.ps1" | iex
         Write-Host ""
-        Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Green
-        Write-Host (Center-Text "║  >> FixOs executed successfully!     ║") -ForegroundColor Green
-        Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Green
+        Write-Host (Center-Text "FixOs executed successfully!") -ForegroundColor Green
     } catch {
         Write-Host ""
-        Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-        Write-Host (Center-Text "║  X Error running FixOs               ║") -ForegroundColor Red
-        Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
+        Write-Host (Center-Text "Error running FixOs") -ForegroundColor Red
     }
     
     Write-Host ""
-    Write-Host (Center-Text ">> FixOs preset completed") -ForegroundColor Green
+    Write-Host (Center-Text "FixOs preset completed") -ForegroundColor Green
     Write-Host ""
     Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
@@ -658,7 +548,7 @@ Initialize-Toolbox
 while ($true) {
     Show-MainMenu
     
-    Write-Host (Center-Text ">> ENTER CHOICE [1-3]: ") -NoNewline -ForegroundColor Cyan
+    Write-Host (Center-Text "Enter choice (1-3): ") -NoNewline -ForegroundColor Cyan
     $choice = Read-Host
     
     switch ($choice) {
@@ -668,17 +558,13 @@ while ($true) {
             Clear-Host
             Show-FixOsLogo
             Write-Host ""
-            Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Green
-            Write-Host (Center-Text "║     >> FIXOS TOOLBOX EXITED <<       ║") -ForegroundColor Green
-            Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Green
+            Write-Host (Center-Text "FixOs Toolbox!") -ForegroundColor Green
             Write-Host ""
             Exit 0
         }
         default {
             Write-Host ""
-            Write-Host (Center-Text "╔══════════════════════════════════════╗") -ForegroundColor Red
-            Write-Host (Center-Text "║        X INVALID OPTION              ║") -ForegroundColor Red
-            Write-Host (Center-Text "╚══════════════════════════════════════╝") -ForegroundColor Red
+            Write-Host (Center-Text "Invalid option!") -ForegroundColor Red
             Write-Host (Center-Text "Press any key to continue...") -ForegroundColor Gray
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         }
