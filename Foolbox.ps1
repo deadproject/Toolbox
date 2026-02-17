@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 2.0.9
+    Version: 2.1.1
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -1228,6 +1228,84 @@ function Apply-RegistryTweaks {
 
     Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Windows\Metrics" -Name "CaptionFont" -Type "String" -Value "Segoe UI"
 
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DontFreeze" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DisablePreloadingOnHover" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ListviewWaterMark" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "NoAutoplayfornonVolume" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoDriveTypeAutorun" -Type "DWord" -Value 255
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "ClearRecentDocsOnExit" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoThumbnailCache" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "AeroPeekEnabled" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "DisableFullWindowDrag" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "ColorizedGlass" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "CompositionPolicy" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "EnableWindowColorization" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop\WindowMetrics" -Name "AppliedDPI" -Type "DWord" -Value 96
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "DisableAeroShake" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "NoLivePreviewOnHover" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "BackgroundOnly" -Type "String" -Value "False"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "Clock Rate" -Type "DWord" -Value 10000
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Mouse" -Name "MouseHoverWidth" -Type "String" -Value "4"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Mouse" -Name "MouseHoverHeight" -Type "String" -Value "4"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Mouse" -Name "MouseHoverTime" -Type "String" -Value "0"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Mouse" -Name "ActiveWindowTracking" -Type "String" -Value "1"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Mouse" -Name "ActiveWindowTrackingDelay" -Type "String" -Value "0"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "SmoothScroll" -Type "String" -Value "0"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop\WindowMetrics" -Name "MinAnimate" -Type "String" -Value "0"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarSmallIcons" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SnapAssist" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "PowerMenuShowFullShutdown" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "RotatingLockScreenEnabled" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Personalization" -Name "NoLockScreenSlideshow" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Personalization" -Name "NoLockScreenCamera" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "CanContinueWebSearch" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "CortanaConsent" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "AllowSearchToUseLocation" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AppHost" -Name "UIEffects" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AppHost" -Name "EnableWebContentEvaluation" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\International\User Profile" -Name "HttpAcceptLanguageOptOut" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\AFK" -Name "TimeoutInactivityInMinutes" -Type "DWord" -Value 0
+
+    Disable-CriticalBootServices
+
     $winget = "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe"
 
     if (-not (Test-Path $winget)) {
@@ -1252,6 +1330,302 @@ function Apply-RegistryTweaks {
     return $true
 }
 
+function Disable-CriticalBootServices {
+    try {
+        $criticalServices = @(
+            'BrokerInfrastructure',
+            'corsvc',
+            'cscsvc',
+            'CryptSvc',
+            'DcomLaunch',
+            'dhcp',
+            'Dnscache',
+            'DPS',
+            'EventLog',
+            'EventSystem',
+            'fontcache',
+            'gpsvc',
+            'iphlpsvc',
+            'KeyIso',
+            'LanmanServer',
+            'LanmanWorkstation',
+            'mpssvc',
+            'MPS',
+            'nsi',
+            'PlugPlay',
+            'Power',
+            'ProfSvc',
+            'RpcEptMapper',
+            'RpcSs',
+            'SamSs',
+            'SENS',
+            'ShellHWDetection',
+            'sppsvc',
+            'SSDPSRV',
+            'SysMain',
+            'TabletInputService',
+            'Themes',
+            'TokenBroker',
+            'TrkWks',
+            'WinDefend',
+            'Winmgmt',
+            'WinRM',
+            'Wlansvc',
+            'WSearch',
+            'wuauserv',
+            'lsass',
+            'services',
+            'svchost',
+            'nvlddmkm',
+            'amdkmpfd'
+        )
+        
+        foreach ($svc in $criticalServices) {
+            $service = Get-Service -Name $svc -ErrorAction SilentlyContinue
+            if ($service) {
+                if ($service.StartType -eq 'Disabled') {
+                    Set-Service -Name $svc -StartupType 'Automatic' -ErrorAction SilentlyContinue
+                }
+            }
+        }
+    } catch {}
+}
+
+function Apply-PerformanceOptimizations {
+    
+    function Set-RegistryForce {
+        param([string]$Path,[string]$Name,[string]$Type,[string]$Value,[string]$Action = "Add")
+        
+        try {
+            if ($Action -eq "Add") {
+                if (-not (Test-Path $Path)) {
+                    New-Item -Path $Path -Force -ErrorAction SilentlyContinue | Out-Null
+                }
+                New-ItemProperty -Path $Path -Name $Name -PropertyType $Type -Value $Value -Force -ErrorAction SilentlyContinue | Out-Null
+            } elseif ($Action -eq "Delete") {
+                Remove-ItemProperty -Path $Path -Name $Name -Force -ErrorAction SilentlyContinue | Out-Null
+            }
+        } catch {}
+    }
+
+    function Remove-RegistryKeyForce {
+        param([string]$Path)
+        
+        try {
+            if (Test-Path $Path) {
+                Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue | Out-Null
+            }
+        } catch {}
+    }
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "NtfsAccessCheck" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "LargeSystemCache" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "SystemPages" -Type "DWord" -Value 0xFFFFFFFF
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "ModifiedPageLife" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "HistoryItemsToKeep" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Clipboard" -Name "CloudClipboardContent" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications" -Name "CloudNotificationDisabled" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Diagnostics\DiagTrack" -Name "DiagTrackAuthorized" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Diagnostics\DiagTrack" -Name "DiagTrackEnabled" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" -Name "DODownloadMode" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization" -Name "SystemSettingsDownloadMode" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "PublishUserActivities" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "UploadUserActivities" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableActivityFeed" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessAccount" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessCalendar" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessContacts" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessEmail" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessLocation" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessMicrophone" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessMotion" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessRadios" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessTrustedDevices" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsActivateWithVoice" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsRunInBackground" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\appDiagnostics" -Name "Value" -Type "String" -Value "Deny"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\appointments" -Name "Value" -Type "String" -Value "Deny"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\contacts" -Name "Value" -Type "String" -Value "Deny"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\email" -Name "Value" -Type "String" -Value "Deny"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name "Value" -Type "String" -Value "Deny"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\microphone" -Name "Value" -Type "String" -Value "Deny"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\motion" -Name "Value" -Type "String" -Value "Deny"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\phoneCall" -Name "Value" -Type "String" -Value "Deny"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\phoneCallHistory" -Name "Value" -Type "String" -Value "Deny"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\radios" -Name "Value" -Type "String" -Value "Deny"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\userAccountInformation" -Name "Value" -Type "String" -Value "Deny"
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\MpsSvc\Parameters\PortKeywords\RDP" -Name "Inbound" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\MpsSvc\Parameters\PortKeywords\Teredo" -Name "Inbound" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\MpsSvc\Parameters\PortKeywords\mDNS" -Name "Inbound" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\238C9FA8-0AAD-41ED-83F4-97BE242C8F20\7bc4b2f0-bf7e-4881-8207-c0f040516da8" -Name "Attributes" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DesktopProcess" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "NoLivePreviewOnHover" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality" -Type "DWord" -Value 100
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "FontSmoothing" -Type "String" -Value "2"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Appearance" -Name "Smoothing" -Type "String" -Value "90"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "UseStandardUserTiling" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\explorer.exe" -Name "DISABLEDXMAXIMIZEDWINDOWEDMODE" -Type "String" -Value "DISABLEDXMAXIMIZEDWINDOWEDMODE"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "FriendlyUIMode" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\System" -Name "InactivityTimeoutSecs" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\MpsSvc" -Name "Start" -Type "DWord" -Value 3
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\WindowsUpdate" -Name "Start" -Type "DWord" -Value 3
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "FeatureManagementEnabled" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "GhostingEnabled" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "SmallIconsInSystemMetrics" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFolderMergeConflicts" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DisablePreloadingOnHover" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Name "Sidebar" -Action "Delete"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "Sidebar" -Action "Delete"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "AutoEnableTouchpadWithKeyboard" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "AutoEnableTouchpadWithMouse" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "StartMenuShowNetPlaces" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "StartMenuShowPrinters" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "NoNetCrawling" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoWinKeys" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SoftLandingEnabled" -Type "DWord" -Value 0
+
+    Remove-RegistryKeyForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\Subscriptions"
+    Remove-RegistryKeyForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\SuggestedApps"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -Name "" -Type "String" -Value ""
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\38f30556-646d-11dd-aad8-70f56cffaf4e" -Name "Attributes" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "ColorPrevalence" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "EnableWindowColorization" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Partmgr" -Name "Start" -Type "DWord" -Value 3
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\sptd" -Name "Start" -Type "DWord" -Value 4 | Out-Null
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Printers\Defaults" -Name "NetID" -Type "String" -Value ""
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ListviewShadow" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowEncryptedFiles" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTypeOverlayIcons" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "PersistBrowsers" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "PersistMonitorSettings" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "FolderSizeMode" -Type "DWord" -Value 2
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SuperHiddenStartPage" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Comdlg32" -Name "SearchHidden" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "WebViewBarricade" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoPropertiesMyComputer" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoPropertiesMyDocuments" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoPropertiesTrash" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoSharedDocuments" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoStartMenuMyDocuments" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoStartMenuMyMusic" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoStartMenuMyPictures" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoStartMenuNetworkPlaces" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoStartMenuPinnedPlaces" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoStartMenuRecent" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SnapAssist" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SnapAssistSizeLimit" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "PowerMenuShowFullShutdown" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "SmoothScroll" -Type "String" -Value "0"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "HotkeyActive" -Type "String" -Value "0"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Accessibility\FilterKeys" -Name "HotKeyActive" -Type "String" -Value "0"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Accessibility\ToggleKeys" -Name "HotKeyActive" -Type "String" -Value "0"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Windows" -Name "DeviceNotSelectedTimeout" -Type "DWord" -Value 1
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Windows" -Name "sShell" -Type "String" -Value "explorer.exe"
+
+    return $true
+}
+
 function Install-FixOS {
     Write-Host "[                    ] 0%" -NoNewline
     
@@ -1262,6 +1636,10 @@ function Install-FixOS {
     Start-Sleep -Milliseconds 100
     $registryResult = Apply-RegistryTweaks
     Write-Host "`r[##########          ] 50%" -NoNewline
+    
+    Start-Sleep -Milliseconds 100
+    $performanceResult = Apply-PerformanceOptimizations
+    Write-Host "`r[###############     ] 75%" -NoNewline
     
     Start-Sleep -Milliseconds 100
     
