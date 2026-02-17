@@ -105,7 +105,7 @@ function Show-Menu {
 
     Write-CenteredLine -Text ""
     Write-CenteredLine -Text ""
-    Write-CenteredLine -Text "[1] Install FixOS [2] Learn More"
+    Write-CenteredLine -Text "[1] Install FixOS    [2] Learn More"
     Write-CenteredLine -Text ""
     Write-CenteredLine -Text "[3] Exit"
     Write-CenteredLine -Text ""
@@ -1063,8 +1063,8 @@ function Apply-RegistryTweaks {
     $commonFlags = @("--exact","--silent","--accept-package-agreements","--accept-source-agreements","--source","winget")
 
     & $winget install --id Nilesoft.Shell @commonFlagss
-    & $winget install --id Alex313031.Thorium.AVX2 @commonFlagss
-    
+    & $winget install --id Alex313031.Thorium @commonFlagss
+
     return $true
 }
 
