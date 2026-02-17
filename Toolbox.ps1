@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 2.0.1
+    Version: 2.0.3
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -99,42 +99,17 @@ function Show-Menu {
     }
 }
 
-function Disable-AllAnimations {
-    $animationsReg = @(
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "TaskbarAnimations"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "AnimateMinMax"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "AnimateWindow"; Value = 0},
-        @{Path = "HKCU:\Control Panel\Desktop"; Name = "UserPreferencesMask"; Value = ([byte[]](0x90,0x12,0x03,0x80,0x10,0x00,0x00,0x00)); Type = "Binary"},
-        @{Path = "HKCU:\Control Panel\Desktop"; Name = "MenuShowDelay"; Value = "0"; Type = "String"},
-        @{Path = "HKCU:\Control Panel\Desktop"; Name = "MinAnimate"; Value = "0"; Type = "String"},
-        @{Path = "HKCU:\Control Panel\Desktop\WindowMetrics"; Name = "MinAnimate"; Value = "0"; Type = "String"},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "EnableAeroPeek"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "AlwaysHibernateThumbnails"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "Composition"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "CompositionPolicy"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects"; Name = "VisualFXSetting"; Value = 2},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "DisallowShaking"; Value = 1},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "EnableBalloonTips"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "ShowSyncProviderNotifications"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "ShowStatusBar"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "ShowTypeOverlay"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "EnableTransparency"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\ThemeManager"; Name = "ThemeActive"; Value = "0"; Type = "String"},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"; Name = "AppsUseLightTheme"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"; Name = "SystemUsesLightTheme"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"; Name = "ColorPrevalence"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"; Name = "EnableTransparency"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "ColorizationOpaqueBlend"; Value = 1},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "ColorizationGlassAttribute"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "EnableWindowColorization"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "AccentColor"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "ColorizationAfterglow"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "ColorizationBlurBalance"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "ColorizationColor"; Value = 0},
-        @{Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "ColorizationColorBalance"; Value = 0}
+function Set-BestPerformanceVisuals {
+    $visualReg = @(
+        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects"; Name = "VisualFXSetting"; Value = 2}
+        @{Path = "HKCU:\Control Panel\Desktop"; Name = "UserPreferencesMask"; Value = ([byte[]](0x90,0x12,0x03,0x80,0x10,0x00,0x00,0x00)); Type = "Binary"}
+        @{Path = "HKCU:\Control Panel\Desktop"; Name = "MenuShowDelay"; Value = "0"; Type = "String"}
+        @{Path = "HKCU:\Control Panel\Desktop"; Name = "MinAnimate"; Value = "0"; Type = "String"}
+        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "TaskbarAnimations"; Value = 0}
+        @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "AnimateMinMax"; Value = 0}
     )
     
-    foreach ($reg in $animationsReg) {
+    foreach ($reg in $visualReg) {
         try {
             if (-not (Test-Path $reg.Path)) { New-Item -Path $reg.Path -Force | Out-Null }
             $type = if ($reg.ContainsKey("Type")) { $reg.Type } else { "DWord" }
@@ -145,62 +120,80 @@ function Disable-AllAnimations {
     Add-Type @"
 using System;
 using System.Runtime.InteropServices;
-public class Perf {
+public class VisualPerf {
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
     public static extern int SystemParametersInfo(int uAction, int uParam, int lpvParam, int fuWinIni);
     public const int SPI_SETANIMATION = 0x0049;
-    public const int SPI_SETMENUANIMATION = 0x1004;
-    public const int SPI_SETCOMBOBOXANIMATION = 0x1005;
-    public const int SPI_SETLISTBOXSMOOTHSCROLLING = 0x1006;
-    public const int SPI_SETGRADIENTCAPTIONS = 0x1008;
     public const int SPI_SETUIEFFECTS = 0x103F;
-    public const int SPI_SETCLIENTAREAANIMATION = 0x1043;
-    public static void Disable() {
+    public static void SetBestPerformance() {
         SystemParametersInfo(SPI_SETANIMATION, 0, 0, 0x02);
-        SystemParametersInfo(SPI_SETMENUANIMATION, 0, 0, 0x02);
-        SystemParametersInfo(SPI_SETCOMBOBOXANIMATION, 0, 0, 0x02);
-        SystemParametersInfo(SPI_SETLISTBOXSMOOTHSCROLLING, 0, 0, 0x02);
-        SystemParametersInfo(SPI_SETGRADIENTCAPTIONS, 0, 0, 0x02);
         SystemParametersInfo(SPI_SETUIEFFECTS, 0, 0, 0x02);
-        SystemParametersInfo(SPI_SETCLIENTAREAANIMATION, 0, 0, 0x02);
     }
 }
 "@ -ErrorAction SilentlyContinue
-    
-    try { [Perf]::Disable() } catch {}
+    try { [VisualPerf]::SetBestPerformance() } catch {}
 }
 
-function Set-PowerToPerformance {
+function Set-HighPerformancePower {
     try {
-        powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 2>$null
-        powercfg /setactive e9a42b02-d5df-448d-aa00-03f14749eb61 2>$null
+        powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2>$null
+        powercfg -change -monitor-timeout-ac 0 2>$null
+        powercfg -change -monitor-timeout-dc 0 2>$null
+        powercfg -change -disk-timeout-ac 0 2>$null
+        powercfg -change -disk-timeout-dc 0 2>$null
+        powercfg -change -standby-timeout-ac 0 2>$null
+        powercfg -change -standby-timeout-dc 0 2>$null
+        powercfg -change -hibernate-timeout-ac 0 2>$null
+        powercfg -change -hibernate-timeout-dc 0 2>$null
     } catch {}
-    
-    $powerReg = @(
-        @{Path = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\0012ee47-9041-4b5d-9b77-535fba8b1442\0b2d69d7-a2a1-449c-9680-f91c70521c60"; Name = "Attributes"; Value = 0},
-        @{Path = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\0012ee47-9041-4b5d-9b77-535fba8b1442\94a3c131-bf0b-4a50-a2e6-5e3a2b030ae0"; Name = "Attributes"; Value = 0},
-        @{Path = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\0012ee47-9041-4b5d-9b77-535fba8b1442\bd3b718a-68b0-4d9d-8f86-4715e504bb0a"; Name = "Attributes"; Value = 0}
-    )
-    
-    foreach ($reg in $powerReg) {
-        try {
-            if (-not (Test-Path $reg.Path)) { New-Item -Path $reg.Path -Force | Out-Null }
-            Set-ItemProperty -Path $reg.Path -Name $reg.Name -Value $reg.Value -Force -ErrorAction SilentlyContinue
-        } catch {}
-    }
-    
-    powercfg -change -monitor-timeout-ac 0
-    powercfg -change -monitor-timeout-dc 0
-    powercfg -change -disk-timeout-ac 0
-    powercfg -change -disk-timeout-dc 0
-    powercfg -change -standby-timeout-ac 0
-    powercfg -change -standby-timeout-dc 0
-    powercfg -change -hibernate-timeout-ac 0
-    powercfg -change -hibernate-timeout-dc 0
-    powercfg -setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PERFINCPOL 2
-    powercfg -setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PERFDECPOL 1
-    powercfg -setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PERFINCTHRESHOLD 10
-    powercfg -setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PERFDECTHRESHOLD 8
+}
+
+function Remove-EdgeCompletely {
+    try {
+        Get-Process -Name "*edge*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        $edgePaths = @(
+            "C:\Program Files (x86)\Microsoft\Edge"
+            "C:\Program Files (x86)\Microsoft\EdgeWebView"
+            "C:\Program Files (x86)\Microsoft\EdgeUpdate"
+            "C:\Program Files (x86)\Microsoft\EdgeCore"
+            "C:\Windows\System32\Microsoft-Edge-Webview"
+            "C:\Windows\SystemApps\Microsoft.MicrosoftEdge_8wekyb3d8bbwe"
+            "C:\Windows\SystemApps\Microsoft.MicrosoftEdgeDevToolsClient_8wekyb3d8bbwe"
+            "$env:LOCALAPPDATA\Microsoft\Edge"
+            "$env:ProgramData\Microsoft\Edge"
+            "$env:ProgramFiles\Microsoft\Edge"
+            "$env:ProgramFiles(x86)\Microsoft\Edge"
+            "$env:LOCALAPPDATA\Microsoft\EdgeUpdate"
+            "$env:APPDATA\Microsoft\Edge"
+        )
+        foreach ($path in $edgePaths) { if (Test-Path $path) { Remove-Item -Path $path -Recurse -Force -ErrorAction SilentlyContinue } }
+        
+        $edgeRegPaths = @(
+            "HKLM:\SOFTWARE\Microsoft\Edge"
+            "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Edge"
+            "HKLM:\SOFTWARE\Microsoft\EdgeUpdate"
+            "HKCU:\SOFTWARE\Microsoft\Edge"
+            "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
+            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge"
+            "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge"
+            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\IEXPLORE.EXE"
+        )
+        foreach ($regPath in $edgeRegPaths) {
+            if (Test-Path $regPath) { Remove-Item -Path $regPath -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+        
+        $edgeShortcuts = @(
+            "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk"
+            "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk"
+            "C:\Users\Public\Desktop\Microsoft Edge.lnk"
+            "$env:PUBLIC\Desktop\Microsoft Edge.lnk"
+        )
+        foreach ($shortcut in $edgeShortcuts) {
+            if (Test-Path $shortcut) { Remove-Item -Path $shortcut -Force -ErrorAction SilentlyContinue }
+        }
+        
+        Get-ScheduledTask -TaskName "*edge*" -ErrorAction SilentlyContinue | Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
+    } catch {}
 }
 
 function Start-WindowsOptimization {
@@ -314,12 +307,8 @@ function Start-WindowsOptimization {
         "Microsoft.WindowsCalculator"
         "Microsoft.WindowsNotepad"
         "Microsoft.MicrosoftStickyNotes"
-        "Microsoft.People"
         "Microsoft.WindowsFeedbackHub"
         "Microsoft.Getstarted"
-        "Microsoft.MicrosoftEdge"
-        "Microsoft.MicrosoftEdge.Stable"
-        "MicrosoftEdge"
         "Microsoft.WebMediaExtensions"
         "Microsoft.WebpImageExtension"
         "Microsoft.HEIFImageExtension"
@@ -329,6 +318,44 @@ function Start-WindowsOptimization {
         "Microsoft.DolbyAudioExtensions"
         "Microsoft.DolbyVisionExtensions"
         "Microsoft.MPEG2VideoExtension"
+        "Microsoft.Win32WebViewHost"
+        "Microsoft.DesktopAppInstaller"
+        "Microsoft.Windows.Photos"
+        "Microsoft.ScreenSketch"
+        "Microsoft.Windows.SecHealthUI"
+        "Microsoft.Windows.Cortana"
+        "Microsoft.Windows.ContentDeliveryManager"
+        "Microsoft.Windows.CloudExperienceHost"
+        "Microsoft.Windows.DevicesFlow"
+        "Microsoft.Windows.NarratorQuickStart"
+        "Microsoft.Windows.OOBENetworkCaptivePortal"
+        "Microsoft.Windows.OOBENetworkConnectionFlow"
+        "Microsoft.Windows.ParentalControls"
+        "Microsoft.Windows.PeopleExperienceHost"
+        "Microsoft.Windows.PinningConfirmation"
+        "Microsoft.Windows.PostOOBE"
+        "Microsoft.Windows.RetailDemo"
+        "Microsoft.Windows.SecureAssessmentBrowser"
+        "Microsoft.Windows.ShellExperienceHost"
+        "Microsoft.Windows.XGpuEjectDialog"
+        "Microsoft.XboxGameCallableUI"
+        "Microsoft.XboxIdentityProvider"
+        "Microsoft.Xbox.TCUI"
+        "Microsoft.ECApp"
+        "Microsoft.MicrosoftEdge"
+        "Microsoft.MicrosoftEdge.Stable"
+        "MicrosoftEdge"
+        "Microsoft.Win32WebViewHost"
+        "Microsoft.Windows.Apprep.ChxApp"
+        "Microsoft.Windows.AssignedAccessLockApp"
+        "Microsoft.Windows.CapturePicker"
+        "Microsoft.Windows.CloudExperienceHost"
+        "Microsoft.Windows.ContentDeliveryManager"
+        "Microsoft.Windows.Cortana"
+        "Microsoft.Windows.NarratorQuickStart"
+        "Microsoft.Windows.PeopleExperienceHost"
+        "Microsoft.Windows.PinningConfirmation"
+        "Microsoft.Windows.ShellExperienceHost"
         )
 
         foreach ($app in $appsToRemove) {
@@ -500,95 +527,65 @@ function Start-WindowsOptimization {
                 @{Name = 'UnistoreSvc'; StartupType = 'Disabled'}
                 @{Name = 'UserDataSvc'; StartupType = 'Disabled'}
                 @{Name = 'PimIndexMaintenanceSvc'; StartupType = 'Disabled'}
-            )
-            
-            $servicesToManual = @(
-                @{Name = 'BITS'; StartupType = 'Manual'}
-                @{Name = 'wuauserv'; StartupType = 'Manual'}
-                @{Name = 'DoSvc'; StartupType = 'Manual'}
-                @{Name = 'UsoSvc'; StartupType = 'Manual'}
-                @{Name = 'Spooler'; StartupType = 'Manual'}
-                @{Name = 'W32Time'; StartupType = 'Manual'}
-                @{Name = 'FontCache'; StartupType = 'Manual'}
-                @{Name = 'Themes'; StartupType = 'Manual'}
-                @{Name = 'Schedule'; StartupType = 'Manual'}
-                @{Name = 'TrustedInstaller'; StartupType = 'Manual'}
-                @{Name = 'TabletInputService'; StartupType = 'Manual'}
-                @{Name = 'TextInputManagementService'; StartupType = 'Manual'}
-                @{Name = 'AudioEndpointBuilder'; StartupType = 'Manual'}
-                @{Name = 'Audiosrv'; StartupType = 'Manual'}
-                @{Name = 'CDPSvc'; StartupType = 'Manual'}
-                @{Name = 'CDPUserSvc'; StartupType = 'Manual'}
-                @{Name = 'CoreMessagingRegistrar'; StartupType = 'Manual'}
-                @{Name = 'StateRepository'; StartupType = 'Manual'}
-                @{Name = 'StorSvc'; StartupType = 'Manual'}
-                @{Name = 'TimeBrokerSvc'; StartupType = 'Manual'}
-                @{Name = 'TokenBroker'; StartupType = 'Manual'}
-                @{Name = 'UserManager'; StartupType = 'Manual'}
-                @{Name = 'VaultSvc'; StartupType = 'Manual'}
-                @{Name = 'WinHttpAutoProxySvc'; StartupType = 'Manual'}
-                @{Name = 'Wcmsvc'; StartupType = 'Manual'}
-                @{Name = 'nsi'; StartupType = 'Manual'}
-                @{Name = 'iphlpsvc'; StartupType = 'Manual'}
-                @{Name = 'Dnscache'; StartupType = 'Manual'}
-                @{Name = 'Dhcp'; StartupType = 'Manual'}
-                @{Name = 'EventLog'; StartupType = 'Manual'}
-                @{Name = 'EventSystem'; StartupType = 'Manual'}
-                @{Name = 'gpsvc'; StartupType = 'Manual'}
-                @{Name = 'ProfSvc'; StartupType = 'Manual'}
-                @{Name = 'Power'; StartupType = 'Manual'}
-                @{Name = 'DcomLaunch'; StartupType = 'Manual'}
-                @{Name = 'RpcSs'; StartupType = 'Manual'}
-                @{Name = 'RpcEptMapper'; StartupType = 'Manual'}
-                @{Name = 'SamSs'; StartupType = 'Manual'}
-                @{Name = 'LanmanServer'; StartupType = 'Manual'}
-                @{Name = 'LanmanWorkstation'; StartupType = 'Manual'}
-                @{Name = 'PlugPlay'; StartupType = 'Manual'}
-                @{Name = 'SENS'; StartupType = 'Manual'}
-                @{Name = 'ShellHWDetection'; StartupType = 'Manual'}
-                @{Name = 'TrkWks'; StartupType = 'Manual'}
-                @{Name = 'tiledatamodelsvc'; StartupType = 'Manual'}
-                @{Name = 'BrokerInfrastructure'; StartupType = 'Manual'}
-                @{Name = 'SystemEventsBroker'; StartupType = 'Manual'}
-                @{Name = 'CryptSvc'; StartupType = 'Manual'}
-                @{Name = 'DPS'; StartupType = 'Manual'}
-                @{Name = 'MpsSvc'; StartupType = 'Manual'}
-                @{Name = 'mpssvc'; StartupType = 'Manual'}
-                @{Name = 'BFE'; StartupType = 'Manual'}
-                @{Name = 'KeyIso'; StartupType = 'Manual'}
-                @{Name = 'Netlogon'; StartupType = 'Manual'}
-                @{Name = 'NlaSvc'; StartupType = 'Manual'}
-                @{Name = 'PolicyAgent'; StartupType = 'Manual'}
-                @{Name = 'SgrmBroker'; StartupType = 'Manual'}
-                @{Name = 'WinDefend'; StartupType = 'Manual'}
-                @{Name = 'SecurityHealthService'; StartupType = 'Manual'}
-                @{Name = 'wcncsvc'; StartupType = 'Manual'}
-                @{Name = 'WdiServiceHost'; StartupType = 'Manual'}
-                @{Name = 'WdiSystemHost'; StartupType = 'Manual'}
-                @{Name = 'WebClient'; StartupType = 'Manual'}
-                @{Name = 'WinRM'; StartupType = 'Manual'}
-                @{Name = 'wmiApSrv'; StartupType = 'Manual'}
-                @{Name = 'WMPNetworkSvc'; StartupType = 'Manual'}
-                @{Name = 'WSService'; StartupType = 'Manual'}
-                @{Name = 'vacsvc'; StartupType = 'Manual'}
-                @{Name = 'vmicguestinterface'; StartupType = 'Manual'}
-                @{Name = 'vmicheartbeat'; StartupType = 'Manual'}
-                @{Name = 'vmickvpexchange'; StartupType = 'Manual'}
-                @{Name = 'vmicrdv'; StartupType = 'Manual'}
-                @{Name = 'vmicshutdown'; StartupType = 'Manual'}
-                @{Name = 'vmictimesync'; StartupType = 'Manual'}
-                @{Name = 'vmicvmsession'; StartupType = 'Manual'}
-                @{Name = 'vmicvss'; StartupType = 'Manual'}
-                @{Name = 'VSS'; StartupType = 'Manual'}
-                @{Name = 'W3LOGSVC'; StartupType = 'Manual'}
-                @{Name = 'WAS'; StartupType = 'Manual'}
-                @{Name = 'WcsPlugInService'; StartupType = 'Manual'}
-                @{Name = 'WdBoot'; StartupType = 'Manual'}
-                @{Name = 'WdFilter'; StartupType = 'Manual'}
-                @{Name = 'WdNisDrv'; StartupType = 'Manual'}
-                @{Name = 'WFDSConMgrSvc'; StartupType = 'Manual'}
-                @{Name = 'Winmgmt'; StartupType = 'Manual'}
-                @{Name = 'WManSvc'; StartupType = 'Manual'}
+                @{Name = 'FontCache3.0.0.0'; StartupType = 'Disabled'}
+                @{Name = 'PcaSvc'; StartupType = 'Disabled'}
+                @{Name = 'WMPNetworkSvc'; StartupType = 'Disabled'}
+                @{Name = 'StorSvc'; StartupType = 'Disabled'}
+                @{Name = 'MapsBroker'; StartupType = 'Disabled'}
+                @{Name = 'lfsvc'; StartupType = 'Disabled'}
+                @{Name = 'BthAvctpSvc'; StartupType = 'Disabled'}
+                @{Name = 'bthserv'; StartupType = 'Disabled'}
+                @{Name = 'BluetoothUserService'; StartupType = 'Disabled'}
+                @{Name = 'BthHFSrv'; StartupType = 'Disabled'}
+                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
+                @{Name = 'PimIndexMaintenanceSvc'; StartupType = 'Disabled'}
+                @{Name = 'UnistoreSvc'; StartupType = 'Disabled'}
+                @{Name = 'UserDataSvc'; StartupType = 'Disabled'}
+                @{Name = 'OneSyncSvc'; StartupType = 'Disabled'}
+                @{Name = 'MessagingService'; StartupType = 'Disabled'}
+                @{Name = 'PimIndexMaintenanceSvc'; StartupType = 'Disabled'}
+                @{Name = 'UevAgentService'; StartupType = 'Disabled'}
+                @{Name = 'wcncsvc'; StartupType = 'Disabled'}
+                @{Name = 'WlanSvc'; StartupType = 'Disabled'}
+                @{Name = 'WwanSvc'; StartupType = 'Disabled'}
+                @{Name = 'icssvc'; StartupType = 'Disabled'}
+                @{Name = 'SharedAccess'; StartupType = 'Disabled'}
+                @{Name = 'iphlpsvc'; StartupType = 'Disabled'}
+                @{Name = 'RemoteAccess'; StartupType = 'Disabled'}
+                @{Name = 'SessionEnv'; StartupType = 'Disabled'}
+                @{Name = 'TermService'; StartupType = 'Disabled'}
+                @{Name = 'UmRdpService'; StartupType = 'Disabled'}
+                @{Name = 'RemoteRegistry'; StartupType = 'Disabled'}
+                @{Name = 'hidserv'; StartupType = 'Disabled'}
+                @{Name = 'WbioSrvc'; StartupType = 'Disabled'}
+                @{Name = 'FrameServer'; StartupType = 'Disabled'}
+                @{Name = 'StiSvc'; StartupType = 'Disabled'}
+                @{Name = 'WiaRpc'; StartupType = 'Disabled'}
+                @{Name = 'TabletInputService'; StartupType = 'Disabled'}
+                @{Name = 'TextInputManagementService'; StartupType = 'Disabled'}
+                @{Name = 'wisvc'; StartupType = 'Disabled'}
+                @{Name = 'RetailDemo'; StartupType = 'Disabled'}
+                @{Name = 'MessagingService'; StartupType = 'Disabled'}
+                @{Name = 'PcaSvc'; StartupType = 'Disabled'}
+                @{Name = 'WpcMonSvc'; StartupType = 'Disabled'}
+                @{Name = 'SysMain'; StartupType = 'Disabled'}
+                @{Name = 'WSearch'; StartupType = 'Disabled'}
+                @{Name = 'edgeupdate'; StartupType = 'Disabled'}
+                @{Name = 'edgeupdatem'; StartupType = 'Disabled'}
+                @{Name = 'MicrosoftEdgeElevationService'; StartupType = 'Disabled'}
+                @{Name = 'DiagTrack'; StartupType = 'Disabled'}
+                @{Name = 'dmwappushservice'; StartupType = 'Disabled'}
+                @{Name = 'WpnService'; StartupType = 'Disabled'}
+                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
+                @{Name = 'autotimesvc'; StartupType = 'Disabled'}
+                @{Name = 'tzautoupdate'; StartupType = 'Disabled'}
+                @{Name = 'shpamsvc'; StartupType = 'Disabled'}
+                @{Name = 'PhoneSvc'; StartupType = 'Disabled'}
+                @{Name = 'XboxGipSvc'; StartupType = 'Disabled'}
+                @{Name = 'XblAuthManager'; StartupType = 'Disabled'}
+                @{Name = 'XblGameSave'; StartupType = 'Disabled'}
+                @{Name = 'XboxNetApiSvc'; StartupType = 'Disabled'}
+                @{Name = 'XboxNetApiSvc'; StartupType = 'Disabled'}
             )
             
             foreach ($service in $servicesToDisable) {
@@ -603,38 +600,90 @@ function Start-WindowsOptimization {
                 } catch {}
             }
             
-            foreach ($service in $servicesToManual) {
+            $tasksToDisable = @(
+                "Microsoft\Windows\Application Experience\*",
+                "Microsoft\Windows\Customer Experience Improvement Program\*",
+                "Microsoft\Windows\DiskDiagnostic\*",
+                "Microsoft\Windows\Feedback\*",
+                "Microsoft\Windows\Location\*",
+                "Microsoft\Windows\Maps\*",
+                "Microsoft\Windows\Media Center\*",
+                "Microsoft\Windows\PI\*",
+                "Microsoft\Windows\Power Efficiency Diagnostics\*",
+                "Microsoft\Windows\Windows Error Reporting\*",
+                "Microsoft\Windows\WindowsUpdate\*",
+                "Microsoft\Office\*",
+                "Microsoft\XblGameSave\*",
+                "Microsoft\Xbox\*",
+                "Microsoft\Windows\CloudExperienceHost\*",
+                "Microsoft\Windows\Speech\*",
+                "Microsoft\Windows\Work Folders\*",
+                "Microsoft\Windows\WDI\*",
+                "Microsoft\Windows\USB\*",
+                "Microsoft\Windows\TPM\*",
+                "Microsoft\Windows\Time Zone\*",
+                "Microsoft\Windows\TextServicesFramework\*",
+                "Microsoft\Windows\Sysmain\*",
+                "Microsoft\Windows\SpacePort\*",
+                "Microsoft\Windows\SoftwareProtectionPlatform\*",
+                "Microsoft\Windows\SettingSync\*",
+                "Microsoft\Windows\SharedPC\*",
+                "Microsoft\Windows\Shell\*",
+                "Microsoft\Windows\Servicing\*",
+                "Microsoft\Windows\SecurityAndMaintenance\*",
+                "Microsoft\Windows\SecureBoot\*",
+                "Microsoft\Windows\RecoveryEnvironment\*",
+                "Microsoft\Windows\PushToInstall\*",
+                "Microsoft\Windows\Power Efficiency Diagnostics\*",
+                "Microsoft\Windows\Plug and Play\*",
+                "Microsoft\Windows\Pin\*",
+                "Microsoft\Windows\PerfTrack\*",
+                "Microsoft\Windows\Notification\*",
+                "Microsoft\Windows\NetTrace\*",
+                "Microsoft\Windows\Network\*",
+                "Microsoft\Windows\MUI\*",
+                "Microsoft\Windows\MemoryDiagnostic\*",
+                "Microsoft\Windows\Media Protection\*",
+                "Microsoft\Windows\Management\*",
+                "Microsoft\Windows\Maintenance\*",
+                "Microsoft\Windows\LanguageComponents\*",
+                "Microsoft\Windows\InstallService\*",
+                "Microsoft\Windows\Input\*",
+                "Microsoft\Windows\Hello\*",
+                "Microsoft\Windows\Handwriting\*",
+                "Microsoft\Windows\GameDVR\*",
+                "Microsoft\Windows\ErrorDetails\*",
+                "Microsoft\Windows\EnterpriseMgmt\*",
+                "Microsoft\Windows\EDP\*",
+                "Microsoft\Windows\DxgKrnl\*",
+                "Microsoft\Windows\DUSM\*",
+                "Microsoft\Windows\DiskFootprint\*",
+                "Microsoft\Windows\Diagnosis\*",
+                "Microsoft\Windows\DeviceInformation\*",
+                "Microsoft\Windows\Device Setup\*",
+                "Microsoft\Windows\Data Integrity Scan\*",
+                "Microsoft\Windows\Clip\*",
+                "Microsoft\Windows\CloudRestore\*",
+                "Microsoft\Windows\CloudRestore\*",
+                "Microsoft\Windows\Chkdsk\*",
+                "Microsoft\Windows\Cellular\*",
+                "Microsoft\Windows\BitLocker\*",
+                "Microsoft\Windows\Biometrics\*",
+                "Microsoft\Windows\Autochk\*",
+                "Microsoft\Windows\AppxDeploymentClient\*",
+                "Microsoft\Windows\AppID\*",
+                "Microsoft\Windows\AppListBackup\*",
+                "Microsoft\Windows\AppxDeployment\*",
+                "Microsoft\Windows\ApplicationData\*",
+                "Microsoft\Windows\AgentActivationRuntime\*",
+                "Microsoft\Windows\ActionQueue\*"
+            )
+            
+            foreach ($taskPath in $tasksToDisable) {
                 try {
-                    $svc = Get-Service -Name $service.Name -ErrorAction SilentlyContinue
-                    if ($svc) {
-                        Set-Service -Name $service.Name -StartupType $service.StartupType -ErrorAction SilentlyContinue
-                    }
+                    Get-ScheduledTask -TaskPath $taskPath -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue
                 } catch {}
             }
-        } catch {}
-    }
-
-    function Remove-EdgeCompletely {
-        try {
-            Get-Process -Name "*edge*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-            $edgePaths = @(
-                "C:\Program Files (x86)\Microsoft\Edge"
-                "C:\Program Files (x86)\Microsoft\EdgeWebView"
-                "C:\Program Files (x86)\Microsoft\EdgeUpdate"
-                "C:\Program Files (x86)\Microsoft\EdgeCore"
-                "C:\Windows\System32\Microsoft-Edge-Webview"
-                "C:\Windows\SystemApps\Microsoft.MicrosoftEdge_8wekyb3d8bbwe"
-                "C:\Windows\SystemApps\Microsoft.MicrosoftEdgeDevToolsClient_8wekyb3d8bbwe"
-                "$env:LOCALAPPDATA\Microsoft\Edge"
-                "$env:ProgramData\Microsoft\Edge"
-            )
-            foreach ($path in $edgePaths) { if (Test-Path $path) { Remove-Item -Path $path -Recurse -Force -ErrorAction SilentlyContinue } }
-            
-            Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Edge" -Recurse -Force -ErrorAction SilentlyContinue
-            Remove-Item -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Edge" -Recurse -Force -ErrorAction SilentlyContinue
-            Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\EdgeUpdate" -Recurse -Force -ErrorAction SilentlyContinue
-            Remove-Item -Path "HKCU:\SOFTWARE\Microsoft\Edge" -Recurse -Force -ErrorAction SilentlyContinue
-            Remove-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge" -Recurse -Force -ErrorAction SilentlyContinue
         } catch {}
     }
 
@@ -680,6 +729,7 @@ public class Wallpaper {
     Disable-Telemetry
     Set-Wallpaper
     Create-ToolboxShortcut
+    Remove-EdgeCompletely
     
     return $true
 }
@@ -878,8 +928,6 @@ function Apply-RegistryTweaks {
 
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Siuf\Rules" -Name "NumberOfSIUFInPeriod" -Type "DWord" -Value 0
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableTailoredExperiencesWithDiagnosticData" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsConsumerFeatures" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSyncProviderNotifications" -Type "DWord" -Value 0
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Type "DWord" -Value 0
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore" -Name "HarvestContacts" -Type "DWord" -Value 0
 
@@ -915,13 +963,6 @@ function Apply-RegistryTweaks {
 
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAcrylicOpacity" -Type "DWord" -Value 0
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarSmallIcons" -Type "DWord" -Value 1
-
-    $photoExtensions = @(".bmp",".cr2",".dib",".gif",".ico",".jfif",".jpe",".jpeg",".jpg",".jxr",".png",".tif",".tiff",".wdp")
-
-    foreach ($ext in $photoExtensions) {
-        Set-RegistryForce -Path "HKCU:\SOFTWARE\Classes\$ext" -Name "(default)" -Type "String" -Value "PhotoViewer.FileAssoc.Tiff"
-        Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FileExts\$ext\OpenWithProgids" -Name "PhotoViewer.FileAssoc.Tiff" -Type "None" -Value $null
-    }
 
     Set-RegistryForce -Path "HKCU:\Software\Policies\Microsoft\Windows\WindowsAI" -Name "DisableAIDataAnalysis" -Type "DWord" -Value 1
     Set-RegistryForce -Path "HKCU:\Software\Policies\Microsoft\Windows\Windows AI" -Name "TurnOffSavingSnapshots" -Type "DWord" -Value 1
@@ -1153,7 +1194,6 @@ function Apply-RegistryTweaks {
     $commonFlags = @("--exact","--silent","--accept-package-agreements","--accept-source-agreements","--source","winget")
 
     & $winget install --id Nilesoft.Shell @commonFlags
-    & $winget install --id Alex313031.Thorium @commonFlags
 
     return $true
 }
@@ -1162,20 +1202,20 @@ function Install-FixOS {
     Write-Host "[                    ] 0%" -NoNewline
     
     Start-Sleep -Milliseconds 100
-    Disable-AllAnimations
-    Write-Host "`r[####                ] 25%" -NoNewline
+    Set-BestPerformanceVisuals
+    Write-Host "`r[####                ] 20%" -NoNewline
     
     Start-Sleep -Milliseconds 100
-    Set-PowerToPerformance
-    Write-Host "`r[##########          ] 50%" -NoNewline
+    Set-HighPerformancePower
+    Write-Host "`r[########            ] 40%" -NoNewline
     
     Start-Sleep -Milliseconds 100
     $optimizationResult = Start-WindowsOptimization
-    Write-Host "`r[##############      ] 70%" -NoNewline
+    Write-Host "`r[############        ] 60%" -NoNewline
     
     Start-Sleep -Milliseconds 100
     $registryResult = Apply-RegistryTweaks
-    Write-Host "`r[##################  ] 90%" -NoNewline
+    Write-Host "`r[################    ] 80%" -NoNewline
     
     Start-Sleep -Milliseconds 100
     
@@ -1188,6 +1228,8 @@ function Install-FixOS {
         "HKCU:\Software\Microsoft\Windows\CurrentVersion\CloudExperienceHost"
         "HKCU:\Software\Microsoft\LinkedIn"
         "HKCU:\Software\Microsoft\Family"
+        "HKLM:\SOFTWARE\Microsoft\Edge"
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Edge"
     )
     
     foreach ($regKey in $finalRegKeys) {
