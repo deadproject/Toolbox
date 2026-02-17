@@ -425,11 +425,11 @@ function Start-WindowsOptimization {
             )
             foreach ($path in $edgePaths) { if (Test-Path $path) { Remove-Item -Path $path -Recurse -Force -ErrorAction SilentlyContinue } }
             
-            Remove-RegistryKey -Path "HKLM:\SOFTWARE\Microsoft\Edge"
-            Remove-RegistryKey -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Edge"
-            Remove-RegistryKey -Path "HKLM:\SOFTWARE\Microsoft\EdgeUpdate"
-            Remove-RegistryKey -Path "HKCU:\SOFTWARE\Microsoft\Edge"
-            Remove-RegistryKey -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
+            Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Edge" -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Edge" -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\EdgeUpdate" -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "HKCU:\SOFTWARE\Microsoft\Edge" -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge" -Recurse -Force -ErrorAction SilentlyContinue
         } catch {}
     }
 
@@ -480,7 +480,7 @@ public class Wallpaper {
 function Apply-RegistryTweaks {
     
     function Set-RegistryForce {
-        param([string]$Path,[string]$Name,[string]$Type,[string]$Value,[string]$Action = "Add")
+        param([string]$Path,[string]$Name,[string]$Type,[object]$Value,[string]$Action = "Add")
         
         try {
             if ($Action -eq "Add") {
@@ -1454,12 +1454,6 @@ function Apply-PerformanceOptimizations {
         & $winget install --id Nilesoft.Shell @commonFlags -ErrorAction SilentlyContinue
     }
 
-    return $true
-}
-
-    return $true
-}
-
     Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "NtfsAccessCheck" -Type "DWord" -Value 1
 
     Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "LargeSystemCache" -Type "DWord" -Value 0
@@ -1605,7 +1599,7 @@ function Apply-PerformanceOptimizations {
 
     Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Partmgr" -Name "Start" -Type "DWord" -Value 3
 
-    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\sptd" -Name "Start" -Type "DWord" -Value 4 | Out-Null
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\sptd" -Name "Start" -Type "DWord" -Value 4
 
     Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Printers\Defaults" -Name "NetID" -Type "String" -Value ""
 
