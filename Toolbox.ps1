@@ -1245,8 +1245,7 @@ function Apply-RegistryTweaks {
     }
 
     $commonFlags = @("--exact","--silent","--accept-package-agreements","--accept-source-agreements","--source","winget")
-
-    & $winget install --id Brave.Brave @commonFlags
+    
     & $winget install --id Nilesoft.Shell @commonFlags
 
     return $true
