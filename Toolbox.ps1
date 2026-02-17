@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 2.1.5
+    Version: 2.1.4
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -264,19 +264,17 @@ function Start-WindowsOptimization {
                 @{Name = 'DiagTrack'; StartupType = 'Disabled'}
                 @{Name = 'dmwappushservice'; StartupType = 'Disabled'}
                 @{Name = 'WSearch'; StartupType = 'Disabled'}
+                @{Name = 'SysMain'; StartupType = 'Disabled'}
                 @{Name = 'XboxGipSvc'; StartupType = 'Disabled'}
                 @{Name = 'XblAuthManager'; StartupType = 'Disabled'}
                 @{Name = 'XblGameSave'; StartupType = 'Disabled'}
                 @{Name = 'XboxNetApiSvc'; StartupType = 'Disabled'}
                 @{Name = 'OneSyncSvc'; StartupType = 'Disabled'}
                 @{Name = 'PcaSvc'; StartupType = 'Disabled'}
-                @{Name = 'WpcMonSvc'; StartupType = 'Disabled'}
                 @{Name = 'wisvc'; StartupType = 'Disabled'}
                 @{Name = 'RetailDemo'; StartupType = 'Disabled'}
-                @{Name = 'MessagingService'; StartupType = 'Disabled'}
                 @{Name = 'lfsvc'; StartupType = 'Disabled'}
                 @{Name = 'MapsBroker'; StartupType = 'Disabled'}
-                @{Name = 'PimIndexMaintenanceSvc'; StartupType = 'Disabled'}
                 @{Name = 'UnistoreSvc'; StartupType = 'Disabled'}
                 @{Name = 'UserDataSvc'; StartupType = 'Disabled'}
                 @{Name = 'WpnService'; StartupType = 'Disabled'}
@@ -284,29 +282,6 @@ function Start-WindowsOptimization {
                 @{Name = 'WdNisSvc'; StartupType = 'Disabled'}
                 @{Name = 'Sense'; StartupType = 'Disabled'}
                 @{Name = 'wscsvc'; StartupType = 'Disabled'}
-                @{Name = 'SysMain'; StartupType = 'Disabled'}
-                @{Name = 'edgeupdate'; StartupType = 'Disabled'}
-                @{Name = 'edgeupdatem'; StartupType = 'Disabled'}
-                @{Name = 'MicrosoftEdgeElevationService'; StartupType = 'Disabled'}
-                @{Name = 'BcastDVRUserService'; StartupType = 'Disabled'}
-                @{Name = 'CaptureService'; StartupType = 'Disabled'}
-                @{Name = 'cbdhsvc'; StartupType = 'Disabled'}
-                @{Name = 'ConsentUxUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'CredentialEnrollmentManagerUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'DeviceAssociationBrokerSvc'; StartupType = 'Disabled'}
-                @{Name = 'DevicePickerUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'DevicesFlowUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'MessagingService'; StartupType = 'Disabled'}
-                @{Name = 'NPSMSvc'; StartupType = 'Disabled'}
-                @{Name = 'P9RdrService'; StartupType = 'Disabled'}
-                @{Name = 'PenService'; StartupType = 'Disabled'}
-                @{Name = 'PrintWorkflowUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'UdkUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
-                @{Name = 'autotimesvc'; StartupType = 'Disabled'}
-                @{Name = 'tzautoupdate'; StartupType = 'Disabled'}
-                @{Name = 'shpamsvc'; StartupType = 'Disabled'}
-                @{Name = 'PhoneSvc'; StartupType = 'Disabled'}
                 @{Name = 'RemoteRegistry'; StartupType = 'Disabled'}
                 @{Name = 'RemoteAccess'; StartupType = 'Disabled'}
                 @{Name = 'SessionEnv'; StartupType = 'Disabled'}
@@ -321,34 +296,26 @@ function Start-WindowsOptimization {
                 @{Name = 'icssvc'; StartupType = 'Disabled'}
                 @{Name = 'WlanSvc'; StartupType = 'Disabled'}
                 @{Name = 'WwanSvc'; StartupType = 'Disabled'}
-                @{Name = 'AppIDSvc'; StartupType = 'Disabled'}
-                @{Name = 'AssignedAccessManagerSvc'; StartupType = 'Disabled'}
                 @{Name = 'TabletInputService'; StartupType = 'Disabled'}
                 @{Name = 'Ndu'; StartupType = 'Disabled'}
-                @{Name = 'PrintNotify'; StartupType = 'Disabled'}
                 @{Name = 'FontCache'; StartupType = 'Disabled'}
                 @{Name = 'Schedule'; StartupType = 'Disabled'}
                 @{Name = 'Themes'; StartupType = 'Disabled'}
+                @{Name = 'PhoneSvc'; StartupType = 'Disabled'}
             )
             
             $servicesToManual = @(
                 @{Name = 'BITS'; StartupType = 'Manual'}
                 @{Name = 'wuauserv'; StartupType = 'Manual'}
-                @{Name = 'UsoSvc'; StartupType = 'Manual'}
-                @{Name = 'W32Time'; StartupType = 'Manual'}
-                @{Name = 'FontCache'; StartupType = 'Manual'}
-                @{Name = 'Themes'; StartupType = 'Manual'}
+                @{Name = 'Spooler'; StartupType = 'Manual'}
                 @{Name = 'AudioEndpointBuilder'; StartupType = 'Manual'}
                 @{Name = 'Audiosrv'; StartupType = 'Manual'}
-                @{Name = 'CoreMessagingRegistrar'; StartupType = 'Manual'}
                 @{Name = 'DcomLaunch'; StartupType = 'Manual'}
                 @{Name = 'RpcSs'; StartupType = 'Manual'}
                 @{Name = 'RpcEptMapper'; StartupType = 'Manual'}
-                @{Name = 'EventLog'; StartupType = 'Manual'}
-                @{Name = 'Winmgmt'; StartupType = 'Manual'}
                 @{Name = 'CryptSvc'; StartupType = 'Manual'}
-                @{Name = 'DPS'; StartupType = 'Manual'}
                 @{Name = 'BFE'; StartupType = 'Manual'}
+                @{Name = 'WinDefend'; StartupType = 'Manual'}
             )
             
             foreach ($service in $servicesToDisable) {
