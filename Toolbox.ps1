@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 2.0.6
+    Version: 2.0.7
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -531,8 +531,6 @@ function Start-WindowsOptimization {
                     }
                 } catch {}
             }
-        } catch {}
-    }
             
             $tasksToDisable = @(
                 "Microsoft\Windows\Application Experience\*",
@@ -618,7 +616,7 @@ function Start-WindowsOptimization {
             }
         } catch {}
     }
-
+    
     function Disable-Telemetry {
         try {
             $telemetryRegistries = @(
