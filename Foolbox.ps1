@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 2.1.5
+    Version: 2.0.1
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -693,10 +693,16 @@ function Disable-AllScheduledTasks {
         "Microsoft\Windows\DirectX\DirectXDatabaseUpdater"
     )
     
-    foreach ($task in $tasksToDisable) {
+    foreach ($taskPath in $tasksToDisable) {
         try {
-            Disable-ScheduledTask -TaskPath $task -ErrorAction SilentlyContinue
-            Unregister-ScheduledTask -TaskPath $task -Confirm:$false -ErrorAction SilentlyContinue
+            $taskName = Split-Path $taskPath -Leaf
+            $taskFolder = Split-Path $taskPath -Parent
+            
+            $task = Get-ScheduledTask -TaskPath "\$taskFolder\" -TaskName $taskName -ErrorAction SilentlyContinue
+            if ($task) {
+                Disable-ScheduledTask -InputObject $task -ErrorAction SilentlyContinue
+                Unregister-ScheduledTask -TaskName $taskName -TaskPath "\$taskFolder\" -Confirm:$false -ErrorAction SilentlyContinue
+            }
         } catch {}
     }
 }
