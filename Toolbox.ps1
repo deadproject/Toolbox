@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 2.0.4
+    Version: 2.0.5
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -520,13 +520,15 @@ function Start-WindowsOptimization {
                 @{Name = 'UevAgentService'; StartupType = 'Disabled'}
             )
             
+            $host.UI.RawUI.FlushInputBuffer()
+            
             foreach ($service in $servicesToDisable) {
                 try {
                     $svc = Get-Service -Name $service.Name -ErrorAction SilentlyContinue
                     if ($svc) {
                         Set-Service -Name $service.Name -StartupType $service.StartupType -ErrorAction SilentlyContinue
                         if ($svc.Status -eq 'Running') {
-                            Stop-Service -Name $service.Name -Force -ErrorAction SilentlyContinue -NoWait
+                            Stop-Service -Name $service.Name -Force -ErrorAction SilentlyContinue
                         }
                     }
                 } catch {}
