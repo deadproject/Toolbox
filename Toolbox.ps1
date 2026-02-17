@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 2.0.3
+    Version: 2.0.4
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -403,13 +403,11 @@ function Start-WindowsOptimization {
                 @{Name = 'DeviceAssociationBrokerSvc'; StartupType = 'Disabled'}
                 @{Name = 'DevicePickerUserSvc'; StartupType = 'Disabled'}
                 @{Name = 'DevicesFlowUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'MessagingService'; StartupType = 'Disabled'}
                 @{Name = 'NPSMSvc'; StartupType = 'Disabled'}
                 @{Name = 'P9RdrService'; StartupType = 'Disabled'}
                 @{Name = 'PenService'; StartupType = 'Disabled'}
                 @{Name = 'PrintWorkflowUserSvc'; StartupType = 'Disabled'}
                 @{Name = 'UdkUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
                 @{Name = 'autotimesvc'; StartupType = 'Disabled'}
                 @{Name = 'tzautoupdate'; StartupType = 'Disabled'}
                 @{Name = 'shpamsvc'; StartupType = 'Disabled'}
@@ -514,78 +512,12 @@ function Start-WindowsOptimization {
                 @{Name = 'WFDSConMgrSvc'; StartupType = 'Disabled'}
                 @{Name = 'Winmgmt'; StartupType = 'Disabled'}
                 @{Name = 'WManSvc'; StartupType = 'Disabled'}
-                @{Name = 'WpnService'; StartupType = 'Disabled'}
-                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
-                @{Name = 'WSearch'; StartupType = 'Disabled'}
-                @{Name = 'WwanSvc'; StartupType = 'Disabled'}
-                @{Name = 'BcastDVRUserService'; StartupType = 'Disabled'}
-                @{Name = 'CaptureService'; StartupType = 'Disabled'}
-                @{Name = 'cbdhsvc'; StartupType = 'Disabled'}
-                @{Name = 'P9RdrService'; StartupType = 'Disabled'}
-                @{Name = 'PrintWorkflowUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'UdkUserSvc'; StartupType = 'Disabled'}
-                @{Name = 'UnistoreSvc'; StartupType = 'Disabled'}
-                @{Name = 'UserDataSvc'; StartupType = 'Disabled'}
-                @{Name = 'PimIndexMaintenanceSvc'; StartupType = 'Disabled'}
                 @{Name = 'FontCache3.0.0.0'; StartupType = 'Disabled'}
-                @{Name = 'PcaSvc'; StartupType = 'Disabled'}
-                @{Name = 'WMPNetworkSvc'; StartupType = 'Disabled'}
-                @{Name = 'StorSvc'; StartupType = 'Disabled'}
-                @{Name = 'MapsBroker'; StartupType = 'Disabled'}
-                @{Name = 'lfsvc'; StartupType = 'Disabled'}
                 @{Name = 'BthAvctpSvc'; StartupType = 'Disabled'}
                 @{Name = 'bthserv'; StartupType = 'Disabled'}
                 @{Name = 'BluetoothUserService'; StartupType = 'Disabled'}
                 @{Name = 'BthHFSrv'; StartupType = 'Disabled'}
-                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
-                @{Name = 'PimIndexMaintenanceSvc'; StartupType = 'Disabled'}
-                @{Name = 'UnistoreSvc'; StartupType = 'Disabled'}
-                @{Name = 'UserDataSvc'; StartupType = 'Disabled'}
-                @{Name = 'OneSyncSvc'; StartupType = 'Disabled'}
-                @{Name = 'MessagingService'; StartupType = 'Disabled'}
-                @{Name = 'PimIndexMaintenanceSvc'; StartupType = 'Disabled'}
                 @{Name = 'UevAgentService'; StartupType = 'Disabled'}
-                @{Name = 'wcncsvc'; StartupType = 'Disabled'}
-                @{Name = 'WlanSvc'; StartupType = 'Disabled'}
-                @{Name = 'WwanSvc'; StartupType = 'Disabled'}
-                @{Name = 'icssvc'; StartupType = 'Disabled'}
-                @{Name = 'SharedAccess'; StartupType = 'Disabled'}
-                @{Name = 'iphlpsvc'; StartupType = 'Disabled'}
-                @{Name = 'RemoteAccess'; StartupType = 'Disabled'}
-                @{Name = 'SessionEnv'; StartupType = 'Disabled'}
-                @{Name = 'TermService'; StartupType = 'Disabled'}
-                @{Name = 'UmRdpService'; StartupType = 'Disabled'}
-                @{Name = 'RemoteRegistry'; StartupType = 'Disabled'}
-                @{Name = 'hidserv'; StartupType = 'Disabled'}
-                @{Name = 'WbioSrvc'; StartupType = 'Disabled'}
-                @{Name = 'FrameServer'; StartupType = 'Disabled'}
-                @{Name = 'StiSvc'; StartupType = 'Disabled'}
-                @{Name = 'WiaRpc'; StartupType = 'Disabled'}
-                @{Name = 'TabletInputService'; StartupType = 'Disabled'}
-                @{Name = 'TextInputManagementService'; StartupType = 'Disabled'}
-                @{Name = 'wisvc'; StartupType = 'Disabled'}
-                @{Name = 'RetailDemo'; StartupType = 'Disabled'}
-                @{Name = 'MessagingService'; StartupType = 'Disabled'}
-                @{Name = 'PcaSvc'; StartupType = 'Disabled'}
-                @{Name = 'WpcMonSvc'; StartupType = 'Disabled'}
-                @{Name = 'SysMain'; StartupType = 'Disabled'}
-                @{Name = 'WSearch'; StartupType = 'Disabled'}
-                @{Name = 'edgeupdate'; StartupType = 'Disabled'}
-                @{Name = 'edgeupdatem'; StartupType = 'Disabled'}
-                @{Name = 'MicrosoftEdgeElevationService'; StartupType = 'Disabled'}
-                @{Name = 'DiagTrack'; StartupType = 'Disabled'}
-                @{Name = 'dmwappushservice'; StartupType = 'Disabled'}
-                @{Name = 'WpnService'; StartupType = 'Disabled'}
-                @{Name = 'WpnUserService'; StartupType = 'Disabled'}
-                @{Name = 'autotimesvc'; StartupType = 'Disabled'}
-                @{Name = 'tzautoupdate'; StartupType = 'Disabled'}
-                @{Name = 'shpamsvc'; StartupType = 'Disabled'}
-                @{Name = 'PhoneSvc'; StartupType = 'Disabled'}
-                @{Name = 'XboxGipSvc'; StartupType = 'Disabled'}
-                @{Name = 'XblAuthManager'; StartupType = 'Disabled'}
-                @{Name = 'XblGameSave'; StartupType = 'Disabled'}
-                @{Name = 'XboxNetApiSvc'; StartupType = 'Disabled'}
-                @{Name = 'XboxNetApiSvc'; StartupType = 'Disabled'}
             )
             
             foreach ($service in $servicesToDisable) {
@@ -594,7 +526,7 @@ function Start-WindowsOptimization {
                     if ($svc) {
                         Set-Service -Name $service.Name -StartupType $service.StartupType -ErrorAction SilentlyContinue
                         if ($svc.Status -eq 'Running') {
-                            Stop-Service -Name $service.Name -Force -ErrorAction SilentlyContinue
+                            Stop-Service -Name $service.Name -Force -ErrorAction SilentlyContinue -NoWait
                         }
                     }
                 } catch {}
@@ -634,7 +566,6 @@ function Start-WindowsOptimization {
                 "Microsoft\Windows\SecureBoot\*",
                 "Microsoft\Windows\RecoveryEnvironment\*",
                 "Microsoft\Windows\PushToInstall\*",
-                "Microsoft\Windows\Power Efficiency Diagnostics\*",
                 "Microsoft\Windows\Plug and Play\*",
                 "Microsoft\Windows\Pin\*",
                 "Microsoft\Windows\PerfTrack\*",
@@ -663,7 +594,6 @@ function Start-WindowsOptimization {
                 "Microsoft\Windows\Device Setup\*",
                 "Microsoft\Windows\Data Integrity Scan\*",
                 "Microsoft\Windows\Clip\*",
-                "Microsoft\Windows\CloudRestore\*",
                 "Microsoft\Windows\CloudRestore\*",
                 "Microsoft\Windows\Chkdsk\*",
                 "Microsoft\Windows\Cellular\*",
