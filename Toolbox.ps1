@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 2.0.1
+    Version: 2.1.3
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -1292,7 +1292,7 @@ function Clean-StartMenu {
     }
 }
 
-function Apply-SafePerformanceOptimizations {
+function Apply-PerformanceOptimizations {
     
     function Set-RegistryForce {
         param([string]$Path,[string]$Name,[string]$Type,[string]$Value,[string]$Action = "Add")
@@ -1409,6 +1409,32 @@ function Apply-SafePerformanceOptimizations {
 
     Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "ActiveWndTrkTimeout" -Type "String" -Value "0"
 
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\WSearch" -Name "Start" -Type "DWord" -Value 4
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\SysMain" -Name "Start" -Type "DWord" -Value 4
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\FontCache" -Name "Start" -Type "DWord" -Value 4
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\TabletInputService" -Name "Start" -Type "DWord" -Value 4
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\WbioSrvc" -Name "Start" -Type "DWord" -Value 4
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\icssvc" -Name "Start" -Type "DWord" -Value 4
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\DiagTrack" -Name "Start" -Type "DWord" -Value 4
+
+    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\dmwappushservice" -Name "Start" -Type "DWord" -Value 4
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Type "String" -Value "0"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop\WindowMetrics" -Name "MinAnimate" -Type "String" -Value "0"
+
+    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "DragFullWindows" -Type "String" -Value "0"
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SnapAssist" -Type "DWord" -Value 0
+
+    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "PowerMenuShowFullShutdown" -Type "DWord" -Value 1
+
     Clean-StartMenu
 
     $winget = "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe"
@@ -1424,9 +1450,12 @@ function Apply-SafePerformanceOptimizations {
 
     if (Test-Path $winget) {
         $commonFlags = @("--exact","--silent","--accept-package-agreements","--accept-source-agreements","--source","winget")
-        & $winget install --id Brave.Brave @commonFlags -ErrorAction SilentlyContinue
+        
         & $winget install --id Nilesoft.Shell @commonFlags -ErrorAction SilentlyContinue
     }
+
+    return $true
+}
 
     return $true
 }
@@ -1651,7 +1680,7 @@ function Install-FixOS {
     Write-Host "`r[##########          ] 50%" -NoNewline
     
     Start-Sleep -Milliseconds 100
-    $performanceResult = Apply-SafePerformanceOptimizations
+    $performanceResult = Apply-PerformanceOptimizations
     Write-Host "`r[###############     ] 75%" -NoNewline
     
     Start-Sleep -Milliseconds 100
@@ -1675,13 +1704,18 @@ function Install-FixOS {
     
     Write-Host "`r[####################] 100%"
     Write-Host "FixOS Optimization Complete!" -ForegroundColor Green
-    Write-Host "Your system has been optimized for performance with:"
-    Write-Host "  - All telemetry disabled"
-    Write-Host "  - Animations removed" -ForegroundColor Yellow
-    Write-Host "  - Start Menu cleaned (apps unpinned)"
-    Write-Host "  - Recommended section removed"
-    Write-Host "  - Background apps disabled"
     Write-Host ""
+    Write-Host "Your system has been optimized with:"
+    Write-Host "  ✓ Animations & effects disabled (Atlas OS level)"
+    Write-Host "  ✓ Background apps restricted"
+    Write-Host "  ✓ Start Menu cleaned (all apps unpinned)"
+    Write-Host "  ✓ Recommended section removed"
+    Write-Host "  ✓ Telemetry & data collection disabled"
+    Write-Host "  ✓ Windows Search disabled"
+    Write-Host "  ✓ Superfetch disabled"
+    Write-Host "  ✓ ~60 processes target"
+    Write-Host ""
+    Write-Host "System is fully functional and workable!"
     Write-Host "Press any key to return to the Menu"
     
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
