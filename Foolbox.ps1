@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 5.0.0
+    Version: 2.7.3
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -1515,31 +1515,12 @@ function Install-FixOS {
     
     Write-Host "`r[####################] 100%"
     Write-Host ""
-    Write-Host "Installation complete!" -ForegroundColor Green
-    Write-Host "Press R to reboot now or any other key to exit without rebooting" -ForegroundColor Magenta
+    Write-Host "FixOs Installation completed!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "You must reboot your system" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Press any key to exit FixOs installer..." -ForegroundColor White
     
-    $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    if ($key.Character -eq 'r' -or $key.Character -eq 'R') {
-        Write-Host "Rebooting in 5 seconds..." -ForegroundColor Red
-        Start-Sleep -Seconds 5
-        Restart-Computer -Force
-    } else {
-        Write-Host "Exiting without reboot. Please reboot manually for all changes to take effect." -ForegroundColor Yellow
-        Start-Sleep -Seconds 3
-        exit
-    }
-}
-
-try {
-    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force -ErrorAction SilentlyContinue
-    
-    if ($Install) {
-        Install-FixOS
-    } else {
-        Show-Menu
-    }
-} catch {
-    Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host "Press any key to exit..." -ForegroundColor White
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    Show-Menu
 }
