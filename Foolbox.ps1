@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 3.1.0
+    Version: 4.0.0
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -15,7 +15,7 @@ if (-not $isAdmin) {
     Write-Host ""
     Write-Host "Please right-click PowerShell and select 'Run as Administrator', then run this script again." -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "Press Enter to exit..." -ForegroundColor Gray
+   -Write-Host "Press Enter to exit..." -ForegroundColor Gray
     $null = Read-Host
     exit
 }
@@ -90,7 +90,7 @@ function Show-Menu {
         try {
             $width = $Host.UI.RawUI.WindowSize.Width
             if ($width -eq 0) { $width = 80 }
-            $padded = $Text.PadLeft([int](($width + $Text.Length)/2))
+            $padded = $Text.PadLeft(([int](($width + $Text.Length)/2)))
             Write-Host $padded -ForegroundColor $ForegroundColor
         } catch {
             Write-Host $Text -ForegroundColor $ForegroundColor
@@ -120,6 +120,75 @@ function Show-Menu {
     }
 }
 
+function Disable-AllAnimations {
+    try {
+        $animKeys = @(
+            @{Path="HKCU:\Control Panel\Desktop"; Name="UserPreferencesMask"; Type="Binary"; Value=([byte[]](0x90,0x12,0x03,0x80,0x10,0x00,0x00,0x00))}
+            @{Path="HKCU:\Control Panel\Desktop"; Name="MenuShowDelay"; Type="String"; Value="0"}
+            @{Path="HKCU:\Control Panel\Desktop"; Name="AutoEndTasks"; Type="String"; Value="1"}
+            @{Path="HKCU:\Control Panel\Desktop"; Name="HungAppTimeout"; Type="String"; Value="1000"}
+            @{Path="HKCU:\Control Panel\Desktop"; Name="WaitToKillAppTimeout"; Type="String"; Value="1000"}
+            @{Path="HKCU:\Control Panel\Desktop"; Name="LowLevelHooksTimeout"; Type="String"; Value="1000"}
+            @{Path="HKCU:\Control Panel\Desktop"; Name="ForegroundLockTimeout"; Type="DWord"; Value=0}
+            @{Path="HKCU:\Control Panel\Desktop\WindowMetrics"; Name="MinAnimate"; Type="String"; Value="0"}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="TaskbarAnimations"; Type="DWord"; Value=0}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="ListviewAlphaSelect"; Type="DWord"; Value=0}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="ListviewShadow"; Type="DWord"; Value=0}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="IconsOnly"; Type="DWord"; Value=1}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="DisallowShaking"; Type="DWord"; Value=1}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="EnableBalloonTips"; Type="DWord"; Value=0}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects"; Name="VisualFXSetting"; Type="DWord"; Value=2}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\DWM"; Name="EnableAeroPeek"; Type="DWord"; Value=0}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\DWM"; Name="AlwaysHibernateThumbnails"; Type="DWord"; Value=0}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\DWM"; Name="AnimationAttributionEnabled"; Type="DWord"; Value=0}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\DWM"; Name="EnableWindowColorization"; Type="DWord"; Value=0}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\DWM"; Name="Composition"; Type="DWord"; Value=0}
+            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\DWM"; Name="CompositionPolicy"; Type="DWord"; Value=0}
+        )
+        
+        foreach ($anim in $animKeys) {
+            try {
+                if (-not (Test-Path $anim.Path)) {
+                    New-Item -Path $anim.Path -Force | Out-Null
+                }
+                if ($anim.Type -eq "Binary") {
+                    Set-ItemProperty -Path $anim.Path -Name $anim.Name -Value $anim.Value -Force
+                } elseif ($anim.Type -eq "String") {
+                    Set-ItemProperty -Path $anim.Path -Name $anim.Name -Value $anim.Value -Type String -Force
+                } else {
+                    Set-ItemProperty -Path $anim.Path -Name $anim.Name -Value $anim.Value -Type DWord -Force
+                }
+            } catch {}
+        }
+        
+        try {
+            $adjustment = @"
+using System;
+using System.Runtime.InteropServices;
+public class AnimationSettings {
+    [DllImport("user32.dll")]
+    public static extern bool SystemParametersInfo(int uAction, int uParam, ref int lpvParam, int fuWinIni);
+    
+    public static void DisableAnimations() {
+        int animation = 0;
+        SystemParametersInfo(0x2001, 0, ref animation, 0x01 | 0x02);
+        int menuAnimation = 0;
+        SystemParametersInfo(0x1002, 0, ref menuAnimation, 0x01 | 0x02);
+        int comboBoxAnimation = 0;
+        SystemParametersInfo(0x1004, 0, ref comboBoxAnimation, 0x01 | 0x02);
+        int listBoxAnimation = 0;
+        SystemParametersInfo(0x1006, 0, ref listBoxAnimation, 0x01 | 0x02);
+        int titleBarAnimation = 0;
+        SystemParametersInfo(0x1008, 0, ref titleBarAnimation, 0x01 | 0x02);
+    }
+}
+"@
+            Add-Type $adjustment -ErrorAction SilentlyContinue
+            [AnimationSettings]::DisableAnimations()
+        } catch {}
+    } catch {}
+}
+
 function Optimize-NTFS {
     try {
         fsutil behavior set disablelastaccess 1 | Out-Null
@@ -129,28 +198,24 @@ function Optimize-NTFS {
 
 function Disable-BackgroundApps {
     try {
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications"
-        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-        Set-ItemProperty -Path $path -Name "GlobalUserDisabled" -Type DWord -Value 1 -Force
+        $key1 = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications"
+        if (-not (Test-Path $key1)) { New-Item -Path $key1 -Force | Out-Null }
+        Set-ItemProperty -Path $key1 -Name "GlobalUserDisabled" -Type DWord -Value 1 -Force
         
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search"
-        Set-ItemProperty -Path $path -Name "BackgroundAppGlobalToggle" -Type DWord -Value 0 -Force
+        $key2 = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search"
+        Set-ItemProperty -Path $key2 -Name "BackgroundAppGlobalToggle" -Type DWord -Value 0 -Force
     } catch {}
 }
 
 function Disable-GameBar {
     try {
-        $regs = @(
-            @{Path="HKCU:\System\GameConfigStore"; Name="GameDVR_Enabled"; Value=0}
-            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR"; Name="AppCaptureEnabled"; Value=0}
-            @{Path="HKCU:\SOFTWARE\Microsoft\GameBar"; Name="ShowStartupPanel"; Value=0}
-            @{Path="HKCU:\SOFTWARE\Microsoft\GameBar"; Name="UseNexusForGameBarEnabled"; Value=0}
-            @{Path="HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR"; Name="AllowGameDVR"; Value=0}
-        )
-        foreach ($reg in $regs) {
-            if (-not (Test-Path $reg.Path)) { New-Item -Path $reg.Path -Force | Out-Null }
-            Set-ItemProperty -Path $reg.Path -Name $reg.Name -Type DWord -Value $reg.Value -Force
-        }
+        Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR" -Name "AppCaptureEnabled" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\GameBar" -Name "ShowStartupPanel" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\GameBar" -Name "UseNexusForGameBarEnabled" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\GameBar" -Name "GamePanelStartupTipIndex" -Type DWord -Value 3 -Force
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\ApplicationManagement\AllowGameDVR" -Name "value" -Type DWord -Value 0 -Force
     } catch {}
 }
 
@@ -165,13 +230,16 @@ function Disable-SleepStudy {
 
 function Disable-AdvertisingID {
     try {
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo"
-        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-        Set-ItemProperty -Path $path -Name "Enabled" -Type DWord -Value 0 -Force
-        
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Type DWord -Value 0 -Force
         $path = "HKLM:\Software\Policies\Microsoft\Windows\AdvertisingInfo"
         if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
         Set-ItemProperty -Path $path -Name "DisabledByGroupPolicy" -Type DWord -Value 1 -Force
+    } catch {}
+}
+
+function Disable-SyncProviderNotifications {
+    try {
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSyncProviderNotifications" -Type DWord -Value 0 -Force
     } catch {}
 }
 
@@ -213,9 +281,8 @@ function Disable-NETCLITelemetry {
 
 function Disable-InputTelemetry {
     try {
-        $path = "HKCU:\SOFTWARE\Microsoft\InputPersonalization"
-        Set-ItemProperty -Path $path -Name "RestrictImplicitInkCollection" -Type DWord -Value 1 -Force
-        Set-ItemProperty -Path $path -Name "RestrictImplicitTextCollection" -Type DWord -Value 1 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\InputPersonalization" -Name "RestrictImplicitInkCollection" -Type DWord -Value 1 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\InputPersonalization" -Name "RestrictImplicitTextCollection" -Type DWord -Value 1 -Force
     } catch {}
 }
 
@@ -229,8 +296,7 @@ function Set-WindowsMediaPlayer {
 
 function Disable-AppLaunchTracking {
     try {
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-        Set-ItemProperty -Path $path -Name "Start_TrackProgs" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_TrackProgs" -Type DWord -Value 0 -Force
     } catch {}
 }
 
@@ -256,8 +322,7 @@ function Disable-RecallSnapshots {
 
 function Disable-TailoredExperiences {
     try {
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy"
-        Set-ItemProperty -Path $path -Name "TailoredExperiencesWithDiagnosticDataEnabled" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" -Name "TailoredExperiencesWithDiagnosticDataEnabled" -Type DWord -Value 0 -Force
         
         $path = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
         if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
@@ -271,9 +336,9 @@ function Disable-FrequentApps {
         if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
         Set-ItemProperty -Path $path -Name "NoInstrumentation" -Type DWord -Value 1 -Force
         
-        $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer"
+        $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
         if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-        Set-ItemProperty -Path $path -Name "ShowOrHideMostUsedApps" -Type DWord -Value 2 -Force
+        Set-ItemProperty -Path $path -Name "NoStartMenuMFUprogramsList" -Type DWord -Value 1 -Force
     } catch {}
 }
 
@@ -295,14 +360,15 @@ function Disable-ErrorReporting {
         if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
         Set-ItemProperty -Path $path -Name "Disabled" -Type DWord -Value 1 -Force
         Set-ItemProperty -Path $path -Name "DontSendAdditionalData" -Type DWord -Value 1 -Force
+        Set-ItemProperty -Path $path -Name "DontShowUI" -Type DWord -Value 1 -Force
+        Set-ItemProperty -Path $path -Name "LoggingDisabled" -Type DWord -Value 1 -Force
     } catch {}
 }
 
 function Set-SearchPrivacy {
     try {
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search"
-        Set-ItemProperty -Path $path -Name "BingSearchEnabled" -Type DWord -Value 0 -Force
-        Set-ItemProperty -Path $path -Name "SearchboxTaskbarMode" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 0 -Force
     } catch {}
 }
 
@@ -318,55 +384,52 @@ function Disable-UserActivityUpload {
 
 function Hide-RecentItems {
     try {
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer"
-        Set-ItemProperty -Path $path -Name "ShowFrequent" -Type DWord -Value 0 -Force
-        Set-ItemProperty -Path $path -Name "ShowRecent" -Type DWord -Value 0 -Force
-        
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-        Set-ItemProperty -Path $path -Name "Start_TrackDocs" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "ShowFrequent" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "ShowRecent" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_TrackDocs" -Type DWord -Value 0 -Force
         
         $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
         if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
         Set-ItemProperty -Path $path -Name "ClearRecentDocsOnExit" -Type DWord -Value 1 -Force
         Set-ItemProperty -Path $path -Name "NoRecentDocsHistory" -Type DWord -Value 1 -Force
+        
+        $path = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "NoRemoteDestinations" -Type DWord -Value 1 -Force
     } catch {}
 }
 
 function Disable-MenuHoverDelay {
     try {
-        $path = "HKCU:\Control Panel\Desktop"
-        Set-ItemProperty -Path $path -Name "MenuShowDelay" -Type String -Value "0" -Force
+        Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Type String -Value "0" -Force
     } catch {}
 }
 
 function Disable-StartMenuRecommendations {
     try {
-        $path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-        Set-ItemProperty -Path $path -Name "Start_IrisRecommendations" -Type DWord -Value 0 -Force
-        Set-ItemProperty -Path $path -Name "Start_AccountNotifications" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_IrisRecommendations" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_AccountNotifications" -Type DWord -Value 0 -Force
         
         $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer"
         if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
         Set-ItemProperty -Path $path -Name "HideRecentlyAddedApps" -Type DWord -Value 1 -Force
         Set-ItemProperty -Path $path -Name "HideRecommendedPersonalizedSites" -Type DWord -Value 1 -Force
+        Set-ItemProperty -Path $path -Name "ShowOrHideMostUsedApps" -Type DWord -Value 2 -Force
     } catch {}
 }
 
 function Show-MorePinsInStartMenu {
     try {
-        $path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-        Set-ItemProperty -Path $path -Name "Start_Layout" -Type DWord -Value 1 -Force
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_Layout" -Type DWord -Value 1 -Force
     } catch {}
 }
 
 function Set-ShutdownTime {
     try {
-        $path = "HKCU:\Control Panel\Desktop"
-        Set-ItemProperty -Path $path -Name "HungAppTimeout" -Type String -Value "2000" -Force
-        Set-ItemProperty -Path $path -Name "WaitToKillAppTimeOut" -Type String -Value "2000" -Force
+        Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "HungAppTimeout" -Type String -Value "2000" -Force
+        Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "WaitToKillAppTimeOut" -Type String -Value "2000" -Force
         
-        $path = "HKLM:\SYSTEM\CurrentControlSet\Control"
-        Set-ItemProperty -Path $path -Name "WaitToKillServiceTimeout" -Type String -Value "2000" -Force
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "WaitToKillServiceTimeout" -Type String -Value "2000" -Force
     } catch {}
 }
 
@@ -388,10 +451,9 @@ function Add-EndTaskToTaskbar {
 
 function Disable-MouseAcceleration {
     try {
-        $path = "HKCU:\Control Panel\Mouse"
-        Set-ItemProperty -Path $path -Name "MouseSpeed" -Type String -Value "0" -Force
-        Set-ItemProperty -Path $path -Name "MouseThreshold1" -Type String -Value "0" -Force
-        Set-ItemProperty -Path $path -Name "MouseThreshold2" -Type String -Value "0" -Force
+        Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseSpeed" -Type String -Value "0" -Force
+        Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold1" -Type String -Value "0" -Force
+        Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold2" -Type String -Value "0" -Force
     } catch {}
 }
 
@@ -412,35 +474,30 @@ function Disable-WindowsSpotlight {
         $path = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
         if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
         Set-ItemProperty -Path $path -Name "DisableWindowsSpotlightFeatures" -Type DWord -Value 1 -Force
+        Set-ItemProperty -Path $path -Name "DisableWindowsSpotlightWindowsWelcomeExperience" -Type DWord -Value 1 -Force
         Set-ItemProperty -Path $path -Name "DisableWindowsSpotlightOnActionCenter" -Type DWord -Value 1 -Force
-        Set-ItemProperty -Path $path -Name "DisableThirdPartySuggestions" -Type DWord -Value 1 -Force
         Set-ItemProperty -Path $path -Name "DisableWindowsSpotlightOnSettings" -Type DWord -Value 1 -Force
+        Set-ItemProperty -Path $path -Name "DisableThirdPartySuggestions" -Type DWord -Value 1 -Force
+        
+        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "{2cc5ca98-6485-489a-920e-b3e88a6ccce3}" -Type DWord -Value 1 -Force
     } catch {}
 }
 
 function Set-VisualEffects {
     try {
-        $path = "HKCU:\Control Panel\Desktop"
-        Set-ItemProperty -Path $path -Name "FontSmoothing" -Type String -Value "2" -Force
-        Set-ItemProperty -Path $path -Name "DragFullWindows" -Type String -Value "1" -Force
-        Set-ItemProperty -Path $path -Name "UserPreferencesMask" -Type Binary -Value ([byte[]](0x90,0x12,0x03,0x80,0x10,0x00,0x00,0x00)) -Force
-        
-        $path = "HKCU:\Control Panel\Desktop\WindowMetrics"
-        Set-ItemProperty -Path $path -Name "MinAnimate" -Type String -Value "0" -Force
-        
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-        Set-ItemProperty -Path $path -Name "TaskbarAnimations" -Type DWord -Value 0 -Force
-        Set-ItemProperty -Path $path -Name "ListviewShadow" -Type DWord -Value 1 -Force
-        Set-ItemProperty -Path $path -Name "ListviewAlphaSelect" -Type DWord -Value 1 -Force
-        Set-ItemProperty -Path $path -Name "IconsOnly" -Type DWord -Value 0 -Force
-        
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects"
-        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-        Set-ItemProperty -Path $path -Name "VisualFXSetting" -Type DWord -Value 3 -Force
-        
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\DWM"
-        Set-ItemProperty -Path $path -Name "EnableAeroPeek" -Type DWord -Value 0 -Force
-        Set-ItemProperty -Path $path -Name "AlwaysHibernateThumbnails" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "FontSmoothing" -Type String -Value "2" -Force
+        Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "UserPreferencesMask" -Type Binary -Value ([byte[]](0x90,0x12,0x03,0x80,0x10,0x00,0x00,0x00)) -Force
+        Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "DragFullWindows" -Type String -Value "1" -Force
+        Set-ItemProperty -Path "HKCU:\Control Panel\Desktop\WindowMetrics" -Name "MinAnimate" -Type String -Value "0" -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ListviewAlphaSelect" -Type DWord -Value 1 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "IconsOnly" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAnimations" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ListviewShadow" -Type DWord -Value 1 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" -Name "VisualFXSetting" -Type DWord -Value 3 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\DWM" -Name "EnableAeroPeek" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\DWM" -Name "AlwaysHibernateThumbnails" -Type DWord -Value 0 -Force
     } catch {}
 }
 
@@ -465,6 +522,15 @@ function Set-RegistrySafe {
         Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -Force
         return $true
     } catch { return $false }
+}
+
+function Remove-RegistryKey {
+    param([string]$Path)
+    try {
+        if (Test-Path $Path) {
+            Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    } catch {}
 }
 
 function Create-ToolboxShortcut {
@@ -496,6 +562,9 @@ function Remove-CrapApps {
         "Microsoft.BingWeather"
         "Microsoft.BingSports"
         "Microsoft.BingFinance"
+        "Microsoft.BingFoodAndDrink"
+        "Microsoft.BingHealthAndFitness"
+        "Microsoft.BingTravel"
         "Microsoft.GetHelp"
         "Microsoft.Getstarted"
         "Microsoft.Messaging"
@@ -549,16 +618,17 @@ function Remove-CrapApps {
         "Microsoft.MicrosoftEdge"
         "Microsoft.MicrosoftEdge.Stable"
         "MicrosoftEdge"
+        "Microsoft.WebMediaExtensions"
+        "Microsoft.WebpImageExtension"
+        "Microsoft.HEIFImageExtension"
+        "Microsoft.VP9VideoExtensions"
+        "Microsoft.RawImageExtension"
+        "Microsoft.HEVCVideoExtension"
+        "Microsoft.DolbyAudioExtensions"
+        "Microsoft.DolbyVisionExtensions"
+        "Microsoft.MPEG2VideoExtension"
         "Microsoft.GamingApp"
         "Microsoft.Family"
-        "Microsoft.Windows.DevHome"
-        "Microsoft.WindowsTerminal"
-        "Microsoft.BingSearch"
-        "Microsoft.ECApp"
-        "Microsoft.MicrosoftEdgeDevToolsClient"
-        "Microsoft.Win32WebViewHost"
-        "Microsoft.XboxGameCallableUI"
-        "Microsoft.XboxIdentityProvider"
     )
 
     foreach ($app in $appsToRemove) {
@@ -571,141 +641,37 @@ function Remove-CrapApps {
 function Optimize-Services {
     try {
         $servicesToDisable = @(
-            @{Name = 'AJRouter'}
-            @{Name = 'AssignedAccessManagerSvc'}
-            @{Name = 'AppIDSvc'}
-            @{Name = 'BDESVC'}
-            @{Name = 'DiagTrack'}
-            @{Name = 'DPS'}
-            @{Name = 'Fax'}
-            @{Name = 'FontCache'}
-            @{Name = 'InventorySvc'}
-            @{Name = 'PcaSvc'}
-            @{Name = 'RmSvc'}
-            @{Name = 'TabletInputService'}
-            @{Name = 'WSearch'}
-            @{Name = 'WbioSrvc'}
-            @{Name = 'webthreatdefsvc'}
-            @{Name = 'lfsvc'}
-            @{Name = 'dmwappushservice'}
-            @{Name = 'XboxGipSvc'}
-            @{Name = 'XblAuthManager'}
-            @{Name = 'XblGameSave'}
-            @{Name = 'XboxNetApiSvc'}
-            @{Name = 'OneSyncSvc'}
-            @{Name = 'WpcMonSvc'}
-            @{Name = 'wisvc'}
-            @{Name = 'RetailDemo'}
-            @{Name = 'MessagingService'}
-            @{Name = 'MapsBroker'}
-            @{Name = 'PimIndexMaintenanceSvc'}
-            @{Name = 'UnistoreSvc'}
-            @{Name = 'UserDataSvc'}
-            @{Name = 'WpnService'}
-            @{Name = 'WpnUserService'}
-            @{Name = 'WdNisSvc'}
-            @{Name = 'Sense'}
-            @{Name = 'wscsvc'}
-            @{Name = 'SysMain'}
-            @{Name = 'edgeupdate'}
-            @{Name = 'edgeupdatem'}
-            @{Name = 'MicrosoftEdgeElevationService'}
-            @{Name = 'BcastDVRUserService'}
-            @{Name = 'CaptureService'}
-            @{Name = 'cbdhsvc'}
-            @{Name = 'ConsentUxUserSvc'}
-            @{Name = 'CredentialEnrollmentManagerUserSvc'}
-            @{Name = 'DeviceAssociationBrokerSvc'}
-            @{Name = 'DevicePickerUserSvc'}
-            @{Name = 'DevicesFlowUserSvc'}
-            @{Name = 'NPSMSvc'}
-            @{Name = 'P9RdrService'}
-            @{Name = 'PrintWorkflowUserSvc'}
-            @{Name = 'UdkUserSvc'}
-            @{Name = 'autotimesvc'}
-            @{Name = 'tzautoupdate'}
-            @{Name = 'shpamsvc'}
-            @{Name = 'PhoneSvc'}
-            @{Name = 'RemoteRegistry'}
-            @{Name = 'RemoteAccess'}
-            @{Name = 'SessionEnv'}
-            @{Name = 'TermService'}
-            @{Name = 'UmRdpService'}
-            @{Name = 'SharedAccess'}
-            @{Name = 'FrameServer'}
-            @{Name = 'StiSvc'}
-            @{Name = 'WiaRpc'}
-            @{Name = 'icssvc'}
-            @{Name = 'WlanSvc'}
-            @{Name = 'WwanSvc'}
+            'AJRouter', 'AssignedAccessManagerSvc', 'AppIDSvc', 'BDESVC', 'DiagTrack', 'DPS', 'Fax', 'FontCache', 
+            'InventorySvc', 'PcaSvc', 'RmSvc', 'TabletInputService', 'WSearch', 'WbioSrvc', 'webthreatdefsvc', 'lfsvc',
+            'dmwappushservice', 'XboxGipSvc', 'XblAuthManager', 'XblGameSave', 'XboxNetApiSvc', 'OneSyncSvc',
+            'WpcMonSvc', 'wisvc', 'RetailDemo', 'MessagingService', 'MapsBroker', 'PimIndexMaintenanceSvc',
+            'UnistoreSvc', 'UserDataSvc', 'WpnService', 'WpnUserService', 'WdNisSvc', 'Sense', 'wscsvc', 'SysMain',
+            'edgeupdate', 'edgeupdatem', 'MicrosoftEdgeElevationService', 'BcastDVRUserService', 'CaptureService',
+            'cbdhsvc', 'ConsentUxUserSvc', 'CredentialEnrollmentManagerUserSvc', 'DeviceAssociationBrokerSvc',
+            'DevicePickerUserSvc', 'DevicesFlowUserSvc', 'NPSMSvc', 'P9RdrService', 'PrintWorkflowUserSvc',
+            'UdkUserSvc', 'autotimesvc', 'tzautoupdate', 'shpamsvc', 'PhoneSvc', 'RemoteRegistry', 'RemoteAccess',
+            'SessionEnv', 'TermService', 'UmRdpService', 'SharedAccess', 'FrameServer', 'StiSvc', 'WiaRpc', 'icssvc',
+            'WlanSvc', 'WwanSvc'
         )
         
         $servicesToManual = @(
-            @{Name = 'BITS'}
-            @{Name = 'CDPSvc'}
-            @{Name = 'DusmSvc'}
-            @{Name = 'LanmanServer'}
-            @{Name = 'LanmanWorkstation'}
-            @{Name = 'Spooler'}
-            @{Name = 'StateRepository'}
-            @{Name = 'StorSvc'}
-            @{Name = 'TokenBroker'}
-            @{Name = 'TrkWks'}
-            @{Name = 'UsoSvc'}
-            @{Name = 'iphlpsvc'}
-            @{Name = 'sppsvc'}
-            @{Name = 'DoSvc'}
-            @{Name = 'W32Time'}
-            @{Name = 'Themes'}
-            @{Name = 'Schedule'}
-            @{Name = 'TrustedInstaller'}
-            @{Name = 'AudioEndpointBuilder'}
-            @{Name = 'Audiosrv'}
-            @{Name = 'CoreMessagingRegistrar'}
-            @{Name = 'TimeBrokerSvc'}
-            @{Name = 'UserManager'}
-            @{Name = 'VaultSvc'}
-            @{Name = 'WinHttpAutoProxySvc'}
-            @{Name = 'Winmgmt'}
-            @{Name = 'Wcmsvc'}
-            @{Name = 'nsi'}
-            @{Name = 'Dnscache'}
-            @{Name = 'Dhcp'}
-            @{Name = 'EventLog'}
-            @{Name = 'EventSystem'}
-            @{Name = 'gpsvc'}
-            @{Name = 'ProfSvc'}
-            @{Name = 'Power'}
-            @{Name = 'DcomLaunch'}
-            @{Name = 'RpcSs'}
-            @{Name = 'RpcEptMapper'}
-            @{Name = 'SamSs'}
-            @{Name = 'PlugPlay'}
-            @{Name = 'SENS'}
-            @{Name = 'ShellHWDetection'}
-            @{Name = 'tiledatamodelsvc'}
-            @{Name = 'BrokerInfrastructure'}
-            @{Name = 'SystemEventsBroker'}
-            @{Name = 'CryptSvc'}
-            @{Name = 'MpsSvc'}
-            @{Name = 'mpssvc'}
-            @{Name = 'BFE'}
-            @{Name = 'KeyIso'}
-            @{Name = 'Netlogon'}
-            @{Name = 'NlaSvc'}
-            @{Name = 'PolicyAgent'}
-            @{Name = 'SgrmBroker'}
-            @{Name = 'WinDefend'}
-            @{Name = 'SecurityHealthService'}
+            'BITS', 'CDPSvc', 'DusmSvc', 'LanmanServer', 'LanmanWorkstation', 'Spooler', 'StateRepository',
+            'StorSvc', 'TokenBroker', 'TrkWks', 'UsoSvc', 'iphlpsvc', 'sppsvc', 'DoSvc', 'W32Time', 'Themes',
+            'Schedule', 'TrustedInstaller', 'AudioEndpointBuilder', 'Audiosrv', 'CoreMessagingRegistrar',
+            'TimeBrokerSvc', 'UserManager', 'VaultSvc', 'WinHttpAutoProxySvc', 'Winmgmt', 'Wcmsvc', 'nsi',
+            'Dnscache', 'Dhcp', 'EventLog', 'EventSystem', 'gpsvc', 'ProfSvc', 'Power', 'DcomLaunch', 'RpcSs',
+            'RpcEptMapper', 'SamSs', 'PlugPlay', 'SENS', 'ShellHWDetection', 'tiledatamodelsvc',
+            'BrokerInfrastructure', 'SystemEventsBroker', 'CryptSvc', 'MpsSvc', 'mpssvc', 'BFE', 'KeyIso',
+            'Netlogon', 'NlaSvc', 'PolicyAgent', 'SgrmBroker', 'WinDefend', 'SecurityHealthService'
         )
         
         foreach ($service in $servicesToDisable) {
             try {
-                $svc = Get-Service -Name $service.Name -ErrorAction SilentlyContinue
+                $svc = Get-Service -Name $service -ErrorAction SilentlyContinue
                 if ($svc) {
-                    Set-Service -Name $service.Name -StartupType Disabled -ErrorAction SilentlyContinue
+                    Set-Service -Name $service -StartupType Disabled -ErrorAction SilentlyContinue
                     if ($svc.Status -eq 'Running') {
-                        Stop-Service -Name $service.Name -Force -ErrorAction SilentlyContinue
+                        Stop-Service -Name $service -Force -ErrorAction SilentlyContinue
                     }
                 }
             } catch {}
@@ -713,9 +679,9 @@ function Optimize-Services {
         
         foreach ($service in $servicesToManual) {
             try {
-                $svc = Get-Service -Name $service.Name -ErrorAction SilentlyContinue
+                $svc = Get-Service -Name $service -ErrorAction SilentlyContinue
                 if ($svc) {
-                    Set-Service -Name $service.Name -StartupType Manual -ErrorAction SilentlyContinue
+                    Set-Service -Name $service -StartupType Manual -ErrorAction SilentlyContinue
                 }
             } catch {}
         }
@@ -725,8 +691,6 @@ function Optimize-Services {
 function Remove-EdgeCompletely {
     try {
         Get-Process -Name "*edge*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-        Start-Sleep -Seconds 2
-        
         $edgePaths = @(
             "C:\Program Files (x86)\Microsoft\Edge"
             "C:\Program Files (x86)\Microsoft\EdgeWebView"
@@ -737,73 +701,106 @@ function Remove-EdgeCompletely {
             "C:\Windows\SystemApps\Microsoft.MicrosoftEdgeDevToolsClient_8wekyb3d8bbwe"
             "$env:LOCALAPPDATA\Microsoft\Edge"
             "$env:ProgramData\Microsoft\Edge"
-            "$env:LOCALAPPDATA\Microsoft\EdgeUpdate"
-            "$env:ProgramData\Microsoft\EdgeUpdate"
-            "$env:ProgramFiles\Microsoft\Edge"
-            "$env:ProgramFiles(x86)\Microsoft\Edge"
-            "$env:ProgramFiles\Microsoft\EdgeUpdate"
-            "$env:ProgramFiles(x86)\Microsoft\EdgeUpdate"
-            "$env:ProgramFiles\Microsoft\EdgeCore"
-            "$env:ProgramFiles(x86)\Microsoft\EdgeCore"
-            "$env:ProgramFiles\Microsoft\EdgeWebView"
-            "$env:ProgramFiles(x86)\Microsoft\EdgeWebView"
         )
+        foreach ($path in $edgePaths) { if (Test-Path $path) { Remove-Item -Path $path -Recurse -Force -ErrorAction SilentlyContinue } }
         
-        foreach ($path in $edgePaths) { 
-            if (Test-Path $path) { 
-                try {
-                    takeown /f $path /r /d y 2>$null
-                    icacls $path /grant administrators:F /t 2>$null
-                    Remove-Item -Path $path -Recurse -Force -ErrorAction SilentlyContinue 
-                } catch {}
-            } 
-        }
-        
-        $edgeRegPaths = @(
-            "HKLM:\SOFTWARE\Microsoft\Edge"
-            "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Edge"
-            "HKLM:\SOFTWARE\Microsoft\EdgeUpdate"
-            "HKCU:\SOFTWARE\Microsoft\Edge"
-            "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
-            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge"
-            "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge"
-            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\ie_to_edge_stub.exe"
-            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe"
+        Remove-RegistryKey -Path "HKLM:\SOFTWARE\Microsoft\Edge"
+        Remove-RegistryKey -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Edge"
+        Remove-RegistryKey -Path "HKLM:\SOFTWARE\Microsoft\EdgeUpdate"
+        Remove-RegistryKey -Path "HKCU:\SOFTWARE\Microsoft\Edge"
+        Remove-RegistryKey -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
+    } catch {}
+}
+
+function Remove-OneDrive {
+    try {
+        Stop-Process -Name "OneDrive" -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 1
+        $OneDriveSetup32 = "$env:SystemRoot\System32\OneDriveSetup.exe"
+        $OneDriveSetup64 = "$env:SystemRoot\SysWOW64\OneDriveSetup.exe"
+        if (Test-Path $OneDriveSetup32) { Start-Process $OneDriveSetup32 "/uninstall" -Wait -ErrorAction SilentlyContinue }
+        if (Test-Path $OneDriveSetup64) { Start-Process $OneDriveSetup64 "/uninstall" -Wait -ErrorAction SilentlyContinue }
+        Start-Sleep -Seconds 2
+        $oneDriveDirs = @(
+            "$env:SystemDrive\OneDriveTemp"
+            "$env:USERPROFILE\OneDrive"
+            "$env:USERPROFILE\AppData\Local\Microsoft\OneDrive"
+            "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\OneDrive.lnk"
+            "$env:ProgramData\Microsoft OneDrive"
+            "$env:LOCALAPPDATA\Microsoft\OneDrive"
+            "$env:ProgramFiles\Microsoft OneDrive"
+            "$env:ProgramFiles(x86)\Microsoft OneDrive"
+            "$env:SystemDrive\ProgramData\Microsoft OneDrive"
+            "$env:USERPROFILE\AppData\Roaming\Microsoft\OneDrive"
         )
+        foreach ($dir in $oneDriveDirs) { if (Test-Path $dir) { Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue } }
         
-        foreach ($regPath in $edgeRegPaths) {
-            if (Test-Path $regPath) { 
-                try {
-                    Remove-Item -Path $regPath -Recurse -Force -ErrorAction SilentlyContinue 
-                } catch {}
+        Remove-RegistryKey -Path "HKCU:\Software\Microsoft\OneDrive"
+        Remove-RegistryKey -Path "HKLM:\SOFTWARE\Microsoft\OneDrive"
+        Remove-RegistryKey -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\OneDrive"
+        Get-ScheduledTask | Where-Object {$_.TaskName -like "*OneDrive*"} | Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
+    } catch {}
+}
+
+function Remove-Teams {
+    try {
+        Stop-Process -Name "Teams" -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 1
+        Get-AppxPackage -AllUsers -Name "*Teams*" | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
+        Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like "*Teams*" | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
+        
+        $teamsDirs = @(
+            "$env:LOCALAPPDATA\Microsoft\Teams"
+            "$env:APPDATA\Microsoft\Teams"
+            "$env:APPDATA\Teams"
+            "$env:ProgramData\Microsoft Teams"
+            "$env:USERPROFILE\AppData\Local\Microsoft\Teams"
+            "$env:USERPROFILE\AppData\Roaming\Microsoft\Teams"
+            "$env:ProgramFiles\Teams Installer"
+            "$env:ProgramFiles(x86)\Teams Installer"
+        )
+        foreach ($dir in $teamsDirs) { if (Test-Path $dir) { Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue } }
+    } catch {}
+}
+
+function Remove-Xbox {
+    try {
+        $xboxApps = @(
+            "Microsoft.Xbox.TCUI"
+            "Microsoft.XboxApp"
+            "Microsoft.XboxGameCallableUI"
+            "Microsoft.XboxGamingOverlay"
+            "Microsoft.XboxIdentityProvider"
+            "Microsoft.XboxSpeechToTextOverlay"
+            "Microsoft.GamingApp"
+        )
+        foreach ($app in $xboxApps) { Remove-AppxSafe -AppName $app }
+        
+        Remove-RegistryKey -Path "HKCU:\Software\Microsoft\XboxApp"
+        Remove-RegistryKey -Path "HKLM:\Software\Microsoft\Xbox"
+        Remove-RegistryKey -Path "HKLM:\Software\Microsoft\GamingServices"
+    } catch {}
+}
+
+function Remove-LinkedIn {
+    try {
+        Get-AppxPackage -AllUsers | Where-Object { $_.Name -like "*LinkedIn*" } | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
+        Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -like "*LinkedIn*" } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
+        $profiles = Get-ChildItem "C:\Users" -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -notmatch '^(Default|Public|All Users)$' }
+        foreach ($profile in $profiles) {
+            $desktop = Join-Path $profile.FullName "Desktop"
+            if (Test-Path $desktop) {
+                Get-ChildItem -Path $desktop -Filter "*LinkedIn*.lnk" -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
             }
-        }
-        
-        $edgeShortcuts = @(
-            "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk",
-            "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk",
-            "C:\Users\Public\Desktop\Microsoft Edge.lnk"
-        )
-        
-        foreach $shortcut in $edgeShortcuts) {
-            if (Test-Path $shortcut) { Remove-Item -Path $shortcut -Force -ErrorAction SilentlyContinue }
         }
     } catch {}
 }
 
 function Disable-Telemetry {
     try {
-        $telemetryRegistries = @(
-            @{Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection"; Name = "AllowTelemetry"; Value = 0}
-            @{Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection"; Name = "AllowTelemetry"; Value = 0}
-            @{Path = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection"; Name = "AllowTelemetry"; Value = 0}
-        )
-        
-        foreach ($reg in $telemetryRegistries) {
-            Set-RegistrySafe -Path $reg.Path -Name $reg.Name -Value $reg.Value
-        }
-        
-        Set-RegistrySafe -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Value 2
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Type DWord -Value 2 -Force -ErrorAction SilentlyContinue
     } catch {}
 }
 
@@ -828,6 +825,47 @@ public class Wallpaper {
     } catch {}
 }
 
+function Add-AdditionalRegistryTweaks {
+    try {
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Type DWord -Value 2 -Force -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy" -Name "VerifiedAndReputablePolicyState" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\ReserveManager" -Name "ShippedWithReserves" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Device performance and health"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "UILockdown" -Type DWord -Value 1 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Family options"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "UILockdown" -Type DWord -Value 1 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Account protection"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "UILockdown" -Type DWord -Value 1 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SOFTWARE\Policies\Microsoft\MRT"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "DontOfferThroughWUAU" -Type DWord -Value 1 -Force -ErrorAction SilentlyContinue
+        
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Type DWord -Value 1 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "AUOptions" -Type DWord -Value 2 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "DeferFeatureUpdates" -Type DWord -Value 1 -Force -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path $path -Name "DeferFeatureUpdatesPeriodInDays" -Type DWord -Value 180 -Force -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path $path -Name "DeferQualityUpdates" -Type DWord -Value 1 -Force -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path $path -Name "DeferQualityUpdatesPeriodInDays" -Type DWord -Value 7 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKCU:\Software\Classes\CLSID\{645FF040-5081-101B-9F08-00AA002F954E}"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "System.IsPinnedToNameSpaceTree" -Type DWord -Value 1 -Force -ErrorAction SilentlyContinue
+    } catch {}
+}
+
 function Start-WindowsOptimization {
     if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
         Write-Warning "Please run as Administrator"
@@ -844,6 +882,7 @@ function Start-WindowsOptimization {
     Disable-GameBar
     Disable-SleepStudy
     Disable-AdvertisingID
+    Disable-SyncProviderNotifications
     Disable-NvidiaTelemetry
     Disable-OfficeTelemetry
     Disable-DeviceSetupSuggestions
@@ -870,7 +909,13 @@ function Start-WindowsOptimization {
     Disable-WindowsFeedback
     Disable-WindowsSpotlight
     Set-VisualEffects
+    Disable-AllAnimations
     Remove-EdgeCompletely
+    Remove-OneDrive
+    Remove-Teams
+    Remove-Xbox
+    Remove-LinkedIn
+    Add-AdditionalRegistryTweaks
     Set-Wallpaper
     Create-ToolboxShortcut
     
@@ -878,10 +923,8 @@ function Start-WindowsOptimization {
 }
 
 function Apply-RegistryTweaks {
-    
     function Set-RegistryForce {
         param([string]$Path,[string]$Name,[string]$Type,[string]$Value,[string]$Action = "Add")
-        
         try {
             if ($Action -eq "Add") {
                 if (-not (Test-Path $Path)) {
@@ -896,7 +939,6 @@ function Apply-RegistryTweaks {
 
     function Remove-RegistryKeyForce {
         param([string]$Path)
-        
         try {
             if (Test-Path $Path) {
                 Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue | Out-Null
@@ -922,18 +964,18 @@ function Apply-RegistryTweaks {
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\providers\B5292708-1619-419B-9923-E5D9F3925E71\default\Device\Start" -Name "ConfigureStartPins" -Type "String" -Value '{ "pinnedList": [] }'
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\providers\B5292708-1619-419B-9923-E5D9F3925E71\default\Device\Start" -Name "ConfigureStartPins_LastWrite" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Type "DWord" -Value 1
-
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Dsh" -Name "AllowNewsAndInterests" -Type "DWord" -Value 0
 
     Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\BitLocker" -Name "PreventDeviceEncryption" -Type "DWord" -Value 1
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EnhancedStorageDevices" -Name "TCGSecurityActivationDisabled" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AUOptions" -Type "DWord" -Value 2
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferFeatureUpdates" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferFeatureUpdatesPeriodInDays" -Type "DWord" -Value 180
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferFeatureUpdatesPeriodInDays" -Type "DWord" -Value 365
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferQualityUpdates" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferQualityUpdatesPeriodInDays" -Type "DWord" -Value 7
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferQualityUpdatesPeriodInDays" -Type "DWord" -Value 365
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "TargetReleaseVersion" -Type "DWord" -Value 1
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "TargetReleaseVersionInfo" -Type "String" -Value "22H2"
+    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "ProductVersion" -Type "String" -Value "Windows 10"
 
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "AllowCortana" -Type "DWord" -Value 0
 
@@ -962,7 +1004,7 @@ function Apply-RegistryTweaks {
 
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "SystemResponsiveness" -Type "DWord" -Value 0
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NetworkThrottlingIndex" -Type "DWord" -Value 10
-    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "ClearPageFileAtShutdown" -Type "DWord" -Value 0
+
     Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "IRPStackSize" -Type "DWord" -Value 30
 
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "GPU Priority" -Type "DWord" -Value 8
@@ -970,6 +1012,8 @@ function Apply-RegistryTweaks {
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "Scheduling Category" -Type "String" -Value "High"
 
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "HideSCAMeetNow" -Type "DWord" -Value 1
+
+    Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
 
     Set-RegistryForce -Path "HKLM:\Software\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting" -Name "Value" -Type "DWord" -Value 0
     Set-RegistryForce -Path "HKLM:\Software\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots" -Name "Value" -Type "DWord" -Value 0
@@ -988,17 +1032,8 @@ function Apply-RegistryTweaks {
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableConsumerAccountStateContent" -Type "DWord" -Value 1
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableCloudOptimizedContent" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy" -Name "VerifiedAndReputablePolicyState" -Type "DWord" -Value 0
-
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\ReserveManager" -Name "ShippedWithReserves" -Type "DWord" -Value 0
-
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Device performance and health" -Name "UILockdown" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Family options" -Name "UILockdown" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Account protection" -Name "UILockdown" -Type "DWord" -Value 1
-
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT" -Name "DontOfferThroughWUAU" -Type "DWord" -Value 1
-
-    Set-RegistryForce -Path "HKCU:\Software\Classes\CLSID\{645FF040-5081-101B-9F08-00AA002F954E}" -Name "System.IsPinnedToNameSpaceTree" -Type "DWord" -Value 1
+    Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge"
+    Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge Update"
 
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "ContentDeliveryAllowed" -Type "DWord" -Value 0
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "FeatureManagementEnabled" -Type "DWord" -Value 0
@@ -1098,10 +1133,6 @@ function Apply-RegistryTweaks {
 
     Set-RegistryForce -Path "HKCU:\Control Panel\Keyboard" -Name "InitialKeyboardIndicators" -Type "String" -Value "2"
 
-    Set-RegistryForce -Path "HKCU:\Control Panel\Mouse" -Name "MouseSpeed" -Type "String" -Value "0"
-    Set-RegistryForce -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold1" -Type "String" -Value "0"
-    Set-RegistryForce -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold2" -Type "String" -Value "0"
-
     Set-RegistryForce -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "Flags" -Type "String" -Value "506"
     Set-RegistryForce -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "HotkeyFlags" -Type "String" -Value "58"
 
@@ -1136,58 +1167,6 @@ function Apply-RegistryTweaks {
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "Hostname" -Value "FixOs" -Force | Out-Null
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "NV Hostname" -Value "FixOs" -Force | Out-Null
 
-    Get-Process -Name "OneDrive" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-
-    $OneDriveSetup32 = "$env:SystemRoot\System32\OneDriveSetup.exe"
-    $OneDriveSetup64 = "$env:SystemRoot\SysWOW64\OneDriveSetup.exe"
-    if (Test-Path $OneDriveSetup32) { Start-Process $OneDriveSetup32 "/uninstall" -Wait -ErrorAction SilentlyContinue }
-    if (Test-Path $OneDriveSetup64) { Start-Process $OneDriveSetup64 "/uninstall" -Wait -ErrorAction SilentlyContinue }
-
-    $oneDriveDirs = @(
-        "$env:SystemDrive\OneDriveTemp"
-        "$env:USERPROFILE\OneDrive"
-        "$env:USERPROFILE\AppData\Local\Microsoft\OneDrive"
-        "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\OneDrive.lnk"
-        "$env:ProgramData\Microsoft OneDrive"
-        "$env:LOCALAPPDATA\Microsoft\OneDrive"
-        "$env:ProgramFiles\Microsoft OneDrive"
-        "$env:ProgramFiles(x86)\Microsoft OneDrive"
-        "$env:SystemDrive\ProgramData\Microsoft OneDrive"
-        "$env:USERPROFILE\AppData\Roaming\Microsoft\OneDrive"
-    )
-    foreach ($dir in $oneDriveDirs) {
-        if (Test-Path $dir) { Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue }
-    }
-
-    Remove-Item -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{018D5C66-4533-4307-9B53-224DE2ED1FE6}' -Force -ErrorAction SilentlyContinue
-    Remove-Item -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{018D5C66-4533-4307-9B53-224DE2ED1FE6}' -Force -ErrorAction SilentlyContinue
-    Remove-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel' -Name '{018D5C66-4533-4307-9B53-224DE2ED1FE6}' -ErrorAction SilentlyContinue
-
-    Get-ScheduledTask | Where-Object {$_.TaskName -like "*OneDrive*"} | Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
-
-    Remove-Item -Path "HKCU:\Software\Microsoft\OneDrive" -Recurse -Force -ErrorAction SilentlyContinue
-    Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\OneDrive" -Recurse -Force -ErrorAction SilentlyContinue
-    Remove-Item -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\OneDrive" -Recurse -Force -ErrorAction SilentlyContinue
-
-    Get-Process -Name "Teams" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-
-    Get-AppxPackage -AllUsers -Name "*Teams*" | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
-    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like "*Teams*" | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
-
-    $teamsDirs = @(
-        "$env:LOCALAPPDATA\Microsoft\Teams"
-        "$env:APPDATA\Microsoft\Teams"
-        "$env:APPDATA\Teams"
-        "$env:ProgramData\Microsoft Teams"
-        "$env:USERPROFILE\AppData\Local\Microsoft\Teams"
-        "$env:USERPROFILE\AppData\Roaming\Microsoft\Teams"
-        "$env:ProgramFiles\Teams Installer"
-        "$env:ProgramFiles(x86)\Teams Installer"
-    )
-    foreach ($dir in $teamsDirs) {
-        if (Test-Path $dir) { Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue }
-    }
-
     $quickLaunchDir = "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
     if (Test-Path $quickLaunchDir) {
         Get-ChildItem -Path $quickLaunchDir -Include *.lnk -Force -ErrorAction SilentlyContinue | Where-Object {
@@ -1218,20 +1197,6 @@ function Apply-RegistryTweaks {
     foreach ($app in $appsToRemove) {
         Get-AppxPackage -AllUsers | Where-Object { $_.Name -like "$app*" } | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
         Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -like "$app*" } | Remove-AppxProvisionedPackage -Online -AllUsers -ErrorAction SilentlyContinue
-    }
-
-    $regPaths = @(
-        "HKCU:\Software\Microsoft\XboxApp"
-        "HKLM:\Software\Microsoft\Xbox"
-        "HKLM:\Software\Microsoft\GamingServices"
-        "HKCU:\Software\Microsoft\Family"
-        "HKCU:\Software\Microsoft\DevHome"
-        "HKCU:\Software\Microsoft\LinkedIn"
-    )
-    foreach ($regPath in $regPaths) {
-        if (Test-Path $regPath) {
-            Remove-Item -Path $regPath -Recurse -Force -ErrorAction SilentlyContinue
-        }
     }
 
     $shortcutPatterns = @("*Teams*.lnk","*LinkedIn*.lnk","*Family*.lnk","*Dev Home*.lnk","*Xbox*.lnk")
@@ -1333,7 +1298,6 @@ function Apply-RegistryTweaks {
     if (-not (Test-Path $winget)) {
         $installerUrl = "https://aka.ms/getwinget"
         $tempFile = "$env:TEMP\Microsoft.DesktopAppInstaller.msixbundle"
-
         Invoke-WebRequest -Uri $installerUrl -OutFile $tempFile
         Add-AppxPackage -Path $tempFile
         Start-Sleep -Seconds 5
@@ -1341,7 +1305,6 @@ function Apply-RegistryTweaks {
 
     if (Test-Path $winget) {
         $commonFlags = @("--exact","--silent","--accept-package-agreements","--accept-source-agreements","--source","winget")
-        & $winget install --id Brave.Brave @commonFlags
         & $winget install --id Nilesoft.Shell @commonFlags
     }
 
@@ -1382,7 +1345,8 @@ function Install-FixOS {
     Start-Sleep -Milliseconds 100
     
     Write-Host "`r[####################] 100%"
-    Write-Host "Press any key to return to the Menu"
+    Write-Host "FixOS installation complete"
+    Write-Host "Press any key to return to Menu"
     
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     Show-Menu
