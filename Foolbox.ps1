@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 4.0.0
+    Version: 5.0.0
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -15,7 +15,7 @@ if (-not $isAdmin) {
     Write-Host ""
     Write-Host "Please right-click PowerShell and select 'Run as Administrator', then run this script again." -ForegroundColor Yellow
     Write-Host ""
-   -Write-Host "Press Enter to exit..." -ForegroundColor Gray
+    Write-Host "Press Enter to exit..." -ForegroundColor Gray
     $null = Read-Host
     exit
 }
@@ -41,17 +41,13 @@ try {
 
 try {
     Start-Sleep -Milliseconds 500
-    
     $windowHandle = [Win32.KeyboardAPI]::GetForegroundWindow()
-    
     if ($windowHandle -ne [IntPtr]::Zero) {
         [Win32.KeyboardAPI]::SetForegroundWindow($windowHandle)
         Start-Sleep -Milliseconds 100
-        
         [Win32.KeyboardAPI]::keybd_event([Win32.KeyboardAPI]::VK_F11, 0, [Win32.KeyboardAPI]::KEYEVENTF_EXTENDEDKEY, 0)
         Start-Sleep -Milliseconds 50
         [Win32.KeyboardAPI]::keybd_event([Win32.KeyboardAPI]::VK_F11, 0, [Win32.KeyboardAPI]::KEYEVENTF_KEYUP, 0)
-        
         Start-Sleep -Milliseconds 500
     }
 } catch {}
@@ -66,9 +62,12 @@ try {
     $Host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size(120, 9999)
 }
 
+$osVersion = [Environment]::OSVersion.Version
+$isWindows10 = $osVersion.Major -eq 10 -and $osVersion.Build -lt 22000
+$isWindows11 = $osVersion.Major -eq 10 -and $osVersion.Build -ge 22000
+
 function Show-Menu {
     Clear-Host
-
     $bannerLines = @(
         " ███████╗██╗██╗  ██╗  ██████╗ ███████╗ ",
         " ██╔════╝██║╚██╗██╔╝ ██╔═══██╗██╔════╝ ", 
@@ -81,12 +80,8 @@ function Show-Menu {
         " © 2026 Devspace. All rights reserved. ",
         "                                       "
     )
-
     function Write-CenteredLine {
-        param (
-            [string]$Text,
-            [ConsoleColor]$ForegroundColor = $Host.UI.RawUI.ForegroundColor
-        )
+        param ([string]$Text,[ConsoleColor]$ForegroundColor = $Host.UI.RawUI.ForegroundColor)
         try {
             $width = $Host.UI.RawUI.WindowSize.Width
             if ($width -eq 0) { $width = 80 }
@@ -96,22 +91,17 @@ function Show-Menu {
             Write-Host $Text -ForegroundColor $ForegroundColor
         }
     }
-
     Write-Host ""
-
     foreach ($line in $bannerLines) {
         Write-CenteredLine -Text $line
     }
-
     Write-CenteredLine -Text ""
     Write-CenteredLine -Text ""
     Write-CenteredLine -Text "[1] Install FixOS    [2] Learn More"
     Write-CenteredLine -Text ""
     Write-CenteredLine -Text "[3] Exit"
     Write-CenteredLine -Text ""
-
     $choice = Read-Host "Select an option"
-
     switch ($choice) {
         "1" { Install-FixOS }
         "2" { Start-Process "https://github.com/DeveIopmentSpace/FixOs"; Show-Menu }
@@ -143,7 +133,6 @@ function Disable-AllAnimations {
             @{Path="HKCU:\SOFTWARE\Microsoft\Windows\DWM"; Name="AnimationAttributionEnabled"; Type="DWord"; Value=0}
             @{Path="HKCU:\SOFTWARE\Microsoft\Windows\DWM"; Name="EnableWindowColorization"; Type="DWord"; Value=0}
             @{Path="HKCU:\SOFTWARE\Microsoft\Windows\DWM"; Name="Composition"; Type="DWord"; Value=0}
-            @{Path="HKCU:\SOFTWARE\Microsoft\Windows\DWM"; Name="CompositionPolicy"; Type="DWord"; Value=0}
         )
         
         foreach ($anim in $animKeys) {
@@ -160,32 +149,6 @@ function Disable-AllAnimations {
                 }
             } catch {}
         }
-        
-        try {
-            $adjustment = @"
-using System;
-using System.Runtime.InteropServices;
-public class AnimationSettings {
-    [DllImport("user32.dll")]
-    public static extern bool SystemParametersInfo(int uAction, int uParam, ref int lpvParam, int fuWinIni);
-    
-    public static void DisableAnimations() {
-        int animation = 0;
-        SystemParametersInfo(0x2001, 0, ref animation, 0x01 | 0x02);
-        int menuAnimation = 0;
-        SystemParametersInfo(0x1002, 0, ref menuAnimation, 0x01 | 0x02);
-        int comboBoxAnimation = 0;
-        SystemParametersInfo(0x1004, 0, ref comboBoxAnimation, 0x01 | 0x02);
-        int listBoxAnimation = 0;
-        SystemParametersInfo(0x1006, 0, ref listBoxAnimation, 0x01 | 0x02);
-        int titleBarAnimation = 0;
-        SystemParametersInfo(0x1008, 0, ref titleBarAnimation, 0x01 | 0x02);
-    }
-}
-"@
-            Add-Type $adjustment -ErrorAction SilentlyContinue
-            [AnimationSettings]::DisableAnimations()
-        } catch {}
     } catch {}
 }
 
@@ -209,13 +172,21 @@ function Disable-BackgroundApps {
 
 function Disable-GameBar {
     try {
-        Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0 -Force
-        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR" -Name "AppCaptureEnabled" -Type DWord -Value 0 -Force
-        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\GameBar" -Name "ShowStartupPanel" -Type DWord -Value 0 -Force
-        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\GameBar" -Name "UseNexusForGameBarEnabled" -Type DWord -Value 0 -Force
-        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\GameBar" -Name "GamePanelStartupTipIndex" -Type DWord -Value 3 -Force
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -Type DWord -Value 0 -Force
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\ApplicationManagement\AllowGameDVR" -Name "value" -Type DWord -Value 0 -Force
+        Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR" -Name "AppCaptureEnabled" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\GameBar" -Name "ShowStartupPanel" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\GameBar" -Name "UseNexusForGameBarEnabled" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\GameBar" -Name "GamePanelStartupTipIndex" -Type DWord -Value 3 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "AllowGameDVR" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\ApplicationManagement\AllowGameDVR"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "value" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
     } catch {}
 }
 
@@ -230,7 +201,10 @@ function Disable-SleepStudy {
 
 function Disable-AdvertisingID {
     try {
-        Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Type DWord -Value 0 -Force
+        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "Enabled" -Type DWord -Value 0 -Force
+        
         $path = "HKLM:\Software\Policies\Microsoft\Windows\AdvertisingInfo"
         if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
         Set-ItemProperty -Path $path -Name "DisabledByGroupPolicy" -Type DWord -Value 1 -Force
@@ -309,15 +283,17 @@ function Disable-OnlineSpeechRecognition {
 }
 
 function Disable-RecallSnapshots {
-    try {
-        $path = "HKCU:\Software\Policies\Microsoft\Windows\WindowsAI"
-        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-        Set-ItemProperty -Path $path -Name "DisableAIDataAnalysis" -Type DWord -Value 1 -Force
-        
-        $path = "HKCU:\Software\Policies\Microsoft\Windows\Windows AI"
-        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-        Set-ItemProperty -Path $path -Name "TurnOffSavingSnapshots" -Type DWord -Value 1 -Force
-    } catch {}
+    if ($isWindows11) {
+        try {
+            $path = "HKCU:\Software\Policies\Microsoft\Windows\WindowsAI"
+            if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+            Set-ItemProperty -Path $path -Name "DisableAIDataAnalysis" -Type DWord -Value 1 -Force
+            
+            $path = "HKCU:\Software\Policies\Microsoft\Windows\Windows AI"
+            if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+            Set-ItemProperty -Path $path -Name "TurnOffSavingSnapshots" -Type DWord -Value 1 -Force
+        } catch {}
+    }
 }
 
 function Disable-TailoredExperiences {
@@ -415,6 +391,8 @@ function Disable-StartMenuRecommendations {
         Set-ItemProperty -Path $path -Name "HideRecentlyAddedApps" -Type DWord -Value 1 -Force
         Set-ItemProperty -Path $path -Name "HideRecommendedPersonalizedSites" -Type DWord -Value 1 -Force
         Set-ItemProperty -Path $path -Name "ShowOrHideMostUsedApps" -Type DWord -Value 2 -Force
+        
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "HideRecommendedPersonalizedSites" -Type DWord -Value 1 -Force -ErrorAction SilentlyContinue
     } catch {}
 }
 
@@ -442,11 +420,13 @@ function Disable-StartupDelay {
 }
 
 function Add-EndTaskToTaskbar {
-    try {
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings"
-        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-        Set-ItemProperty -Path $path -Name "TaskbarEndTask" -Type DWord -Value 1 -Force
-    } catch {}
+    if ($isWindows11) {
+        try {
+            $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings"
+            if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+            Set-ItemProperty -Path $path -Name "TaskbarEndTask" -Type DWord -Value 1 -Force
+        } catch {}
+    }
 }
 
 function Disable-MouseAcceleration {
@@ -688,6 +668,33 @@ function Optimize-Services {
     } catch {}
 }
 
+function Disable-WindowsDefenderStartup {
+    try {
+        $path = "HKLM:\SYSTEM\CurrentControlSet\Services\WinDefend"
+        if (Test-Path $path) {
+            Set-ItemProperty -Path $path -Name "Start" -Value 4 -Type DWord -Force -ErrorAction SilentlyContinue
+        }
+        
+        $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+        if (Test-Path $path) {
+            Remove-ItemProperty -Path $path -Name "WindowsDefender" -Force -ErrorAction SilentlyContinue
+            Remove-ItemProperty -Path $path -Name "SecurityHealth" -Force -ErrorAction SilentlyContinue
+        }
+        
+        schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Cache Maintenance" /Disable 2>$null
+        schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Cleanup" /Disable 2>$null
+        schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan" /Disable 2>$null
+        schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Verification" /Disable 2>$null
+        
+        if ($isWindows10) {
+            schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Cache Maintenance" /Disable 2>$null
+            schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Cleanup" /Disable 2>$null
+            schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan" /Disable 2>$null
+            schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Verification" /Disable 2>$null
+        }
+    } catch {}
+}
+
 function Remove-EdgeCompletely {
     try {
         Get-Process -Name "*edge*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
@@ -798,9 +805,17 @@ function Remove-LinkedIn {
 
 function Disable-Telemetry {
     try {
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Type DWord -Value 2 -Force -ErrorAction SilentlyContinue
+        $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "AllowTelemetry" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "AllowTelemetry" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SOFTWARE\Microsoft\Windows Defender\Spynet"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "SubmitSamplesConsent" -Type DWord -Value 2 -Force -ErrorAction SilentlyContinue
     } catch {}
 }
 
@@ -827,9 +842,17 @@ public class Wallpaper {
 
 function Add-AdditionalRegistryTweaks {
     try {
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Type DWord -Value 2 -Force -ErrorAction SilentlyContinue
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy" -Name "VerifiedAndReputablePolicyState" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\ReserveManager" -Name "ShippedWithReserves" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        $path = "HKLM:\SOFTWARE\Microsoft\Windows Defender\Spynet"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "SubmitSamplesConsent" -Type DWord -Value 2 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "VerifiedAndReputablePolicyState" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
+        
+        $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\ReserveManager"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-ItemProperty -Path $path -Name "ShippedWithReserves" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue
         
         $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Device performance and health"
         if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
@@ -915,6 +938,7 @@ function Start-WindowsOptimization {
     Remove-Teams
     Remove-Xbox
     Remove-LinkedIn
+    Disable-WindowsDefenderStartup
     Add-AdditionalRegistryTweaks
     Set-Wallpaper
     Create-ToolboxShortcut
@@ -948,193 +972,324 @@ function Apply-RegistryTweaks {
 
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force -ErrorAction SilentlyContinue | Out-Null
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsSpotlightOnLockScreen" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsConsumerFeatures" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsSpotlightActiveUser" -Type "DWord" -Value 1
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "DisableWindowsSpotlightOnLockScreen" -Type "DWord" -Value 1
+    Set-RegistryForce -Path $path -Name "DisableWindowsConsumerFeatures" -Type "DWord" -Value 1
+    Set-RegistryForce -Path $path -Name "DisableWindowsSpotlightActiveUser" -Type "DWord" -Value 1
 
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\DevHomeUpdate"
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\OutlookUpdate"
 
     Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications" -Name "ConfigureChatAutoInstall" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Chat" -Name "ChatIcon" -Type "DWord" -Value 3
+    
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Chat"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "ChatIcon" -Type "DWord" -Value 3
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Start" -Name "ConfigureStartPins" -Type "String" -Value '{ "pinnedList": [] }'
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Start" -Name "ConfigureStartPins_ProviderSet" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Start" -Name "ConfigureStartPins_WinningProvider" -Type "String" -Value "B5292708-1619-419B-9923-E5D9F3925E71"
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\providers\B5292708-1619-419B-9923-E5D9F3925E71\default\Device\Start" -Name "ConfigureStartPins" -Type "String" -Value '{ "pinnedList": [] }'
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\providers\B5292708-1619-419B-9923-E5D9F3925E71\default\Device\Start" -Name "ConfigureStartPins_LastWrite" -Type "DWord" -Value 1
+    $path = "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Start"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "ConfigureStartPins" -Type "String" -Value '{ "pinnedList": [] }'
+    Set-RegistryForce -Path $path -Name "ConfigureStartPins_ProviderSet" -Type "DWord" -Value 1
+    Set-RegistryForce -Path $path -Name "ConfigureStartPins_WinningProvider" -Type "String" -Value "B5292708-1619-419B-9923-E5D9F3925E71"
+    
+    $path = "HKLM:\SOFTWARE\Microsoft\PolicyManager\providers\B5292708-1619-419B-9923-E5D9F3925E71\default\Device\Start"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "ConfigureStartPins" -Type "String" -Value '{ "pinnedList": [] }'
+    Set-RegistryForce -Path $path -Name "ConfigureStartPins_LastWrite" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Dsh" -Name "AllowNewsAndInterests" -Type "DWord" -Value 0
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Dsh"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "AllowNewsAndInterests" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\BitLocker" -Name "PreventDeviceEncryption" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EnhancedStorageDevices" -Name "TCGSecurityActivationDisabled" -Type "DWord" -Value 1
+    $path = "HKLM:\SYSTEM\CurrentControlSet\Control\BitLocker"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "PreventDeviceEncryption" -Type "DWord" -Value 1
+    
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EnhancedStorageDevices"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "TCGSecurityActivationDisabled" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferFeatureUpdates" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferFeatureUpdatesPeriodInDays" -Type "DWord" -Value 365
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferQualityUpdates" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DeferQualityUpdatesPeriodInDays" -Type "DWord" -Value 365
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "TargetReleaseVersion" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "TargetReleaseVersionInfo" -Type "String" -Value "22H2"
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "ProductVersion" -Type "String" -Value "Windows 10"
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "DeferFeatureUpdates" -Type "DWord" -Value 1
+    Set-RegistryForce -Path $path -Name "DeferFeatureUpdatesPeriodInDays" -Type "DWord" -Value 365
+    Set-RegistryForce -Path $path -Name "DeferQualityUpdates" -Type "DWord" -Value 1
+    Set-RegistryForce -Path $path -Name "DeferQualityUpdatesPeriodInDays" -Type "DWord" -Value 365
+    Set-RegistryForce -Path $path -Name "TargetReleaseVersion" -Type "DWord" -Value 1
+    Set-RegistryForce -Path $path -Name "TargetReleaseVersionInfo" -Type "String" -Value "22H2"
+    Set-RegistryForce -Path $path -Name "ProductVersion" -Type "String" -Value "Windows 10"
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "AllowCortana" -Type "DWord" -Value 0
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "AllowCortana" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableActivityFeed" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "PublishUserActivities" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "UploadUserActivities" -Type "DWord" -Value 0
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "EnableActivityFeed" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "PublishUserActivities" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "UploadUserActivities" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name "Value" -Type "String" -Value "Deny"
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "SensorPermissionState" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration" -Name "Status" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKLM:\SYSTEM\Maps" -Name "AutoUpdateEnabled" -Type "DWord" -Value 0
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "Value" -Type "String" -Value "Deny"
+    
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "SensorPermissionState" -Type "DWord" -Value 0
+    
+    $path = "HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "Status" -Type "DWord" -Value 0
+    
+    $path = "HKLM:\SYSTEM\Maps"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "AutoUpdateEnabled" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsInkWorkspace" -Name "AllowWindowsInkWorkspace" -Type "DWord" -Value 0
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsInkWorkspace"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "AllowWindowsInkWorkspace" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "DoNotShowFeedbackNotifications" -Type "DWord" -Value 1
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "DoNotShowFeedbackNotifications" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo" -Name "DisabledByGroupPolicy" -Type "DWord" -Value 1
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "DisabledByGroupPolicy" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting" -Name "Disabled" -Type "DWord" -Value 1
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "Disabled" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" -Name "DODownloadMode" -Type "DWord" -Value 0
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "DODownloadMode" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance" -Name "fAllowToGetHelp" -Type "DWord" -Value 0
+    $path = "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "fAllowToGetHelp" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching" -Name "SearchOrderConfig" -Type "DWord" -Value 1
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "SearchOrderConfig" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "SystemResponsiveness" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NetworkThrottlingIndex" -Type "DWord" -Value 10
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "SystemResponsiveness" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "NetworkThrottlingIndex" -Type "DWord" -Value 10
 
-    Set-RegistryForce -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "IRPStackSize" -Type "DWord" -Value 30
+    $path = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "IRPStackSize" -Type "DWord" -Value 30
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "GPU Priority" -Type "DWord" -Value 8
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "Priority" -Type "DWord" -Value 6
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "Scheduling Category" -Type "String" -Value "High"
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "GPU Priority" -Type "DWord" -Value 8
+    Set-RegistryForce -Path $path -Name "Priority" -Type "DWord" -Value 6
+    Set-RegistryForce -Path $path -Name "Scheduling Category" -Type "String" -Value "High"
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "HideSCAMeetNow" -Type "DWord" -Value 1
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "HideSCAMeetNow" -Type "DWord" -Value 1
 
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
 
-    Set-RegistryForce -Path "HKLM:\Software\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting" -Name "Value" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKLM:\Software\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots" -Name "Value" -Type "DWord" -Value 0
+    $path = "HKLM:\Software\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "Value" -Type "DWord" -Value 0
+    
+    $path = "HKLM:\Software\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "Value" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" -Name "01" -Type "DWord" -Value 0
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "01" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -Type "DWord" -Value 0
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "AllowGameDVR" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "DisableAutomaticRestartSignOn" -Type "DWord" -Value 1
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "DisableAutomaticRestartSignOn" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -Name "KFMBlockOptIn" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -Name "DisableFileSyncNGSC" -Type "DWord" -Value 1
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "KFMBlockOptIn" -Type "DWord" -Value 1
+    
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "DisableFileSyncNGSC" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\PushToInstall" -Name "DisablePushToInstall" -Type "DWord" -Value 1
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\PushToInstall"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "DisablePushToInstall" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableConsumerAccountStateContent" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableCloudOptimizedContent" -Type "DWord" -Value 1
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "DisableConsumerAccountStateContent" -Type "DWord" -Value 1
+    Set-RegistryForce -Path $path -Name "DisableCloudOptimizedContent" -Type "DWord" -Value 1
 
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge"
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge Update"
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "ContentDeliveryAllowed" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "FeatureManagementEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "OEMPreInstalledAppsEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEverEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "RotatingLockScreenEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "RotatingLockScreenOverlayEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SoftLandingEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContentEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-310093Enabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338387Enabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338388Enabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338389Enabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353698Enabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353694Enabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353696Enabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "ContentDeliveryAllowed" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "FeatureManagementEnabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "OEMPreInstalledAppsEnabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "PreInstalledAppsEnabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "PreInstalledAppsEverEnabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "SilentInstalledAppsEnabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "RotatingLockScreenEnabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "RotatingLockScreenOverlayEnabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "SoftLandingEnabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "SubscribedContentEnabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "SubscribedContent-310093Enabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "SubscribedContent-338387Enabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "SubscribedContent-338388Enabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "SubscribedContent-338389Enabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "SubscribedContent-353698Enabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "SubscribedContent-353694Enabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "SubscribedContent-353696Enabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "SystemPaneSuggestionsEnabled" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" -Name "TailoredExperiencesWithDiagnosticDataEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" -Name "IsMiEnabled" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "TailoredExperiencesWithDiagnosticDataEnabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "IsMiEnabled" -Type "DWord" -Value 0
 
     Remove-RegistryKeyForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\Subscriptions"
     Remove-RegistryKeyForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\SuggestedApps"
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy" -Name "HasAccepted" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "HasAccepted" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot" -Name "TurnOffWindowsCopilot" -Type "DWord" -Value 1
+    if ($isWindows11) {
+        $path = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-RegistryForce -Path $path -Name "TurnOffWindowsCopilot" -Type "DWord" -Value 1
+    }
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Notepad" -Name "ShowStoreBanner" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Notepad"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "ShowStoreBanner" -Type "DWord" -Value 0
 
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Name "OneDriveSetup" -Action "Delete"
 
-    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Type "DWord" -Value 0
+    $path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "TaskbarAl" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "Start_IrisRecommendations" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "Start_AccountNotifications" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "HideRecentlyAddedApps" -Type "DWord" -Value 1
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search"
+    Set-RegistryForce -Path $path -Name "SearchboxTaskbarMode" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People" -Name "PeopleBand" -Type "DWord" -Value 0
+    $path = "HKCU:\Software\Policies\Microsoft\Windows\Explorer"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "HideRecentlyAddedApps" -Type "DWord" -Value 1
+    Set-RegistryForce -Path $path -Name "DisableNotificationCenter" -Type "DWord" -Value 1
+    Set-RegistryForce -Path $path -Name "DisableSearchBoxSuggestions" -Type "DWord" -Value 1
+
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "PeopleBand" -Type "DWord" -Value 0
 
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTaskViewButton" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsTaskbarViewMode" -Type "DWord" -Value 2
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" -Name "EnableFeeds" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Feeds"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "ShellFeedsTaskbarViewMode" -Type "DWord" -Value 2
+    Set-RegistryForce -Path $path -Name "ShellFeedsEnabled" -Type "DWord" -Value 0
+    
+    $path = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "EnableFeeds" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\PushNotifications" -Name "ToastEnabled" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\PushNotifications"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "ToastEnabled" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" -Name "SettingSyncEnabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" -Name "LocationServicesEnabled" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy"
+    Set-RegistryForce -Path $path -Name "SettingSyncEnabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "LocationServicesEnabled" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Personalization\Settings" -Name "AcceptedPrivacyPolicy" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Personalization\Settings"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "AcceptedPrivacyPolicy" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Feedback" -Name "AutoSample" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Feedback" -Name "ServiceEnabled" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Feedback"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "AutoSample" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "ServiceEnabled" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\Control Panel\International\User Profile" -Name "HttpAcceptLanguageOptOut" -Type "DWord" -Value 1
+    $path = "HKCU:\Control Panel\International\User Profile"
+    Set-RegistryForce -Path $path -Name "HttpAcceptLanguageOptOut" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" -Name "GlobalUserDisabled" -Type "DWord" -Value 1
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications"
+    Set-RegistryForce -Path $path -Name "GlobalUserDisabled" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppDiagnostics" -Name "AppDiagnosticsEnabled" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppDiagnostics"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "AppDiagnosticsEnabled" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization" -Name "DODownloadMode" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "DODownloadMode" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication" -Name "UseSignInInfo" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "UseSignInInfo" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Maps" -Name "AutoDownload" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Maps"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "AutoDownload" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Siuf\Rules" -Name "NumberOfSIUFInPeriod" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Siuf\Rules"
+    Set-RegistryForce -Path $path -Name "NumberOfSIUFInPeriod" -Type "DWord" -Value 0
 
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSyncProviderNotifications" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo"
+    Set-RegistryForce -Path $path -Name "Enabled" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore" -Name "HarvestContacts" -Type "DWord" -Value 0
+    $path = "HKCU:\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "HarvestContacts" -Type "DWord" -Value 0
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\OperationStatusManager" -Name "EnthusiastMode" -Type "DWord" -Value 1
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\OperationStatusManager"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "EnthusiastMode" -Type "DWord" -Value 1
+    
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Type "DWord" -Value 1
     Set-RegistryForce -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SettingsPageVisibility" -Type "String" -Value "hide:home"
 
-    Set-RegistryForce -Path "HKCU:\Control Panel\Desktop" -Name "AutoEndTasks" -Type "DWord" -Value 1
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+    Set-RegistryForce -Path $path -Name "HideSCAMeetNow" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "HideSCAMeetNow" -Type "DWord" -Value 1
+    if ($isWindows11) {
+        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings"
+        Set-RegistryForce -Path $path -Name "TaskbarEndTask" -Type "DWord" -Value 1
+    }
 
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarDeveloperSettings" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarEndTask" -Type "DWord" -Value 1
-
-    Set-RegistryForce -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "DisableNotificationCenter" -Type "DWord" -Value 1
-
-    Set-RegistryForce -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_FSEBehavior" -Type "DWord" -Value 2
-    Set-RegistryForce -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type "DWord" -Value 0
-    Set-RegistryForce -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_DXGIHonorFSEWindowsCompatible" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_HonorUserFSEBehaviorMode" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_EFSEFeatureFlags" -Type "DWord" -Value 0
-
-    Set-RegistryForce -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "DisableSearchBoxSuggestions" -Type "DWord" -Value 1
+    $path = "HKCU:\System\GameConfigStore"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "GameDVR_FSEBehavior" -Type "DWord" -Value 2
+    Set-RegistryForce -Path $path -Name "GameDVR_Enabled" -Type "DWord" -Value 0
+    Set-RegistryForce -Path $path -Name "GameDVR_DXGIHonorFSEWindowsCompatible" -Type "DWord" -Value 1
+    Set-RegistryForce -Path $path -Name "GameDVR_HonorUserFSEBehaviorMode" -Type "DWord" -Value 1
+    Set-RegistryForce -Path $path -Name "GameDVR_EFSEFeatureFlags" -Type "DWord" -Value 0
 
     Set-RegistryForce -Path "HKCU:\Control Panel\Keyboard" -Name "InitialKeyboardIndicators" -Type "String" -Value "2"
 
-    Set-RegistryForce -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "Flags" -Type "String" -Value "506"
-    Set-RegistryForce -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "HotkeyFlags" -Type "String" -Value "58"
+    $path = "HKCU:\Control Panel\Accessibility\StickyKeys"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "Flags" -Type "String" -Value "506"
+    Set-RegistryForce -Path $path -Name "HotkeyFlags" -Type "String" -Value "58"
 
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAcrylicOpacity" -Type "DWord" -Value 0
     Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarSmallIcons" -Type "DWord" -Value 1
@@ -1142,23 +1297,37 @@ function Apply-RegistryTweaks {
     $photoExtensions = @(".bmp",".cr2",".dib",".gif",".ico",".jfif",".jpe",".jpeg",".jpg",".jxr",".png",".tif",".tiff",".wdp")
 
     foreach ($ext in $photoExtensions) {
-        Set-RegistryForce -Path "HKCU:\SOFTWARE\Classes\$ext" -Name "(default)" -Type "String" -Value "PhotoViewer.FileAssoc.Tiff"
-        Set-RegistryForce -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FileExts\$ext\OpenWithProgids" -Name "PhotoViewer.FileAssoc.Tiff" -Type "None" -Value $null
+        $path = "HKCU:\SOFTWARE\Classes\$ext"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-RegistryForce -Path $path -Name "(default)" -Type "String" -Value "PhotoViewer.FileAssoc.Tiff"
+        
+        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FileExts\$ext\OpenWithProgids"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-RegistryForce -Path $path -Name "PhotoViewer.FileAssoc.Tiff" -Type "None" -Value $null
     }
 
-    Set-RegistryForce -Path "HKCU:\Software\Policies\Microsoft\Windows\WindowsAI" -Name "DisableAIDataAnalysis" -Type "DWord" -Value 1
-    Set-RegistryForce -Path "HKCU:\Software\Policies\Microsoft\Windows\Windows AI" -Name "TurnOffSavingSnapshots" -Type "DWord" -Value 1
+    $path = "HKCU:\Software\Policies\Microsoft\Windows\WindowsAI"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "DisableAIDataAnalysis" -Type "DWord" -Value 1
+    
+    $path = "HKCU:\Software\Policies\Microsoft\Windows\Windows AI"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "TurnOffSavingSnapshots" -Type "DWord" -Value 1
 
-    Set-RegistryForce -Path "HKCU:\Software\Microsoft\Multimedia\Audio" -Name "UserDuckingPreference" -Type "DWord" -Value 3
+    $path = "HKCU:\Software\Microsoft\Multimedia\Audio"
+    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+    Set-RegistryForce -Path $path -Name "UserDuckingPreference" -Type "DWord" -Value 3
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -Type "DWord" -Value 3
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+    Set-RegistryForce -Path $path -Name "EnableLUA" -Type "DWord" -Value 3
 
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}"
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}"
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}"
     Remove-RegistryKeyForce -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}"
 
-    Set-RegistryForce -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "SettingsPageVisibility" -Type "String" -Value "hide:home"
+    $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+    Set-RegistryForce -Path $path -Name "SettingsPageVisibility" -Type "String" -Value "hide:home"
 
     Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run" -Name "com.squirrel.Teams.Teams" -Force -ErrorAction SilentlyContinue | Out-Null
     Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "com.squirrel.Teams.Teams" -Force -ErrorAction SilentlyContinue | Out-Null
@@ -1177,7 +1346,7 @@ function Apply-RegistryTweaks {
     }
 
     $SearchRegPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSettings"
-    New-Item -Path $SearchRegPath -Force -ErrorAction SilentlyContinue | Out-Null
+    if (-not (Test-Path $SearchRegPath)) { New-Item -Path $SearchRegPath -Force | Out-Null }
     Set-ItemProperty -Path $SearchRegPath -Name "IsDeviceSearchHistoryEnabled" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue | Out-Null
     Set-ItemProperty -Path $SearchRegPath -Name "IsCloudSearchEnabled" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue | Out-Null
     Set-ItemProperty -Path $SearchRegPath -Name "IsMSACloudSearchEnabled" -Type DWord -Value 0 -Force -ErrorAction SilentlyContinue | Out-Null
@@ -1345,11 +1514,20 @@ function Install-FixOS {
     Start-Sleep -Milliseconds 100
     
     Write-Host "`r[####################] 100%"
-    Write-Host "FixOS installation complete"
-    Write-Host "Press any key to return to Menu"
+    Write-Host ""
+    Write-Host "Installation complete!" -ForegroundColor Green
+    Write-Host "Press R to reboot now or any other key to exit without rebooting" -ForegroundColor Magenta
     
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    Show-Menu
+    $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    if ($key.Character -eq 'r' -or $key.Character -eq 'R') {
+        Write-Host "Rebooting in 5 seconds..." -ForegroundColor Red
+        Start-Sleep -Seconds 5
+        Restart-Computer -Force
+    } else {
+        Write-Host "Exiting without reboot. Please reboot manually for all changes to take effect." -ForegroundColor Yellow
+        Start-Sleep -Seconds 3
+        exit
+    }
 }
 
 try {
@@ -1362,6 +1540,6 @@ try {
     }
 } catch {
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host "Press any key to exit..." -ForegroundColor Gray
+    Write-Host "Press any key to exit..." -ForegroundColor White
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
