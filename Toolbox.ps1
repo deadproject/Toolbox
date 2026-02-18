@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 4.1.0
+    Version: 2.4.2
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -61,6 +61,10 @@ try {
     $Host.UI.RawUI.WindowSize = New-Object System.Management.Automation.Host.Size(120, 50)
     $Host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size(120, 9999)
 }
+
+$osVersion = [Environment]::OSVersion.Version
+$isWindows10 = $osVersion.Major -eq 10 -and $osVersion.Build -lt 22000
+$isWindows11 = $osVersion.Major -eq 10 -and $osVersion.Build -ge 22000
 
 function Show-Menu {
     Clear-Host
@@ -279,15 +283,17 @@ function Disable-OnlineSpeechRecognition {
 }
 
 function Disable-RecallSnapshots {
-    try {
-        $path = "HKCU:\Software\Policies\Microsoft\Windows\WindowsAI"
-        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-        Set-ItemProperty -Path $path -Name "DisableAIDataAnalysis" -Type DWord -Value 1 -Force
-        
-        $path = "HKCU:\Software\Policies\Microsoft\Windows\Windows AI"
-        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-        Set-ItemProperty -Path $path -Name "TurnOffSavingSnapshots" -Type DWord -Value 1 -Force
-    } catch {}
+    if ($isWindows11) {
+        try {
+            $path = "HKCU:\Software\Policies\Microsoft\Windows\WindowsAI"
+            if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+            Set-ItemProperty -Path $path -Name "DisableAIDataAnalysis" -Type DWord -Value 1 -Force
+            
+            $path = "HKCU:\Software\Policies\Microsoft\Windows\Windows AI"
+            if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+            Set-ItemProperty -Path $path -Name "TurnOffSavingSnapshots" -Type DWord -Value 1 -Force
+        } catch {}
+    }
 }
 
 function Disable-TailoredExperiences {
@@ -414,11 +420,13 @@ function Disable-StartupDelay {
 }
 
 function Add-EndTaskToTaskbar {
-    try {
-        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings"
-        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-        Set-ItemProperty -Path $path -Name "TaskbarEndTask" -Type DWord -Value 1 -Force
-    } catch {}
+    if ($isWindows11) {
+        try {
+            $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings"
+            if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+            Set-ItemProperty -Path $path -Name "TaskbarEndTask" -Type DWord -Value 1 -Force
+        } catch {}
+    }
 }
 
 function Disable-MouseAcceleration {
@@ -656,6 +664,33 @@ function Optimize-Services {
                     Set-Service -Name $service -StartupType Manual -ErrorAction SilentlyContinue
                 }
             } catch {}
+        }
+    } catch {}
+}
+
+function Disable-WindowsDefenderStartup {
+    try {
+        $path = "HKLM:\SYSTEM\CurrentControlSet\Services\WinDefend"
+        if (Test-Path $path) {
+            Set-ItemProperty -Path $path -Name "Start" -Value 4 -Type DWord -Force -ErrorAction SilentlyContinue
+        }
+        
+        $path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+        if (Test-Path $path) {
+            Remove-ItemProperty -Path $path -Name "WindowsDefender" -Force -ErrorAction SilentlyContinue
+            Remove-ItemProperty -Path $path -Name "SecurityHealth" -Force -ErrorAction SilentlyContinue
+        }
+        
+        schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Cache Maintenance" /Disable 2>$null
+        schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Cleanup" /Disable 2>$null
+        schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan" /Disable 2>$null
+        schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Verification" /Disable 2>$null
+        
+        if ($isWindows10) {
+            schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Cache Maintenance" /Disable 2>$null
+            schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Cleanup" /Disable 2>$null
+            schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan" /Disable 2>$null
+            schtasks /Change /TN "Microsoft\Windows\Windows Defender\Windows Defender Verification" /Disable 2>$null
         }
     } catch {}
 }
@@ -903,6 +938,7 @@ function Start-WindowsOptimization {
     Remove-Teams
     Remove-Xbox
     Remove-LinkedIn
+    Disable-WindowsDefenderStartup
     Add-AdditionalRegistryTweaks
     Set-Wallpaper
     Create-ToolboxShortcut
@@ -1132,9 +1168,11 @@ function Apply-RegistryTweaks {
     if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
     Set-RegistryForce -Path $path -Name "HasAccepted" -Type "DWord" -Value 0
 
-    $path = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot"
-    if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-    Set-RegistryForce -Path $path -Name "TurnOffWindowsCopilot" -Type "DWord" -Value 1
+    if ($isWindows11) {
+        $path = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot"
+        if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
+        Set-RegistryForce -Path $path -Name "TurnOffWindowsCopilot" -Type "DWord" -Value 1
+    }
 
     $path = "HKCU:\SOFTWARE\Microsoft\Notepad"
     if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
@@ -1233,8 +1271,10 @@ function Apply-RegistryTweaks {
     $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
     Set-RegistryForce -Path $path -Name "HideSCAMeetNow" -Type "DWord" -Value 1
 
-    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings"
-    Set-RegistryForce -Path $path -Name "TaskbarEndTask" -Type "DWord" -Value 1
+    if ($isWindows11) {
+        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings"
+        Set-RegistryForce -Path $path -Name "TaskbarEndTask" -Type "DWord" -Value 1
+    }
 
     $path = "HKCU:\System\GameConfigStore"
     if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
@@ -1474,8 +1514,11 @@ function Install-FixOS {
     Start-Sleep -Milliseconds 100
     
     Write-Host "`r[####################] 100%"
-    Write-Host "Installation complete"
-    Write-Host "Press any key to return to Menu"
+    Write-Host "FixOs Installation completed!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "You must reboot your system" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Press any key to exit FixOs installer..." -ForegroundColor White
     
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     Show-Menu
@@ -1487,7 +1530,7 @@ try {
     if ($Install) {
         Install-FixOS
     } else {
-        Show-Menu
+        
     }
 } catch {
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
