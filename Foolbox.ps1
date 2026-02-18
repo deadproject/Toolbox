@@ -1,7 +1,7 @@
 <#
 - MORE INFO = https://github.com/DeveIopmentSpace/FixOs/tree/dev
 - NOTES
-    Version: 2.7.3
+    Version: 2.4.2
     Author: Project/Development Space
     Requires: Administrator privileges
 #>
@@ -1514,7 +1514,6 @@ function Install-FixOS {
     Start-Sleep -Milliseconds 100
     
     Write-Host "`r[####################] 100%"
-    Write-Host ""
     Write-Host "FixOs Installation completed!" -ForegroundColor Green
     Write-Host ""
     Write-Host "You must reboot your system" -ForegroundColor Yellow
@@ -1523,4 +1522,18 @@ function Install-FixOS {
     
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     Show-Menu
+}
+
+try {
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force -ErrorAction SilentlyContinue
+    
+    if ($Install) {
+        Install-FixOS
+    } else {
+        Show-Menu
+    }
+} catch {
+    Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Press any key to exit..." -ForegroundColor Gray
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
